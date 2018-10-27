@@ -1,17 +1,29 @@
 {
-    "extends": "../tslint.json",
-    "rules": {
-        "directive-selector": [
-            true,
-            "attribute",
-            "fw",
-            "camelCase"
-        ],
-        "component-selector": [
-            true,
-            "element",
-            "fw",
-            "kebab-case"
-        ]
-    }
+  "extends": "../tslint.json",
+  "rules": {
+    "directive-selector": [
+      true,
+      "attribute",
+      [
+        "fw",
+        "passport",
+        "exception",
+        "layout",
+        "header"
+      ],
+      "camelCase"
+    ],
+    "component-selector": [
+      true,
+      "element",
+      [
+        "fw",
+        "passport",
+        "exception",
+        "layout",
+        "header"
+      ],
+      "kebab-case"
+    ]
+  }
 }
