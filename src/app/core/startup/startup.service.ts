@@ -40,7 +40,6 @@ export class StartupService {
     ).pipe(
       // 接收其他拦截器后产生的异常消息
       catchError(([langData, appData]) => {
-        ``
         resolve(null);
         return [langData, appData];
       })
