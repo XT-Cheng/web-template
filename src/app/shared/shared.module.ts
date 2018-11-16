@@ -13,6 +13,7 @@ import { TranslateModule } from '@ngx-translate/core';
 // #region third libs
 import { NgZorroAntdModule } from 'ng-zorro-antd';
 import { CountdownModule } from 'ngx-countdown';
+import { AutofocusDirective } from './directives/autofocus.directive';
 const THIRDMODULES = [
   NgZorroAntdModule,
   CountdownModule
@@ -21,7 +22,7 @@ const THIRDMODULES = [
 
 // #region your componets & directives
 const COMPONENTS = [];
-const DIRECTIVES = [];
+const DIRECTIVES = [AutofocusDirective];
 // #endregion
 
 @NgModule({

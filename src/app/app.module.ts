@@ -7,7 +7,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { I18NService } from '@core/i18n/i18n.service';
 import { DefaultInterceptor } from '@core/net/default.interceptor';
 import { StartupService } from '@core/startup/startup.service';
-import { SimpleInterceptor } from '@delon/auth';
 import { ALAIN_I18N_TOKEN, DELON_LOCALE, zh_CN as delonLang } from '@delon/theme';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -20,6 +19,7 @@ import { DelonModule } from './delon.module';
 import { LayoutModule } from './layout/layout.module';
 import { RoutesModule } from './routes/routes.module';
 import { SharedModule } from './shared/shared.module';
+import { JWTInterceptor } from '@delon/auth';
 
 // #region default language
 // 参考：https://ng-alain.com/docs/i18n
@@ -65,7 +65,7 @@ const FORM_MODULES = [JsonSchemaModule];
 
 // #region Http Interceptors
 const INTERCEPTOR_PROVIDES = [
-  { provide: HTTP_INTERCEPTORS, useClass: SimpleInterceptor, multi: true },
+  { provide: HTTP_INTERCEPTORS, useClass: JWTInterceptor, multi: true },
   { provide: HTTP_INTERCEPTORS, useClass: DefaultInterceptor, multi: true }
 ];
 // #endregion

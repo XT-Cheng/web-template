@@ -1,4 +1,5 @@
 import { MockRequest, MockStatusError } from '@delon/mock';
+import { JWTTokenModel } from '@delon/auth';
 // TIPS: mockjs 一些优化细节见：https://ng-alain.com/docs/mock
 // import * as Mock from 'mockjs';
 
@@ -48,7 +49,22 @@ function saveData(id: number, value: any) {
   return { msg: 'ok' };
 }
 
+const model = new JWTTokenModel();
+// from: https://jwt.io/
+// tslint:disable-next-line:max-line-length
+model.token = `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWRtaW4iLCJleHAiOjQ2NzA0MDk2MDAsImF2YXRhciI6ImFzc2V0cy9wZW9wbGUucG5nIiwiZW1haWwiOiJ4eXpAYWJjLmNvbSJ9.XR3qOzgRm5-NTi0hWPaD8U2hCoLTN2vb0SAAM3aYj2akAmlLWbdYldSO8GUrThH4r8-rexMpzaVWkyByHjJhSB1_mJsAWlC5pE2Cup2sHcaWGLdl3_OO1wLwWvIJ-smCydExx8be5FZd3_DXElvuY1R-Y4WSOgpYv0m7ampqJbY`;
+const payloadDATA = {
+  name: 'admin',
+  exp: 4670409600,
+  avatar: 'assets/people.png',
+  email: 'xyz@abc.com'
+};
+
 export const USERS = {
+  // 'POST /passport/login': { _token: model.token },
+  'POST /passport/login': () => {
+    throw new MockStatusError(404);
+  },
   '/user': (req: MockRequest) => genData(req.queryString),
   '/user/:id': (req: MockRequest) => list.find(w => w.id === +req.params.id),
   'POST /user/:id': (req: MockRequest) => saveData(+req.params.id, req.body),
