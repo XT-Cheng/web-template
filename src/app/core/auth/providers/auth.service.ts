@@ -1,6 +1,6 @@
-import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { DA_SERVICE_TOKEN, TokenService, DelonAuthConfig } from '@delon/auth';
+import { Inject, Injectable } from '@angular/core';
+import { DA_SERVICE_TOKEN, DelonAuthConfig, TokenService } from '@delon/auth';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 

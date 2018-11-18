@@ -1,5 +1,6 @@
-import { MockRequest, MockStatusError } from '@delon/mock';
 import { JWTTokenModel } from '@delon/auth';
+import { MockRequest, MockStatusError } from '@delon/mock';
+
 // TIPS: mockjs 一些优化细节见：https://ng-alain.com/docs/mock
 // import * as Mock from 'mockjs';
 
@@ -62,9 +63,9 @@ const payloadDATA = {
 
 export const USERS = {
   // 'POST /passport/login': { _token: model.token },
-  'POST /passport/login': () => {
-    throw new MockStatusError(404);
-  },
+  // 'POST /passport/login': () => {
+  //   throw new MockStatusError(404);
+  // },
   '/user': (req: MockRequest) => genData(req.queryString),
   '/user/:id': (req: MockRequest) => list.find(w => w.id === +req.params.id),
   'POST /user/:id': (req: MockRequest) => saveData(+req.params.id, req.body),

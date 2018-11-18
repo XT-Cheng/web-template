@@ -1,20 +1,13 @@
-import { SettingsService } from '@delon/theme';
-import { Component, OnDestroy, Inject, Optional } from '@angular/core';
+import { Component, Inject, OnDestroy, Optional } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { NzMessageService, NzModalService } from 'ng-zorro-antd';
-import {
-  SocialService,
-  SocialOpenType,
-  TokenService,
-  DA_SERVICE_TOKEN,
-  JWTTokenModel,
-  ITokenService,
-} from '@delon/auth';
-import { ReuseTabService } from '@delon/abc';
-import { environment } from '@env/environment';
-import { StartupService } from '@core/startup/startup.service';
 import { AuthService } from '@core/auth/providers/auth.service';
+import { StartupService } from '@core/startup/startup.service';
+import { ReuseTabService } from '@delon/abc';
+import { DA_SERVICE_TOKEN, ITokenService, JWTTokenModel, SocialOpenType, SocialService } from '@delon/auth';
+import { SettingsService } from '@delon/theme';
+import { environment } from '@env/environment';
+import { NzMessageService, NzModalService } from 'ng-zorro-antd';
 
 @Component({
   selector: 'passport-login',
@@ -121,7 +114,7 @@ export class UserLoginComponent implements OnDestroy {
 
         // 重新获取 StartupService 内容，若其包括 User 有关的信息的话
         this.startupSrv.load().then(() => this.router.navigate(['/']));
-      });
+      }, () => this.loading = false);
   }
 
   //#region social
