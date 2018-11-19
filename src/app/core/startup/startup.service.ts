@@ -36,14 +36,16 @@ export class StartupService {
   private viaHttp(resolve: any) {
     zip(
       this.httpClient.get(`assets/tmp/i18n/${this.i18n.defaultLang}.json`),
-      this.httpClient.get('/appInfo')
+      this.httpClient.get('/appInfo'),
+      this.httpClient.get('/menuInfo'),
+      this.httpClient.get(`/userAccess/${this.settingService.user.id}`)
     ).pipe(
       // 接收其他拦截器后产生的异常消息
-      catchError(([langData, appData]) => {
+      catchError(([langData, appData, menuData, userAccessData]) => {
         resolve(null);
-        return [langData, appData];
+        return [langData, appData, menuData, userAccessData];
       })
-    ).subscribe(([langData, appData]) => {
+    ).subscribe(([langData, appData, menuData, userAccessData]) => {
       // setting language data
       this.translate.setTranslation(this.i18n.defaultLang, langData);
       this.translate.setDefaultLang(this.i18n.defaultLang);
@@ -52,11 +54,10 @@ export class StartupService {
       const res: any = appData;
       // 应用信息：包括站点名、描述、年份
       this.settingService.setApp(appData);
-
-      // ACL：设置权限为全量
-      this.aclService.setFull(true);
+      // ACL：设置权限
+      this.aclService.setRole(userAccessData);
       // 初始化菜单
-      // this.menuService.add(res.menu);
+      this.menuService.add(menuData);
       // 设置页面标题的后缀
       this.titleService.suffix = appData.name;
     },

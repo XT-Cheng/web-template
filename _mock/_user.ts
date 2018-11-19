@@ -11,6 +11,7 @@ for (let i = 0; i < total; i += 1) {
   list.push({
     id: i + 1,
     disabled: i % 6 === 0,
+    accessStrings: ['access_1', 'access_2'],
     href: 'https://ant.design',
     avatar: [
       'https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png',
@@ -53,8 +54,9 @@ function saveData(id: number, value: any) {
 const model = new JWTTokenModel();
 // from: https://jwt.io/
 // tslint:disable-next-line:max-line-length
-model.token = `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWRtaW4iLCJleHAiOjQ2NzA0MDk2MDAsImF2YXRhciI6ImFzc2V0cy9wZW9wbGUucG5nIiwiZW1haWwiOiJ4eXpAYWJjLmNvbSJ9.XR3qOzgRm5-NTi0hWPaD8U2hCoLTN2vb0SAAM3aYj2akAmlLWbdYldSO8GUrThH4r8-rexMpzaVWkyByHjJhSB1_mJsAWlC5pE2Cup2sHcaWGLdl3_OO1wLwWvIJ-smCydExx8be5FZd3_DXElvuY1R-Y4WSOgpYv0m7ampqJbY`;
+model.token = `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjo0NjcwNDA5NjAwLCJuYW1lIjoiYWRtaW4iLCJlbWFpbCI6Inh5ekBhYmMuY29tIiwiYXZhdGFyIjoiYXNzZXRzL3Blb3BsZS5wbmcifQ.0SmeW63Ijc5LUp3fBD2Fz_0Ye-InhMwXHdlaypiHf3eAKAO1URPFvqZ3JMXgBePCvfNCszMem417HHAZVvSWm7y3GBxZ8Wf2Mgj0Kv713HdbO58iHrGW7VYscMVsb4iRv2je7gzWyYM6QFYiVj4C7E-TgkskLR7edktHKmePw94`;
 const payloadDATA = {
+  id: 1,
   name: 'admin',
   exp: 4670409600,
   avatar: 'assets/people.png',
@@ -68,6 +70,14 @@ export const USERS = {
   // },
   '/user': (req: MockRequest) => genData(req.queryString),
   '/user/:id': (req: MockRequest) => list.find(w => w.id === +req.params.id),
+  '/userAccess/:id': (req: MockRequest) => {
+    const found = list.find(w => w.id === +req.params.id);
+    if (found) {
+      return found.accessStrings;
+    }
+
+    return [];
+  },
   'POST /user/:id': (req: MockRequest) => saveData(+req.params.id, req.body),
   // 支持值为 Object 和 Array
   'GET /users': { users: [1, 2], total: 2 },
