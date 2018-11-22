@@ -11,7 +11,7 @@ import {
 import { throwIfAlreadyLoaded } from '@core/module-import-guard';
 
 import { AlainThemeModule } from '@delon/theme';
-import { DelonABCModule, STConfig } from '@delon/abc';
+import { DelonABCModule, STConfig, XlsxConfig } from '@delon/abc';
 import { DelonChartModule } from '@delon/chart';
 import { DelonAuthModule } from '@delon/auth';
 import { DelonACLModule } from '@delon/acl';
@@ -70,11 +70,18 @@ export function fnSTConfig(): STConfig {
   });
 }
 
+export function fnXlsxConfig(): XlsxConfig {
+  return Object.assign(new XlsxConfig(), <XlsxConfig>{
+    url: `./assets/javascripts/xlsx.full.min.js`
+  });
+}
+
 const GLOBAL_CONFIG_PROVIDES = [
   // TIPS：@delon/abc 有大量的全局配置信息，例如设置所有 `st` 的页码默认为 `20` 行
   { provide: STConfig, useFactory: fnSTConfig },
   { provide: PageHeaderConfig, useFactory: fnPageHeaderConfig },
   { provide: DelonAuthConfig, useFactory: fnDelonAuthConfig },
+  { provide: XlsxConfig, useFactory: fnXlsxConfig },
 ];
 
 // #endregion
