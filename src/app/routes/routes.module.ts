@@ -14,6 +14,7 @@ import { UserLockComponent } from './passport/lock/lock.component';
 import { Exception403Component } from './exception/403.component';
 import { Exception404Component } from './exception/404.component';
 import { Exception500Component } from './exception/500.component';
+import { ExcelHandleComponent } from './example/excel.handle.component';
 
 
 const COMPONENTS = [
@@ -27,16 +28,17 @@ const COMPONENTS = [
   UserLockComponent,
   Exception403Component,
   Exception404Component,
-  Exception500Component
+  Exception500Component,
+  ExcelHandleComponent
 ];
 const COMPONENTS_NOROUNT = [];
 
 @NgModule({
-  imports: [ SharedModule, RouteRoutingModule ],
+  imports: [SharedModule, RouteRoutingModule],
   declarations: [
     ...COMPONENTS,
     ...COMPONENTS_NOROUNT
   ],
   entryComponents: COMPONENTS_NOROUNT
 })
-export class RoutesModule {}
+export class RoutesModule { }

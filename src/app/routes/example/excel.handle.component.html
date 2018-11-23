@@ -1,0 +1,20 @@
+<div class="alain-default__content-title">
+  <h1>Import excel file</h1>
+</div>
+<nz-card nzTitle="Import">
+  <div>
+    <input type="file" (change)="change($event)" multiple="false" class="ml-sm" />
+  </div>
+  <button nz-button (click)="import()">Execute</button>
+  <div class="my-md">
+    <nz-alert [nzType]="'info'" [nzShowIcon]="true" [nzMessage]="message" *ngIf='showProgress'>
+      <ng-template #message>
+        待处理
+        <strong class="text-primary">{{toBeProcess}}</strong> 项&nbsp;&nbsp; 成功
+        <strong>{{processSucceed}}</strong> 个&nbsp;&nbsp; 失败
+        <strong>{{processFailed}}</strong> 个
+      </ng-template>
+    </nz-alert>
+  </div>
+  <st #st [data]="tableRecords" [loading]="loading" [ps]="50" [columns]="columns" class="mt-sm"></st>
+</nz-card>
