@@ -15,7 +15,11 @@ import { Exception403Component } from './exception/403.component';
 import { Exception404Component } from './exception/404.component';
 import { Exception500Component } from './exception/500.component';
 import { ExcelHandleComponent } from './example/excel.handle.component';
+import { BAPITestComponent } from './bapi/bapi.test.component';
 
+const BAPI = [
+  BAPITestComponent
+];
 
 const COMPONENTS = [
   DashboardComponent,
@@ -37,7 +41,8 @@ const COMPONENTS_NOROUNT = [];
   imports: [SharedModule, RouteRoutingModule],
   declarations: [
     ...COMPONENTS,
-    ...COMPONENTS_NOROUNT
+    ...COMPONENTS_NOROUNT,
+    ...BAPI
   ],
   entryComponents: COMPONENTS_NOROUNT
 })

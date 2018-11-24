@@ -19,6 +19,7 @@ import { Exception404Component } from './exception/404.component';
 import { Exception500Component } from './exception/500.component';
 import { JWTGuard } from '@delon/auth';
 import { ExcelHandleComponent } from './example/excel.handle.component';
+import { BAPITestComponent } from './bapi/bapi.test.component';
 
 const routes: Routes = [
   {
@@ -27,7 +28,8 @@ const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent, canActivate: [JWTGuard], data: { title: '仪表盘' } },
-      { path: 'example/excel', component: ExcelHandleComponent }
+      { path: 'example/excel', component: ExcelHandleComponent },
+      { path: 'bapi/test', component: BAPITestComponent, data: { title: 'BAPI 测试' } }
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }
     ]
