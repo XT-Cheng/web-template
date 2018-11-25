@@ -5,6 +5,8 @@ import { map, switchMap } from 'rxjs/operators';
 import { IBapiResult, DialogTypeEnum } from '@core/hydra/bapi/constants';
 import { FetchService } from './fetch.service';
 import { TestBapi } from './bapi/test.bapi';
+import { CreateBufferBapi } from './bapi/mpl/master/create.buffer';
+import { DeleteBufferBapi } from './bapi/mpl/master/delete.buffer';
 
 @Injectable()
 export class BapiService {
@@ -27,6 +29,24 @@ export class BapiService {
     const typedString = type as keyof typeof DialogTypeEnum;
     return new TestBapi(DialogTypeEnum[typedString], content).execute(this._http);
   }
+
+  //#region MPL Master
+
+  //#region Create Buffer
+  createMPLBuffer(name: string, description: string,
+    type: string, plant: string, area: string,
+    storageLocation: string, parent: string, level: number) {
+    return new CreateBufferBapi(name, description, type, plant, area, storageLocation, parent, level).execute(this._http);
+  }
+  //#endregion
+
+  //#region Delete Buffer
+  deleteMPLBuffer(name: string) {
+    return new DeleteBufferBapi(name).execute(this._http);
+  }
+  //#endregion
+
+  //#endregion
 
   //#endregion
 

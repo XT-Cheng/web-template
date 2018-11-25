@@ -1,0 +1,29 @@
+<div class="alain-default__content-title">
+  <h1>Import Material Buffer</h1>
+</div>
+<nz-card nzTitle="Import" [nzExtra]="reset">
+  <div>
+    <input #uploader type="file" (change)="change($event)" multiple="false" class="ml-sm" />
+  </div>
+</nz-card>
+<nz-card nzTitle="Action">
+  <button nz-button nzType="primary" [disabled]="executing || tableRecords.length === 0" (click)="import()">Create</button>
+  <button nz-button nzType="danger" [disabled]="executing || tableRecords.length === 0" (click)="deleteData()">Delete</button>
+  <button nz-button nzType="danger" style='float: right;' [disabled]="!executing" (click)="stop()">Stop</button>
+</nz-card>
+<nz-card nzTitle="Data">
+  <div class="my-md">
+    <nz-alert [nzType]="'info'" [nzShowIcon]="true" [nzMessage]="message" *ngIf='showProgress'>
+      <ng-template #message>
+        待处理
+        <strong class="text-primary">{{toBeProcess}}</strong> 项&nbsp;&nbsp; 成功
+        <strong>{{processSucceed}}</strong> 个&nbsp;&nbsp; 失败
+        <strong>{{processFailed}}</strong> 个
+      </ng-template>
+    </nz-alert>
+  </div>
+  <st #st [data]="tableRecords" [loading]="executing" [ps]="50" [columns]="columns" class="mt-sm"></st>
+</nz-card>
+<ng-template #reset>
+  <button nz-button nzSize='small' (click)='resetAll()'>reset</button>
+</ng-template>

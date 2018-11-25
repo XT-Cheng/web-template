@@ -14,11 +14,15 @@ import { UserLockComponent } from './passport/lock/lock.component';
 import { Exception403Component } from './exception/403.component';
 import { Exception404Component } from './exception/404.component';
 import { Exception500Component } from './exception/500.component';
-import { ExcelHandleComponent } from './example/excel.handle.component';
 import { BAPITestComponent } from './bapi/bapi.test.component';
+import { ImportBufferComponent } from './import/import.buffer.component';
 
 const BAPI = [
   BAPITestComponent
+];
+
+const IMPORT = [
+  ImportBufferComponent
 ];
 
 const COMPONENTS = [
@@ -33,7 +37,6 @@ const COMPONENTS = [
   Exception403Component,
   Exception404Component,
   Exception500Component,
-  ExcelHandleComponent
 ];
 const COMPONENTS_NOROUNT = [];
 
@@ -42,7 +45,8 @@ const COMPONENTS_NOROUNT = [];
   declarations: [
     ...COMPONENTS,
     ...COMPONENTS_NOROUNT,
-    ...BAPI
+    ...BAPI,
+    ...IMPORT
   ],
   entryComponents: COMPONENTS_NOROUNT
 })

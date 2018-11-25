@@ -1,5 +1,5 @@
 import { DialogTypeEnum, DIALOG_USER, IBapiResult } from '@core/hydra/bapi/constants';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map, tap, switchMap } from 'rxjs/operators';
 
@@ -84,6 +84,7 @@ export abstract class DialogBase {
         if (!ret.isSuccess) {
           return throwError(`BAPI Error: ${ret.description}`);
         }
+        return of(ret);
       }));
   }
 

@@ -1,8 +1,9 @@
-import { ViewChild } from '@angular/core';
+import { ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { STComponent, STColumn, STColumnBadge, XlsxService } from '@delon/abc';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, Subject, BehaviorSubject } from 'rxjs';
-import { map, catchError, switchMap } from 'rxjs/operators';
+import { map, catchError, switchMap, takeUntil, takeWhile, finalize } from 'rxjs/operators';
+import { isNullOrUndefined, isUndefined } from 'util';
 
 const STATUS: STColumnBadge = {
   0: { text: '待处理', color: 'default' },
@@ -10,39 +11,59 @@ const STATUS: STColumnBadge = {
   2: { text: '错误', color: 'error' },
 };
 
-export abstract class ImportHandleBase {
-  //#region fields
+export abstract class ImportHandleBase implements OnInit {
+  //#region Private fields
 
   @ViewChild('st') comp: STComponent;
 
+  _recordPerTurn = 50;
+
   _tableRecords: any[] = [];
-  allRecords: any[] = [];
+  _allRecords: any[] = [];
 
-  statusCol: STColumn = { title: '状态', index: 'status', type: 'badge', badge: STATUS };
-  errorCol: STColumn = { title: '错误', index: 'error' };
+  _statusCol: STColumn = { title: '状态', index: 'status', type: 'badge', badge: STATUS };
+  _errorCol: STColumn = { title: '错误', index: 'error' };
 
-  columns: STColumn[] = [this.statusCol];
+  _showProgress = false;
 
-  showOnlyToBeProcessOrFailed = false;
-  showProgress = false;
+  _columns: STColumn[] = [this._statusCol];
 
   _toBeProcess = 0;
   _processSucceed = 0;
   _processFailed = 0;
+  _currentPosition = 0;
 
-  loading = false;
+  _executing = false;
+  _stopExecuting = false;
 
-  obs$: Observable<any> = of('start');
+  _obs$: Observable<any> = of('start');
 
   //#endregion
 
-  //#region constructor
+  //#region Public fields
+
+
+  //#endregion
+
+  //#region Constructor
 
   constructor(protected xlsx: XlsxService) { }
 
   //#endregion
 
-  //#region protected properties
+  //#region Protected properties
+  protected get showProgress(): boolean {
+    return this._showProgress;
+  }
+
+  protected get columns(): STColumn[] {
+    return this._columns;
+  }
+
+  protected get executing(): boolean {
+    return this._executing;
+  }
+
   protected get tableRecords(): any[] {
     return this._tableRecords;
   }
@@ -61,58 +82,139 @@ export abstract class ImportHandleBase {
 
   //#endregion
 
-  //#region protected methods
+  //#region Protected properties
+
+  protected abstract get dataFields(): STColumn[];
+
+  protected abstract get key(): string;
+
+  //#endregion
+
+  //#region Implmented Interface
+
+  ngOnInit() {
+    // Generate Columns
+    this._columns = [this._statusCol];
+
+    this._columns.push(...this.dataFields);
+
+    this._columns.push(this._errorCol);
+  }
+
+  //#endregion
+
+  //#region Protected methods
+  protected stopExecuting() {
+    this._stopExecuting = true;
+  }
 
   protected loadFile(file) {
-    this.xlsx.import(file).then((res) => {
+    return this.xlsx.import(file).then((res) => {
       this.prepareRecords(res);
     });
+  }
+
+  protected clear() {
+    this._obs$ = of('start');
+
+    this._executing = false;
+    this._showProgress = false;
+
+    this._allRecords = [];
+    this._tableRecords = [];
   }
 
   protected execute(processor: (records) => Observable<any>) {
     this.start();
 
-    this.allRecords.forEach((rec) => {
+    this._toBeProcess = this._tableRecords.length;
+
+    this.executePerRound(processor);
+  }
+
+  protected executePerRound(processor: (records) => Observable<any>) {
+    this._obs$ = of('start');
+
+    const stopAt = (this._currentPosition + this._recordPerTurn > this._tableRecords.length) ?
+      this._tableRecords.length : this._currentPosition + this._recordPerTurn;
+
+    let i = this._currentPosition;
+    for (; i < stopAt; i++) {
+      const rec = this._tableRecords[i];
+
       if (rec.status === 0 || rec.status === 2) {
-        this.obs$ = this.obs$.pipe(
-          map(() => [rec]),
+        this._obs$ = this._obs$.pipe(
+          map(() => {
+            return [rec];
+          }),
           switchMap((records) => processor(records)),
+          takeWhile(() => {
+            return !this._stopExecuting;
+          }),
           map(() => {
             rec.status = 1;
             this._processSucceed++;
             this._toBeProcess--;
+            this._currentPosition++;
           }),
           catchError((err) => {
-            rec.error = err.message;
+            rec.status = 2;
+            rec.error = err;
             this._processFailed++;
             this._toBeProcess--;
+            this._currentPosition++;
             return of('next');
           })
         );
       }
-    });
+    }
 
-    this.obs$.subscribe(() => {
-      this.end();
-    });
+    this._obs$.pipe(
+      finalize(() => {
+        // this.end();
+      })
+    ).subscribe(() => {
+      if (this._currentPosition < this._tableRecords.length) {
+        setTimeout(() => this.executePerRound(processor), 0);
+      } else {
+        this.end();
+      }
+    }, () => this.end());
   }
 
   //#endregion
 
-  //#region privated methods
-  private start() {
-    this.loading = true;
-    this.showProgress = true;
+  //#region Private methods
+  private chunkArray(source: Array<any>, chunkSize) {
+    return source.reduce((resultArray, item, index) => {
+      const chunkIndex = Math.floor(index / chunkSize);
 
-    this._toBeProcess = this.allRecords.length;
+      if (!resultArray[chunkIndex]) {
+        resultArray[chunkIndex] = [];  // start a new chunk
+      }
+
+      resultArray[chunkIndex].push(item);
+
+      return resultArray;
+    }, []);
+  }
+
+  private start() {
+    this._stopExecuting = false;
+    this._executing = true;
+    this._showProgress = true;
+
+    this._toBeProcess = this._tableRecords.length;
     this._processFailed = this._processSucceed = 0;
+    this._currentPosition = 0;
   }
 
   protected end(err: any = null) {
-    this.loading = false;
-    this.showProgress = false;
+    this._executing = false;
+    this._showProgress = false;
+    this._stopExecuting = false;
 
-    this._tableRecords = this.allRecords.filter((rec) => {
+    this._tableRecords = this._allRecords.filter((rec) => {
       return rec.status === 0 || rec.status === 2;
     });
   }
@@ -125,17 +227,8 @@ export abstract class ImportHandleBase {
     const fields = output[0];
     const values = output.slice(1);
 
-    // Generate Columns
-    this.columns = [this.statusCol];
-
-    fields.forEach(field => {
-      this.columns.push({ title: field, index: field });
-    });
-
-    this.columns.push(this.errorCol);
-
     // Generate records
-    this.allRecords = [];
+    this._allRecords = [];
 
     values.forEach(value => {
       const element = {};
@@ -143,12 +236,15 @@ export abstract class ImportHandleBase {
       element['error'] = '';
 
       for (let index = 0; index < fields.length; index++) {
-        element[fields[index]] = value[index];
+        element[fields[index]] = isUndefined(value[index]) ? `` : value[index];
       }
-      this.allRecords.push(element);
+
+      if (element[this.key]) {
+        this._allRecords.push(element);
+      }
     });
 
-    this._tableRecords = this.allRecords.filter((rec) => {
+    this._tableRecords = this._allRecords.filter((rec) => {
       return rec.status === 0 || rec.status === 2;
     });
   }

@@ -39,10 +39,24 @@ export class BAPITestComponent {
     }
     this.bapiTestForm.controls['result'].reset();
     this.isExecuting = true;
-    this._bapiService.test(value.type, value.dialog).pipe(finalize(() => {
+    // this._bapiService.test(value.type, value.dialog).pipe(finalize(() => {
+    //   this.isExecuting = false;
+    // })).subscribe((res) => {
+    //   this.bapiTestForm.controls[`result`].setValue(res);
+    // }, (err) => {
+    //   this.bapiTestForm.controls[`result`].setValue(err);
+    // });
+    // this._bapiService.createMPLBuffer(`import-test8`, `import-test`, `F`, '0916', 'Comp', '', '', 0).pipe(finalize(() => {
+    //   this.isExecuting = false;
+    // })).subscribe((res) => {
+    //   this.bapiTestForm.controls[`result`].setValue(res.content);
+    // }, (err) => {
+    //   this.bapiTestForm.controls[`result`].setValue(err);
+    // });
+    this._bapiService.deleteMPLBuffer(`import-test`).pipe(finalize(() => {
       this.isExecuting = false;
     })).subscribe((res) => {
-      this.bapiTestForm.controls[`result`].setValue(res);
+      this.bapiTestForm.controls[`result`].setValue(res.content);
     }, (err) => {
       this.bapiTestForm.controls[`result`].setValue(err);
     });
