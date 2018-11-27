@@ -2,8 +2,6 @@ import { NgModule } from '@angular/core';
 
 import { SharedModule } from '@shared/shared.module';
 import { RouteRoutingModule } from './routes-routing.module';
-// dashboard pages
-import { DashboardComponent } from './dashboard/dashboard.component';
 // passport pages
 import { UserLoginComponent } from './passport/login/login.component';
 import { UserRegisterComponent } from './passport/register/register.component';
@@ -16,6 +14,8 @@ import { Exception404Component } from './exception/404.component';
 import { Exception500Component } from './exception/500.component';
 import { BAPITestComponent } from './bapi/bapi.test.component';
 import { ImportBufferComponent } from './import/import.buffer.component';
+import { MachineSummaryComponent } from './dashboard/machine.summary.component';
+import { DelonChartModule } from '@delon/chart';
 
 const BAPI = [
   BAPITestComponent
@@ -26,7 +26,7 @@ const IMPORT = [
 ];
 
 const COMPONENTS = [
-  DashboardComponent,
+  MachineSummaryComponent,
   // passport pages
   UserLoginComponent,
   UserRegisterComponent,
@@ -41,7 +41,11 @@ const COMPONENTS = [
 const COMPONENTS_NOROUNT = [];
 
 @NgModule({
-  imports: [SharedModule, RouteRoutingModule],
+  imports: [
+    SharedModule,
+    RouteRoutingModule,
+    DelonChartModule
+  ],
   declarations: [
     ...COMPONENTS,
     ...COMPONENTS_NOROUNT,

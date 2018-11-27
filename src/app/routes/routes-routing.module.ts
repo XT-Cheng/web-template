@@ -5,8 +5,6 @@ import { environment } from '@env/environment';
 import { LayoutDefaultComponent } from '../layout/default/default.component';
 import { LayoutFullScreenComponent } from '../layout/fullscreen/fullscreen.component';
 import { LayoutPassportComponent } from '../layout/passport/passport.component';
-// dashboard pages
-import { DashboardComponent } from './dashboard/dashboard.component';
 // passport pages
 import { UserLoginComponent } from './passport/login/login.component';
 import { UserRegisterComponent } from './passport/register/register.component';
@@ -17,9 +15,9 @@ import { UserLockComponent } from './passport/lock/lock.component';
 import { Exception403Component } from './exception/403.component';
 import { Exception404Component } from './exception/404.component';
 import { Exception500Component } from './exception/500.component';
-import { JWTGuard } from '@delon/auth';
 import { BAPITestComponent } from './bapi/bapi.test.component';
 import { ImportBufferComponent } from './import/import.buffer.component';
+import { MachineSummaryComponent } from './dashboard/machine.summary.component';
 
 const routes: Routes = [
   {
@@ -27,7 +25,7 @@ const routes: Routes = [
     component: LayoutDefaultComponent,
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent, canActivate: [JWTGuard], data: { title: '仪表盘' } },
+      { path: 'dashboard', component: MachineSummaryComponent, data: { title: '仪表盘' } },
       { path: 'bapi/test', component: BAPITestComponent, data: { title: 'BAPI 测试' } },
       { path: 'import/buffer', component: ImportBufferComponent, data: { title: '导入 Material Buffer' } }
       // 业务子模块

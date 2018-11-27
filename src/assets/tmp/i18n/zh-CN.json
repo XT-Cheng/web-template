@@ -113,5 +113,20 @@
   "app.monitor.waiting-for-implementation": "等待后期实现",
   "app.monitor.popular-searches": "热门搜索",
   "app.monitor.resource-surplus": "资源剩余",
-  "app.monitor.fund-surplus": "补贴资金剩余"
+  "app.monitor.fund-surplus": "补贴资金剩余",
+  "app.machine.summary.general": "Machine Genearl Info",
+  "app.machine.summary.workOrder": "Work Order",
+  "app.machine.summary.shift.output": "Output of Current Shift",
+  "app.machine.summary.shift.scrap": "Scrap of Current Shift",
+  "app.machine.summary.oee": "OEE",
+  "app.machine.summary.targetQty": "Target Qty.",
+  "app.machine.summary.output": "Yield",
+  "app.machine.summary.scrap": "Scrap",
+  "app.machine.summary.estimateFinishedAt": "Est. Finished At",
+  "app.machine.summary.compareToLastHour": "Comp. to last Hour",
+  "app.machine.summary.outputPerHour": "Output per Hour",
+  "app.machine.summary.scrapPerHour": "Scrap per Hour",
+  "app.machine.summary.changeOver": "Check List Items",
+  "app.machine.summary.materialPreparation": "Mat. Prep.",
+  "app.machine.summary.finishedQty": "Fin. Qty"
 }

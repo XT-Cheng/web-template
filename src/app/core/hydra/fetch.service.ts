@@ -7,7 +7,7 @@ import { map, concatMap, combineLatest, delay } from 'rxjs/operators';
 export class FetchService {
   //#region Private members
 
-  private _url = 'fetch';
+  private _url = 'http://localhost:3001/fetch';
 
   //#endregion
 
@@ -19,12 +19,8 @@ export class FetchService {
 
   //#region Public methods
 
-  getOperator(badge: string) {
-    const sql =
-      `SELECT PERSON_NAME || PERSON_VORNAME AS NAME ` +
-      ` FROM PERSONALSTAMM WHERE KARTEN_NUMMER = '${badge}'`;
-
-    return this.http.get(`/${this._url}?sql=${sql}`).pipe(
+  query(sql: string) {
+    return this.http.get(`${this._url}?sql=${sql}`).pipe(
       map((res: any) => {
         return res;
       })

@@ -14,6 +14,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { NgZorroAntdModule } from 'ng-zorro-antd';
 import { CountdownModule } from 'ngx-countdown';
 import { AutofocusDirective } from './directives/autofocus.directive';
+import { ChartTrendComponent } from './components/chart/trend.component';
+import { ChartCardComponent } from './components/chart/card.component';
+import { ParetoComponent } from './components/chart/pareto.component';
+import { ChartGaugeComponent } from './components/chart/gauge.component';
+import { ChartBarLineComponent } from './components/chart/barLine.component';
 const THIRDMODULES = [
   NgZorroAntdModule,
   CountdownModule
@@ -21,6 +26,14 @@ const THIRDMODULES = [
 // #endregion
 
 // #region your componets & directives
+const CHART_COMPONENTS = [
+  ChartTrendComponent,
+  ParetoComponent,
+  ChartGaugeComponent,
+  ChartCardComponent,
+  ChartBarLineComponent
+];
+
 const COMPONENTS = [];
 const DIRECTIVES = [AutofocusDirective];
 // #endregion
@@ -40,6 +53,7 @@ const DIRECTIVES = [AutofocusDirective];
   ],
   declarations: [
     // your components
+    ...CHART_COMPONENTS,
     ...COMPONENTS,
     ...DIRECTIVES
   ],
@@ -57,6 +71,7 @@ const DIRECTIVES = [AutofocusDirective];
     // third libs
     ...THIRDMODULES,
     // your components
+    ...CHART_COMPONENTS,
     ...COMPONENTS,
     ...DIRECTIVES
   ]
