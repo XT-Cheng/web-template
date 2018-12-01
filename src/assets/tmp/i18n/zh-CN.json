@@ -123,6 +123,7 @@
   "app.machine.summary.output": "Yield",
   "app.machine.summary.scrap": "Scrap",
   "app.machine.summary.estimateFinishedAt": "Est. Finished At",
+  "app.machine.summary.scheduleCompltedAt": "Sch. Complete At",
   "app.machine.summary.compareToLastHour": "Comp. to last Hour",
   "app.machine.summary.outputPerHour": "Output per Hour",
   "app.machine.summary.scrapPerHour": "Scrap per Hour",

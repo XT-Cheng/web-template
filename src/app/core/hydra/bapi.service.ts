@@ -7,6 +7,8 @@ import { FetchService } from './fetch.service';
 import { TestBapi } from './bapi/test.bapi';
 import { CreateBufferBapi } from './bapi/mpl/master/create.buffer';
 import { DeleteBufferBapi } from './bapi/mpl/master/delete.buffer';
+import { CreatePersonBapi } from './bapi/mpl/master/create.person';
+import { DeletePersonBapi } from './bapi/mpl/master/delete.person';
 
 @Injectable()
 export class BapiService {
@@ -43,6 +45,22 @@ export class BapiService {
   //#region Delete Buffer
   deleteMPLBuffer(name: string) {
     return new DeleteBufferBapi(name).execute(this._http);
+  }
+  //#endregion
+
+  //#endregion
+
+  //#region HR Master
+
+  //#region Create Person
+  createHRPerson() {
+    return new CreatePersonBapi().execute(this._http);
+  }
+  //#endregion
+
+  //#region Delete Person
+  deleteHRPerson() {
+    return new DeletePersonBapi().execute(this._http);
   }
   //#endregion
 

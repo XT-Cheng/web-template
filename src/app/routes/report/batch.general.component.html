@@ -1,0 +1,23 @@
+<div class="alain-default__content-title">
+  <h1>Batch Genearl Report</h1>
+</div>
+<nz-card nzTitle="Batch Summary" [nzExtra]="extraTemplate">
+  <fw-g2-bar-line (barClicked)='barClicked($event)' height="295" [colorOverLimit]="'red'" [colorBelowLimit]="'lime'"
+    [data]="chartDataView"></fw-g2-bar-line>
+  <st #st [data]="tableData" [ps]="50" [columns]="columns" class="mt-sm"></st>
+</nz-card>
+<ng-template #extraTemplate>
+  <div nz-row>
+    <div nz-col nzSpan="8">
+      <p>当前物料:{{currentMaterial}}</p>
+    </div>
+    <div nz-col nzSpan="8">
+      <p>当前物料区:{{currentBufferName}}</p>
+    </div>
+    <div nz-col nzSpan="8">
+      <button nz-button nzSize='small' [disabled]='level === 0' [nzType]="'primary'" (click)='gotoUpperLevel()'>
+        <i nz-icon type="up"></i>
+      </button>
+    </div>
+  </div>
+</ng-template>

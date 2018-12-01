@@ -10,6 +10,8 @@ import {
   TemplateRef,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -58,7 +60,8 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
   }
   private _height = 0;
 
-  @Input() limit = 1000;
+  @Input() limit = 0;
+  @Input() allowInteract = false;
 
   @Input() padding: number[];
   @Input() data: Array<{
@@ -71,6 +74,9 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
     this._autoLabel = toBoolean(value);
   }
   private _autoLabel = true;
+
+  @Output()
+  barClicked: EventEmitter<any> = new EventEmitter();
 
   // #endregion
 
@@ -155,6 +161,13 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
           // rotate: 30,
           textBaseline: 'top' // 文本基准线，可取 top middle bottom，默认为middle
         }
+      })
+      .select({
+        // 设置是否允许选中以及选中样式
+        mode: 'single', // 多选还是单选
+        style: {
+          fill: '#1890ff', // 选中的样式
+        },
       });
     if (this.limit > 0) {
       chart.guide().line({
@@ -168,6 +181,14 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
         }
       });
     }
+
+    chart.on('plotclick', (ev) => {
+      const shape = ev.shape;
+      if (!shape || !shape.name) {
+        return false;
+      }
+      this.barClicked.emit(ev.data.point);
+    });
 
     chart.render();
     this.chart = chart;

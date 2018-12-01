@@ -16,13 +16,20 @@ import { BAPITestComponent } from './bapi/bapi.test.component';
 import { ImportBufferComponent } from './import/import.buffer.component';
 import { MachineSummaryComponent } from './dashboard/machine.summary.component';
 import { DelonChartModule } from '@delon/chart';
+import { ImportPersonComponent } from './import/import.person.component';
+import { BatchGeneralComponent } from './report/batch.general.component';
 
 const BAPI = [
   BAPITestComponent
 ];
 
+const REPORT = [
+  BatchGeneralComponent
+];
+
 const IMPORT = [
-  ImportBufferComponent
+  ImportBufferComponent,
+  ImportPersonComponent
 ];
 
 const COMPONENTS = [
@@ -50,7 +57,8 @@ const COMPONENTS_NOROUNT = [];
     ...COMPONENTS,
     ...COMPONENTS_NOROUNT,
     ...BAPI,
-    ...IMPORT
+    ...IMPORT,
+    ...REPORT
   ],
   entryComponents: COMPONENTS_NOROUNT
 })

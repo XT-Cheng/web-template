@@ -1,108 +1,108 @@
-<nz-card [nzTitle]="('app.machine.summary.general' | translate) + ': WeiChai Final Assembly'" [nzBodyStyle]="{padding: '0px'}">
+<nz-card [nzTitle]="('app.machine.summary.general' | translate) + ': ' + machine.name" [nzBodyStyle]="{padding: '0px'}">
   <div class="mb-md" style='margin: 10px;'>
-    <div class="bg-success rounded-md">
+    <div class="rounded-md" [ngStyle]="getMachineColor(machine)">
       <div class="p-md text-white">
-        <div class="h2 mt0">RUNNING</div>
+        <div class="h2 mt0">{{machine.currentStatus}}</div>
       </div>
     </div>
   </div>
   <div nz-row [nzGutter]="24" style='padding-top: 1px;'>
     <div nz-col nzXs="24" nzSm="12" nzMd="12" nzLg="6">
-      <fw-g2-card [title]="'app.machine.summary.workOrder' | translate" total="2002123456789012" contentHeight="87px"
-        [footer]="footer1">
+      <fw-g2-card [title]="'app.machine.summary.workOrder' | translate" [total]="machine.nextOperation?.name"
+        contentHeight="87px" [footer]="footer1">
         <p class="text-truncate mb0">
           {{'app.machine.summary.targetQty' | translate}} / {{'app.machine.summary.finishedQty' | translate}}:
-          <span class="ml-sm">12,000 / 4230</span>
+          <span class="ml-sm">{{machine.currentOperation?.targetQty}} / {{machine.currentOperation?.totalYield}}</span>
         </p>
-        <g2-mini-progress percent="78" strokeWidth="28" target="80" [color]="'red'" style="position: relative;top: 20px;"></g2-mini-progress>
+        <fw-g2-mini-progress [percent]="machine.currentOperation?.finishRate" strokeWidth="28" [target]="machine.currentOperation?.expectFinishRate"
+          [color]="getProgressColor(machine.currentOperation?.finishRate, machine.currentOperation?.expectFinishRate)"
+          style="position: relative;top: 20px;"></fw-g2-mini-progress>
         <ng-template #footer1>
-          <fw-g2-trend flag="up" style="display:block; margin-top:2px;">
+          <p class="text-truncate mb0">
+            {{'app.machine.summary.scheduleCompltedAt' | translate}}:
+            <span class="ml-sm">{{format(machine.currentOperation?.scheduleCompleted)}}</span>
+          </p>
+          <fw-g2-trend [reverseColor]='true' [flag]="getTrendFlag(machine.currentOperation?.estimatedFinished, machine.currentOperation?.scheduleCompleted)"
+            style="display:block; margin-top:2px;">
             {{'app.machine.summary.estimateFinishedAt' | translate}}:
-            <span class="ml-sm">2018/11/21</span>
+            <span class="ml-sm">{{format(machine.currentOperation?.estimatedFinished)}}</span>
           </fw-g2-trend>
         </ng-template>
       </fw-g2-card>
     </div>
     <div nz-col nzXs="24" nzSm="12" nzMd="12" nzLg="6">
-      <fw-g2-card [title]="'app.machine.summary.shift.output' | translate" total="232" contentHeight="87px" [footer]="footer2">
+      <fw-g2-card [title]="'app.machine.summary.shift.output' | translate" [total]="machine.currentHourYield"
+        contentHeight="87px" [footer]="footer2">
         <p class="text-truncate mb0">
           {{'app.machine.summary.outputPerHour' | translate}}:
-          <span class="ml-sm">12.34</span>
+          <span class="ml-sm">{{machine.averageHourYield}}</span>
         </p>
-        <g2-mini-area color="#975FE4" height="66" [data]="data.visitData"></g2-mini-area>
+        <fw-g2-mini-area color="#975FE4" height="66" [data]="machine.yieldTrend"></fw-g2-mini-area>
         <ng-template #footer2>
-          <fw-g2-trend flag="up" [reverseColor]='true' style="display:block; margin-top:2px;">
+          <fw-g2-trend [flag]="getPerformanceFlag(machine)" [reverseColor]='true' style="display:block; margin-top:2px;">
             {{'app.machine.summary.compareToLastHour' | translate}}:
-            <span class="ml-sm">23%</span>
+            <span class="ml-sm">{{getPerformanceComparedToLastHour(machine)}}%</span>
           </fw-g2-trend>
         </ng-template>
       </fw-g2-card>
     </div>
     <div nz-col nzXs="24" nzSm="12" nzMd="12" nzLg="6">
-      <fw-g2-card [title]="'app.machine.summary.shift.scrap' | translate" total="12" contentHeight="87px" [footer]="footer3">
+      <fw-g2-card [title]="'app.machine.summary.shift.scrap' | translate" [total]="machine.currentHourScrap"
+        contentHeight="87px" [footer]="footer3">
         <p class="text-truncate mb0">
           {{'app.machine.summary.scrapPerHour' | translate}}:
-          <span class="ml-sm">0.34</span>
+          <span class="ml-sm">{{machine.averageHourScrap}}</span>
         </p>
-        <g2-mini-bar height="66" [data]="data.visitData"></g2-mini-bar>
+        <fw-g2-mini-bar height="66" [data]="machine.scrapTrend"></fw-g2-mini-bar>
         <ng-template #footer3>
-          <fw-g2-trend flag="down" style="display:block; margin-top:2px;">
+          <fw-g2-trend [flag]="getScrapFlag(machine)" style="display:block; margin-top:2px;">
             {{'app.machine.summary.compareToLastHour' | translate}}:
-            <span class="ml-sm">23%</span>
+            <span class="ml-sm">{{getScrapComparedToLastHour(machine)}}%</span>
           </fw-g2-trend>
         </ng-template>
       </fw-g2-card>
     </div>
     <div nz-col nzXs="24" nzSm="12" nzMd="12" nzLg="6">
       <fw-g2-card [title]="'app.machine.summary.oee' | translate" contentHeight="87px">
-        <fw-g2-gauge [height]="180" [percent]="89"></fw-g2-gauge>
+        <fw-g2-gauge [height]="180" [lower]='machine.alarmSetting?.oeeLower' [upper]='machine.alarmSetting?.oeeUpper'
+          [percent]="machine.currentShiftOEE.overAll"></fw-g2-gauge>
       </fw-g2-card>
     </div>
   </div>
 </nz-card>
 <nz-card [nzBordered]="false" class="ant-card__body-nopadding sales-card">
-  <!-- <nz-tabset [nzTabBarExtraContent]="extraTemplate"> -->
   <nz-tabset>
-    <nz-tab [nzTitle]="'app.machine.summary.outputPerHour' | translate">
-      <div nz-row>
-        <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24">
-          <div class="bar">
-            <fw-g2-bar-line height="295" [colorOverLimit]="'lime'" [colorBelowLimit]="'red'" [data]="data.salesData"></fw-g2-bar-line>
-          </div>
-        </div>
-      </div>
-    </nz-tab>
     <nz-tab [nzTitle]="'app.machine.summary.scrapPerHour' | translate">
       <div nz-row>
         <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24">
           <div class="bar">
-            <fw-g2-bar-line height="295" [colorBelowLimit]="'lime'" [colorOverLimit]="'red'" [data]="data.salesData"></fw-g2-bar-line>
+            <fw-g2-bar-line height="295" [colorOverLimit]="'red'" [colorBelowLimit]="'lime'" limit='8' [data]="machine.scrapTrend"></fw-g2-bar-line>
           </div>
         </div>
       </div>
     </nz-tab>
-    <nz-tab [nzTitle]="'app.machine.summary.changeOver' | translate">
-      <st [data]="data.prepareData" [columns]="prepareCols" size="small" ps="5" [page]="{toTop:false}">
-      </st>
+
+    <nz-tab [nzTitle]="'app.machine.summary.outputPerHour' | translate">
+      <div nz-row>
+        <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24">
+          <div class="bar">
+            <fw-g2-bar-line height="295" [colorOverLimit]="'lime'" [colorBelowLimit]="'red'" limit='900' [data]="machine.yieldTrend"></fw-g2-bar-line>
+          </div>
+        </div>
+      </div>
     </nz-tab>
+
+    <!-- <nz-tab [nzTitle]="'app.machine.summary.changeOver' | translate">
+      <st [data]="prepareData" [columns]="prepareCols" size="small" ps="5" [page]="{toTop:false}">
+      </st>
+    </nz-tab> -->
     <nz-tab [nzTitle]="'app.machine.summary.materialPreparation' | translate">
-      <st [data]="data.materialData" [columns]="materialCols" size="small" ps="5" [page]="{toTop:false}">
+      <st [data]="machine.componentLoggedOnTable" [columns]="materialCols" size="small" ps="5" [page]="{toTop:false}">
         <ng-template st-row="percentages" let-item let-index="index">
-          <g2-mini-progress [percent]="item.percentage" strokeWidth="15" [target]="getMaterialLimit(item.material)"
-            [color]="getMaterialStatusColor(item.percentage)"></g2-mini-progress>
+          <fw-g2-mini-progress [percent]="item.percentage" strokeWidth="15" [target]="getMaterialLimit(item.material)"
+            [color]="getMaterialStatusColor(item.percentage)"></fw-g2-mini-progress>
         </ng-template>
       </st>
     </nz-tab>
-    <ng-template #extraTemplate>
-      <div class="sales-extra-wrap">
-        <div class="sales-extra">
-          <a (click)="setDate('today')">本日</a>
-          <a (click)="setDate('week')">本周</a>
-          <a (click)="setDate('month')">本月</a>
-          <a (click)="setDate('year')">本年</a>
-        </div>
-        <nz-range-picker [(ngModel)]="date_range" style="display:inline-block; width: 256px;"></nz-range-picker>
-      </div>
-    </ng-template>
   </nz-tabset>
 </nz-card>

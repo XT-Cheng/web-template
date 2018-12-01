@@ -18,6 +18,7 @@ import { Exception500Component } from './exception/500.component';
 import { BAPITestComponent } from './bapi/bapi.test.component';
 import { ImportBufferComponent } from './import/import.buffer.component';
 import { MachineSummaryComponent } from './dashboard/machine.summary.component';
+import { BatchGeneralComponent } from './report/batch.general.component';
 
 const routes: Routes = [
   {
@@ -27,7 +28,8 @@ const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: MachineSummaryComponent, data: { title: '仪表盘' } },
       { path: 'bapi/test', component: BAPITestComponent, data: { title: 'BAPI 测试' } },
-      { path: 'import/buffer', component: ImportBufferComponent, data: { title: '导入 Material Buffer' } }
+      { path: 'import/buffer', component: ImportBufferComponent, data: { title: '导入 Material Buffer' } },
+      { path: 'reports/batch_general', component: BatchGeneralComponent, data: { title: '物料批次概览' } }
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }
     ]

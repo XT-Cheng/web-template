@@ -52,23 +52,23 @@ export abstract class ImportHandleBase implements OnInit {
   //#endregion
 
   //#region Protected properties
-  protected get showProgress(): boolean {
+  public get showProgress(): boolean {
     return this._showProgress;
   }
 
-  protected get columns(): STColumn[] {
+  public get columns(): STColumn[] {
     return this._columns;
   }
 
-  protected get executing(): boolean {
+  public get executing(): boolean {
     return this._executing;
   }
 
-  protected get tableRecords(): any[] {
+  public get tableRecords(): any[] {
     return this._tableRecords;
   }
 
-  protected get toBeProcess() {
+  public get toBeProcess() {
     return this._toBeProcess;
   }
 

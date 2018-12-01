@@ -13,8 +13,8 @@ import { VBoardService } from '@core/hydra/webService/vBoard.service';
 export class BAPITestComponent {
   //#region Protected members
 
-  protected bapiTestForm: FormGroup;
-  protected isExecuting = false;
+  public bapiTestForm: FormGroup;
+  public isExecuting = false;
 
   //#endregion
 
@@ -42,13 +42,13 @@ export class BAPITestComponent {
     }
     this.bapiTestForm.controls['result'].reset();
     this.isExecuting = true;
-    // this._bapiService.test(value.type, value.dialog).pipe(finalize(() => {
-    //   this.isExecuting = false;
-    // })).subscribe((res) => {
-    //   this.bapiTestForm.controls[`result`].setValue(res);
-    // }, (err) => {
-    //   this.bapiTestForm.controls[`result`].setValue(err);
-    // });
+    this._bapiService.test(value.type, value.dialog).pipe(finalize(() => {
+      this.isExecuting = false;
+    })).subscribe((res) => {
+      this.bapiTestForm.controls[`result`].setValue(res.content);
+    }, (err) => {
+      this.bapiTestForm.controls[`result`].setValue(err);
+    });
     // this._bapiService.createMPLBuffer(`import-test8`, `import-test`, `F`, '0916', 'Comp', '', '', 0).pipe(finalize(() => {
     //   this.isExecuting = false;
     // })).subscribe((res) => {
@@ -63,13 +63,13 @@ export class BAPITestComponent {
     // }, (err) => {
     //   this.bapiTestForm.controls[`result`].setValue(err);
     // });
-    this._machineRptService.getMachine(`KM000001`).pipe(
-      finalize(() => this.isExecuting = false)
-    ).subscribe((machine) => {
-      console.log(machine);
-    }, () => {
-      this.isExecuting = false;
-    });
+    // this._machineRptService.getMachine(`KM000001`).pipe(
+    //   finalize(() => this.isExecuting = false)
+    // ).subscribe((machine) => {
+    //   console.log(machine);
+    // }, () => {
+    //   this.isExecuting = false;
+    // });
     // this._vBoardService.GetCurrentShiftMachineOEEData(`KM000001`).pipe(
     //   finalize(() => this.isExecuting = false)
     // ).subscribe((res) => {

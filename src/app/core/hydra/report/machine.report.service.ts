@@ -3,14 +3,12 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError, forkJoin } from 'rxjs';
 import { map, concatMap, combineLatest, delay } from 'rxjs/operators';
 import { FetchService } from '../fetch.service';
-import { Machine } from '../interface/common.interface';
+import { Machine } from '../interface/machine.interface';
 import { VBoardService } from '../webService/vBoard.service';
 
 @Injectable()
 export class MachineReportService {
   //#region Private members
-
-  private _url = 'fetch';
 
   //#endregion
 
@@ -23,6 +21,11 @@ export class MachineReportService {
   //#region Public methods
 
   getMachine(machineName: string) {
+    const machineAlarmSql =
+      `SELECT OEE_LOWER, OEE_UPPER, SCRAP_LOWER, SCRAP_UPPER ` +
+      `FROM U_TE_MRA_SETTINGS ` +
+      `WHERE MACHINE = '${machineName}'`;
+
     const machineSql =
       `SELECT MACHINE.MASCH_NR AS MACHINE, STATUS.M_STATUS AS STATUS, TEXT.STOER_TEXT AS TEXT, STATUS.SCHICHTNR AS SHIFTNR ` +
       `FROM MASCHINEN MACHINE, MASCHINEN_STATUS STATUS, STOERTEXTE TEXT ` +
@@ -59,13 +62,15 @@ export class MachineReportService {
 
     return forkJoin(
       this._fetchService.query(machineSql),
+      this._fetchService.query(machineSql),
       this._fetchService.query(machineCurrentOPSql),
       this._fetchService.query(machineNextOPSql),
       this._fetchService.query(loggedOnOperatorSql),
       this._fetchService.query(loggedOnComponentSql),
       this._fetchService.query(loggedOnToolSql),
       this._vBoardService.Get24HoursMachineMRAData(machineName),
-      this._vBoardService.GetCurrentShiftMachineOEEData(machineName))
+      this._vBoardService.GetCurrentShiftMachineOEEData(machineName),
+      this._fetchService.query(machineAlarmSql))
       .pipe(
         map((array) => {
           const [
@@ -76,7 +81,8 @@ export class MachineReportService {
             loggedOnComponent,
             loggedOnTool,
             mraData,
-            currentShiftOEE] = array;
+            currentShiftOEE,
+            alarmSetting] = array;
 
           if (machine.length === 0) {
             return null;
@@ -93,6 +99,22 @@ export class MachineReportService {
             currentShift: machine[0].SHIFTNR
           });
 
+          if (alarmSetting.length > 0) {
+            ret.alarmSetting = {
+              oeeLower: alarmSetting[0].OEE_LOWER,
+              oeeUpper: alarmSetting[0].OEE_UPPER,
+              scrapLower: alarmSetting[0].SCRAP_LOWER,
+              scrapUpper: alarmSetting[0].SCRAP_UPPER,
+            };
+          } else {
+            ret.alarmSetting = {
+              oeeLower: 55,
+              oeeUpper: 80,
+              scrapLower: 5,
+              scrapUpper: 1,
+            };
+          }
+
           if (currentShiftOEE.length > 0) {
             ret.currentShiftOEE.availability = currentShiftOEE[0].AVAILABILITY_RATE;
             ret.currentShiftOEE.performance = currentShiftOEE[0].PERFORMANCE_RATE;
@@ -103,6 +125,7 @@ export class MachineReportService {
             ret.machineYieldAndScrap.set(rec.SNAPSHOT_TIMESTAMP, {
               yield: rec.QUANTITY_GOOD,
               scrap: rec.QUANTITY_SCRAP,
+              performance: rec.PERFORMANCE,
             });
           });
 
@@ -130,6 +153,7 @@ export class MachineReportService {
             });
           });
 
+          ret.caculate();
           return ret;
         }));
   }

@@ -19,6 +19,9 @@ import { ChartCardComponent } from './components/chart/card.component';
 import { ParetoComponent } from './components/chart/pareto.component';
 import { ChartGaugeComponent } from './components/chart/gauge.component';
 import { ChartBarLineComponent } from './components/chart/barLine.component';
+import { ChartMiniAreaComponent } from './components/chart/miniArea.component';
+import { ChartMiniProgressComponent } from './components/chart/miniProgress.component';
+import { ChartMiniBarComponent } from './components/chart/miniBar.component';
 const THIRDMODULES = [
   NgZorroAntdModule,
   CountdownModule
@@ -31,7 +34,10 @@ const CHART_COMPONENTS = [
   ParetoComponent,
   ChartGaugeComponent,
   ChartCardComponent,
-  ChartBarLineComponent
+  ChartBarLineComponent,
+  ChartMiniAreaComponent,
+  ChartMiniProgressComponent,
+  ChartMiniBarComponent
 ];
 
 const COMPONENTS = [];

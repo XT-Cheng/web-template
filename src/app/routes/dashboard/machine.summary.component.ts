@@ -1,9 +1,10 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { _HttpClient, ALAIN_I18N_TOKEN } from '@delon/theme';
 import { NzMessageService } from 'ng-zorro-antd';
-import { getTimeDistance } from '@delon/util';
 import { STColumn, STColumnTag } from '@delon/abc';
 import { I18NService } from '@core/i18n/i18n.service';
+import { Machine } from '@core/hydra/interface/machine.interface';
+import { format } from 'date-fns';
 
 const TAG: STColumnTag = {
   1: { text: 'Success', color: 'green' },
@@ -25,11 +26,25 @@ const MAT_TAG: STColumnTag = {
   styleUrls: ['./machine.summary.component.less']
 })
 export class MachineSummaryComponent implements OnInit {
-  constructor(
-    private http: _HttpClient,
-    public msg: NzMessageService,
-    @Inject(ALAIN_I18N_TOKEN) private i18n: I18NService,
-  ) { }
+  //#region Check List
+
+  prepareData = [{
+    name: 'Fix. Prep.',
+    desc: `Fix. Prep.`,
+    finished: 1,
+  }, {
+    name: 'Mat. Prep.',
+    desc: `Mat. Prep.`,
+    finished: 2,
+  }, {
+    name: 'WI Prep.',
+    desc: `WI Prep.`,
+    finished: 5,
+  }, {
+    name: 'Leader Confirm.',
+    desc: `Leader Confirm.`,
+    finished: 3,
+  }];
 
   prepareCols: STColumn[] = [
     { title: 'Name', index: 'name' },
@@ -40,66 +55,108 @@ export class MachineSummaryComponent implements OnInit {
     { title: 'Status', index: 'finished', type: 'tag', tag: TAG },
   ];
 
+  //#endregion
+
+  //#region Material Prpare
+
   materialCols: STColumn[] = [
-    { title: 'Batch', index: 'batch' },
+    { title: 'Batch', index: 'batchName' },
     {
       title: 'Material',
       index: 'material',
     },
-    { title: 'Qty', index: 'qty' },
+    { title: 'Qty', index: 'batchQty' },
     { title: 'Remain.', render: 'percentages' },
     { title: 'Status', index: 'loaded', type: 'tag', tag: MAT_TAG },
   ];
-  salesType = 'all';
-  salesPieData: any;
-  salesTotal = 0;
-  data: any = {
-    salesData: [],
-    offlineData: [],
-    visitData: []
-  };
-  rankingListData: any[] = Array(7)
-    .fill({})
-    .map((item, i) => {
-      return {
-        title: '测试',
-        total: 323234,
-      };
-    });
 
-  date_range: Date[] = [];
-  setDate(type: any) {
-    this.date_range = getTimeDistance(type);
-  }
+  //#endregion
 
-  changeSaleType() {
-    this.salesPieData =
-      this.salesType === 'all'
-        ? this.data.salesTypeData
-        : this.salesType === 'online'
-          ? this.data.salesTypeDataOnline
-          : this.data.salesTypeDataOffline;
-    if (this.salesPieData)
-      this.salesTotal = this.salesPieData.reduce((pre, now) => now.y + pre, 0);
-  }
+  machine: Machine = new Machine();
+
+  constructor(
+    private http: _HttpClient,
+    public msg: NzMessageService,
+    @Inject(ALAIN_I18N_TOKEN) private i18n: I18NService,
+  ) { }
 
   ngOnInit() {
-    this.http.get('/chart').subscribe((res: any) => {
-      res.offlineData.forEach((item: any) => {
-        item.chart = Object.assign([], res.offlineChartData);
-      });
-      this.data = res;
-      this.changeSaleType();
+    this.http.get('/machine').subscribe((res: any) => {
+      this.machine = res;
+    });
+
+    this.http.get('/batches').subscribe((res: any) => {
+      console.log(res);
     });
   }
 
   getMaterialLimit(material: string) {
-    return 80;
+    return Machine.COMP_REMAIN_PERCENTAGE;
   }
 
   getMaterialStatusColor(percentage: number) {
-    if (percentage > 80) return 'green';
+    if (percentage && percentage > Machine.COMP_REMAIN_PERCENTAGE) return 'green';
 
     return 'red';
+  }
+
+  getPerformanceComparedToLastHour(machine: Machine) {
+    return Math.abs(machine.performanceComparedToLastHour);
+  }
+
+  getPerformanceFlag(machine: Machine) {
+    if (machine.performanceComparedToLastHour > 0) return 'up';
+
+    return 'down';
+  }
+
+  getScrapComparedToLastHour(machine: Machine) {
+    return Math.abs(machine.scrapComparedToLastHour);
+  }
+
+  getScrapFlag(machine: Machine) {
+    if (machine.scrapComparedToLastHour > 0) return 'up';
+
+    return 'down';
+  }
+
+  getProgressColor(actual, expected) {
+    if (actual > expected) {
+      return 'lime';
+    }
+    return 'red';
+  }
+
+  getTrendFlag(actual, expected) {
+    if (actual > expected) return 'down';
+
+    return 'up';
+  }
+
+  format(date) {
+    if (!date) return ``;
+
+    return format(date, 'YYYY-MM-DD HH:MM');
+  }
+
+  getMachineColor(machine: Machine) {
+    let color;
+
+    switch (machine.currentStatusNr) {
+      case 200:
+        color = '#52c41a';
+        break;
+      case 399:
+        color = '#BEB2B0';
+        break;
+      case 110:
+        color = '#BADFEC';
+        break;
+      default:
+        color = '#F63B25';
+        break;
+    }
+
+    return { 'background-color': color };
   }
 }

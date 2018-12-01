@@ -22,6 +22,9 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
   // #region fields
   colors = ['#F5222D', '#0086FA', 'limegreen'];
 
+  @Input() lower = 20;
+  @Input() upper = 90;
+
   @Input() title: string;
 
   @Input()
@@ -74,7 +77,7 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
     });
     // 绘制指标
     // tslint:disable-next-line:no-unused-expression
-    val >= 50 && this.chart.guide().arc({
+    val >= this.lower && this.chart.guide().arc({
       zIndex: 1,
       start: [0, 0.95],
       end: [val, 0.95],
@@ -85,10 +88,10 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     // tslint:disable-next-line:no-unused-expression
-    val >= 80 && this.chart.guide().arc({
+    val >= this.upper && this.chart.guide().arc({
       zIndex: 1,
-      start: [50, 0.95],
-      end: [80, 0.95],
+      start: [this.lower, 0.95],
+      end: [this.upper, 0.95],
       style: {
         stroke: this.colors[1],
         lineWidth: 12
@@ -96,10 +99,10 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     // tslint:disable-next-line:no-unused-expression
-    val > 80 && val <= 100 && this.chart.guide().arc({
+    val > this.upper && val <= 100 && this.chart.guide().arc({
       zIndex: 1,
-      start: [80, 0.95],
-      end: [val, 0.95],
+      start: [this.upper, 0.95],
+      end: [100, 0.95],
       style: {
         stroke: this.colors[2],
         lineWidth: 12
@@ -107,9 +110,9 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     // tslint:disable-next-line:no-unused-expression
-    val > 50 && val <= 80 && this.chart.guide().arc({
+    val > this.lower && val <= this.upper && this.chart.guide().arc({
       zIndex: 1,
-      start: [50, 0.95],
+      start: [this.lower, 0.95],
       end: [val, 0.95],
       style: {
         stroke: this.colors[1],
@@ -118,7 +121,7 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     // tslint:disable-next-line:no-unused-expression
-    val < 50 && this.chart.guide().arc({
+    val < this.lower && this.chart.guide().arc({
       zIndex: 1,
       start: [0, 0.95],
       end: [val, 0.95],
@@ -127,16 +130,6 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
         lineWidth: 12
       }
     });
-
-    // this.chart.guide().arc({
-    //   zIndex: 1,
-    //   start: [0, 0.95],
-    //   end: [data[0].value, 0.95],
-    //   style: {
-    //     stroke: this.color,
-    //     lineWidth: 12,
-    //   },
-    // });
 
     // 绘制数字
     if (this.title) {
@@ -195,17 +188,6 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
           },
         });
 
-        // const { origin } = cfg;
-        // group.addShape('text', {
-        //   attrs: {
-        //     x: center.x,
-        //     y: center.y + 80,
-        //     text: `${origin._origin.value}%`,
-        //     textAlign: 'center',
-        //     fontSize: 24,
-        //     fill: 'rgba(0, 0, 0, 0.85)',
-        //   },
-        // });
         return group.addShape('circle', {
           attrs: {
             x: center.x,

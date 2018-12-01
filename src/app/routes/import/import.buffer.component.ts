@@ -1,8 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
-import { XlsxService, STColumn, STColumnBadge, STComponent } from '@delon/abc';
-import { OperatorFunction, Observable, of, pipe, throwError } from 'rxjs';
-import { switchMap, concatMap, map, delay } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
+import { Component, ViewChild, ElementRef } from '@angular/core';
+import { XlsxService, STColumn } from '@delon/abc';
 import { ImportHandleBase } from '@shared/components/import.handle.base';
 import { BapiService } from '@core/hydra/bapi.service';
 
@@ -20,7 +17,7 @@ export class ImportBufferComponent extends ImportHandleBase {
 
   //#region Constructor
 
-  constructor(_xlsx: XlsxService, private _http: HttpClient, private _bapiService: BapiService) {
+  constructor(_xlsx: XlsxService, private _bapiService: BapiService) {
     super(_xlsx);
   }
 
@@ -30,7 +27,7 @@ export class ImportBufferComponent extends ImportHandleBase {
 
   change(e: Event) {
     const file = (e.target as HTMLInputElement).files[0];
-    this.loadFile(file).then((res) => {
+    this.loadFile(file).then(() => {
       this.uploaderElem.nativeElement.value = '';
     });
   }
