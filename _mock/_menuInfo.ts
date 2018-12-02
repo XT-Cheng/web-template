@@ -11,11 +11,15 @@ const menuInfo: Menu[] = [{
     icon: `anticon anticon-dashboard`,
     children: [{
       text: 'Line Summary',
-      group: false,
+      group: true,
       /** 图标 */
       icon: `anticon anticon-rocket`,
-      /** 路由 */
-      link: `/dashboard/lineGeneral`,
+      children: [{
+        text: 'KM000001',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/KM000001`,
+      }]
     }]
   },
   {

@@ -26,7 +26,7 @@ const routes: Routes = [
     component: LayoutDefaultComponent,
     children: [
       { path: '', redirectTo: 'dashboard/lineGeneral', pathMatch: 'full' },
-      { path: 'dashboard/lineGeneral', component: MachineSummaryComponent, data: { title: '产线概览' } },
+      { path: 'dashboard/lineGeneral/:machineName', component: MachineSummaryComponent, data: { title: '产线概览' } },
       { path: 'bapi/test', component: BAPITestComponent, data: { title: 'BAPI 测试' } },
       { path: 'import/buffer', component: ImportBufferComponent, data: { title: '导入 Material Buffer' } },
       { path: 'reports/batchSummary', component: BatchGeneralComponent, data: { title: '物料批次概览' } }

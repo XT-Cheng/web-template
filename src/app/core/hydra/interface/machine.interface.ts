@@ -11,7 +11,7 @@ export class Machine {
   private _hourlyPerformance = [];
 
   name: string;
-  description: string;
+  description = '';
   currentStatusNr: number;
   currentStatus: string;
   currentOperation: Operation;
@@ -32,7 +32,7 @@ export class Machine {
     return toNumber((this._yieldTrend.reduce((previousValue, currentValue, currentIndex, array) => {
       previousValue += currentValue.y;
       return previousValue;
-    }, 0) / this._yieldTrend.length * 2.0).toFixed());
+    }, 0) / this._yieldTrend.length * 2.0).toFixed(1));
   }
 
   get averageHourScrap(): number {
@@ -41,7 +41,7 @@ export class Machine {
     return toNumber((this._scrapTrend.reduce((previousValue, currentValue, currentIndex, array) => {
       previousValue += currentValue.y;
       return previousValue;
-    }, 0) / this._scrapTrend.length * 2.0).toFixed());
+    }, 0) / this._scrapTrend.length * 2.0).toFixed(1));
   }
 
   get currentShiftYield(): number {

@@ -160,6 +160,15 @@ export class BatchGeneralComponent implements OnInit {
     this.level = 0;
     this.currentBufferName = this.currentMaterial = '';
 
+    forkJoin(this.batchRptService.getMaterialBuffers(), this.batchRptService.getBatches()).pipe(
+      finalize(() => this.loading = false)
+    ).subscribe(array => {
+      [this.buffers, this.originalData] = array;
+
+      this.tableData = this.generateTableData(this.currentMaterial, this.currentBufferName);
+      this.chartDataView = this.generateChartData(this.level, null);
+    });
+
     interval(10000).subscribe(() => {
       forkJoin(this.batchRptService.getMaterialBuffers(), this.batchRptService.getBatches()).pipe(
         finalize(() => this.loading = false)

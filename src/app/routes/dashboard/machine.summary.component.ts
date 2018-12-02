@@ -7,6 +7,8 @@ import { Machine } from '@core/hydra/interface/machine.interface';
 import { format } from 'date-fns';
 import { interval } from 'rxjs';
 import { MachineReportService } from '@core/hydra/report/machine.report.service';
+import { Router, ActivationEnd, ActivatedRoute } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 const TAG: STColumnTag = {
   1: { text: 'Success', color: 'green' },
@@ -75,18 +77,37 @@ export class MachineSummaryComponent implements OnInit {
   //#endregion
 
   machine: Machine = new Machine();
+  machineName = '';
 
   constructor(
     private _machineRptService: MachineReportService,
     public msg: NzMessageService,
+    private router: Router,
+    private route: ActivatedRoute,
     @Inject(ALAIN_I18N_TOKEN) private i18n: I18NService,
-  ) { }
+  ) {
+    // this.router.events
+    //   .pipe(filter(e => e instanceof ActivationEnd))
+    //   .subscribe(() => {
+    //     this.machineName = this.router.url.substr(this.router.url.lastIndexOf('?') + 1);
+    //     this._machineRptService.getMachine(this.machineName).subscribe((machine: any) => {
+    //       this.machine = machine;
+    //     });
+    //   });
+  }
 
   ngOnInit() {
+    this.machineName = this.route.snapshot.paramMap.get('machineName');
+    this._machineRptService.getMachine(this.machineName).subscribe((machine: any) => {
+      this.machine = machine;
+    });
+
     interval(10000).subscribe(() => {
-      this._machineRptService.getMachine('KM000001').subscribe((machine: any) => {
-        this.machine = machine;
-      });
+      if (this.machineName) {
+        this._machineRptService.getMachine(this.machineName).subscribe((machine: any) => {
+          this.machine = machine;
+        });
+      }
     });
   }
 
