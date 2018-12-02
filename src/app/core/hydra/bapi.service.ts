@@ -14,8 +14,6 @@ import { DeletePersonBapi } from './bapi/mpl/master/delete.person';
 export class BapiService {
   //#region Private members
 
-  private _url = 'bapi';
-
   //#endregion
 
   //#region Constructor

@@ -25,11 +25,11 @@ const routes: Routes = [
     path: '',
     component: LayoutDefaultComponent,
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: MachineSummaryComponent, data: { title: '仪表盘' } },
+      { path: '', redirectTo: 'dashboard/lineGeneral', pathMatch: 'full' },
+      { path: 'dashboard/lineGeneral', component: MachineSummaryComponent, data: { title: '产线概览' } },
       { path: 'bapi/test', component: BAPITestComponent, data: { title: 'BAPI 测试' } },
       { path: 'import/buffer', component: ImportBufferComponent, data: { title: '导入 Material Buffer' } },
-      { path: 'reports/batch_general', component: BatchGeneralComponent, data: { title: '物料批次概览' } }
+      { path: 'reports/batchSummary', component: BatchGeneralComponent, data: { title: '物料批次概览' } }
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }
     ]

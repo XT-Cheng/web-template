@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError, forkJoin } from 'rxjs';
 import { map, concatMap, combineLatest, delay } from 'rxjs/operators';
 import { FetchService } from '../fetch.service';
-import { Machine } from '../interface/machine.interface';
+import { Machine, Operation } from '../interface/machine.interface';
 import { VBoardService } from '../webService/vBoard.service';
 
 @Injectable()
@@ -27,23 +27,32 @@ export class MachineReportService {
       `WHERE MACHINE = '${machineName}'`;
 
     const machineSql =
-      `SELECT MACHINE.MASCH_NR AS MACHINE, STATUS.M_STATUS AS STATUS, TEXT.STOER_TEXT AS TEXT, STATUS.SCHICHTNR AS SHIFTNR ` +
+      `SELECT MACHINE.MASCH_NR AS MACHINE, MACHINE.BEZ_LANG AS DESCRIPTION, STATUS.M_STATUS AS STATUS, ` +
+      `TEXT.STOER_TEXT AS TEXT, STATUS.SCHICHTNR AS SHIFTNR ` +
       `FROM MASCHINEN MACHINE, MASCHINEN_STATUS STATUS, STOERTEXTE TEXT ` +
       `WHERE MACHINE.MASCH_NR = '${machineName}' ` +
       `AND STATUS.MASCH_NR = MACHINE.MASCH_NR AND TEXT.STOERTXT_NR = STATUS.M_STATUS`;
 
     const machineCurrentOPSql =
-      `SELECT MACHINE.MASCH_NR AS MACHINE, HYBUCH.SUBKEY2 AS OPERATION, AUFTRAGS_BESTAND.USER_C_55 AS LEADORDER ` +
-      `FROM MASCHINEN MACHINE, HYBUCH, AUFTRAGS_BESTAND ` +
-      `WHERE MACHINE.MASCH_NR = '${machineName}' AND HYBUCH.SUBKEY2 = AUFTRAGS_BESTAND.AUFTRAG_NR ` +
-      `AND HYBUCH.SUBKEY1(%2B) = MACHINE.MASCH_NR AND HYBUCH.KEY_TYPE(%2B) = 'A'`;
+      `SELECT MACHINE.MASCH_NR AS MACHINE,HYBUCH.SUBKEY2 AS OPERATION,OPERATION.USER_C_55 AS LEADORDER, ` +
+      `OP_STATUS.GUT_BAS AS YIELD, OP_STATUS.AUS_BAS AS SCRAP, PPS.SOLL_MENGE_BAS AS TARGETQTY, PPS.SOLL_DAUER AS TARGET_CYCLE,` +
+      `(PPS.ERREND_DAT %2B PPS.ERREND_ZEIT / 24 / 3600) AS PLANNED_FINISHED ` +
+      ` FROM MASCHINEN MACHINE,HYBUCH,AUFTRAGS_BESTAND OPERATION,AUFTRAG_STATUS OP_STATUS,PPS_BESTAND PPS ` +
+      `WHERE MACHINE.MASCH_NR = '${machineName}' AND OPERATION.AUFTRAG_NR = OP_STATUS.AUFTRAG_NR ` +
+      ` AND PPS.AUFTRAG_NR = OPERATION.AUFTRAG_NR AND HYBUCH.SUBKEY2 = OPERATION.AUFTRAG_NR ` +
+      ` AND HYBUCH.SUBKEY1  = MACHINE.MASCH_NR AND HYBUCH.KEY_TYPE = 'A'`;
+
+    const operationBOMItemsSql =
+      `SELECT AUFTRAG_NR AS OPERATION, ARTIKEL AS MATERIAL, POS AS POS, SOLL_MENGE AS QUANTITY, SOLL_EINH AS UNIT ` +
+      ` FROM MLST_HY WHERE AUFTRAG_NR IN ` +
+      ` (SELECT HYBUCH.SUBKEY2 FROM HYBUCH WHERE HYBUCH.SUBKEY1 = '${machineName}' AND HYBUCH.KEY_TYPE = 'A')`;
 
     const machineNextOPSql =
       `SELECT OP.AUFTRAG_NR AS NEXTOPERATION, OP.USER_C_55 AS LEADORDER, ` +
       ` (OP.TERM_ANF_DAT %2B OP.TERM_ANF_ZEIT / 3600 / 24) AS STARTDATE ` +
       ` FROM AUFTRAGS_BESTAND OP, AUFTRAG_STATUS STATUS ` +
       ` WHERE OP.MASCH_NR = '${machineName}' AND OP.AUFTRAG_NR = STATUS.AUFTRAG_NR ` +
-      ` AND STATUS.A_STATUS <> 'L'  ORDER BY  TERM_ANF_DAT, TERM_ANF_ZEIT`;
+      ` AND STATUS.A_STATUS <> 'L'  ORDER BY TERM_ANF_DAT, TERM_ANF_ZEIT`;
 
     const loggedOnOperatorSql = `SELECT PERSONALNUMMER AS PERSON, NAME, KARTEN_NUMMER AS BADGE ` +
       `FROM HYBUCH,PERSONALSTAMM ` +
@@ -62,26 +71,29 @@ export class MachineReportService {
 
     return forkJoin(
       this._fetchService.query(machineSql),
-      this._fetchService.query(machineSql),
       this._fetchService.query(machineCurrentOPSql),
+      this._fetchService.query(operationBOMItemsSql),
       this._fetchService.query(machineNextOPSql),
       this._fetchService.query(loggedOnOperatorSql),
       this._fetchService.query(loggedOnComponentSql),
       this._fetchService.query(loggedOnToolSql),
       this._vBoardService.Get24HoursMachineMRAData(machineName),
       this._vBoardService.GetCurrentShiftMachineOEEData(machineName),
+      this._vBoardService.GetCurrentShiftMachineRejectsData(machineName),
       this._fetchService.query(machineAlarmSql))
       .pipe(
         map((array) => {
           const [
             machine,
             machineCurrentOP,
+            bomItems,
             machineNextOP,
             loggedOnOperator,
             loggedOnComponent,
             loggedOnTool,
             mraData,
             currentShiftOEE,
+            currentShiftOutput,
             alarmSetting] = array;
 
           if (machine.length === 0) {
@@ -90,14 +102,34 @@ export class MachineReportService {
 
           const ret = Object.assign(new Machine(), {
             name: machine[0].MACHINE,
+            description: machine[0].DESCRIPTION,
             currentStatusNr: machine[0].STATUS,
             currentStatus: machine[0].TEXT,
-            currentOperation: machineCurrentOP.length > 0 ? machineCurrentOP[0].OPERATION : ``,
             nextOperation: machineNextOP.length > 0 ? machineNextOP[0].NEXTOPERATION : ``,
             currentLeadOrder: machineCurrentOP.length > 0 ? machineCurrentOP[0].LEADORDER : ``,
             nextLeadOrder: machineNextOP.length > 0 ? machineNextOP[0].LEADORDER : ``,
             currentShift: machine[0].SHIFTNR
           });
+
+          if (machineCurrentOP.length > 0) {
+            ret.currentOperation = Object.assign(new Operation(), {
+              name: machineCurrentOP[0].OPERATION,
+              targetQty: machineCurrentOP[0].TARGETQTY,
+              totalYield: machineCurrentOP[0].YIELD,
+              totalScrap: machineCurrentOP[0].SCRAP,
+              targetCycleTime: machineCurrentOP[0].TARGET_CYCLE,
+              scheduleCompleted: new Date(machineCurrentOP[0].PLANNED_FINISHED)
+            });
+
+            bomItems.forEach(item => {
+              ret.currentOperation.bomItems.set(item.POS, {
+                material: item.MATERIAL,
+                pos: item.POS,
+                quantity: item.QUANTITY,
+                unit: item.UNIT,
+              });
+            });
+          }
 
           if (alarmSetting.length > 0) {
             ret.alarmSetting = {
@@ -121,13 +153,28 @@ export class MachineReportService {
             ret.currentShiftOEE.quality = currentShiftOEE[0].QUALITY_RATE;
           }
 
-          mraData.forEach(rec => {
-            ret.machineYieldAndScrap.set(rec.SNAPSHOT_TIMESTAMP, {
-              yield: rec.QUANTITY_GOOD,
-              scrap: rec.QUANTITY_SCRAP,
-              performance: rec.PERFORMANCE,
+          if (currentShiftOutput.length > 0) {
+            ret.currentShiftOEE.yield = currentShiftOutput.reduce((previousValue, currentValue, currentIndex) => {
+              previousValue += currentValue.YIELD;
+              return previousValue;
+            }, 0);
+            ret.currentShiftOEE.scrap = currentShiftOutput.reduce((previousValue, currentValue, currentIndex) => {
+              previousValue += currentValue.REJECTS;
+              return previousValue;
+            }, 0);
+          }
+
+          if (ret.currentOperation) {
+            mraData.forEach(rec => {
+              if (rec.ORDERNUMBER === ret.currentOperation.name) {
+                ret.machineYieldAndScrap.set(new Date(rec.SNAPSHOT_TIMESTAMP), {
+                  yield: rec.QUANTITY_GOOD,
+                  scrap: rec.QUANTITY_SCRAP,
+                  performance: rec.PERFORMANCE,
+                });
+              }
             });
-          });
+          }
 
           loggedOnOperator.forEach(operator => {
             ret.operatorLoggedOn.set(operator.PERSON, {
@@ -138,7 +185,7 @@ export class MachineReportService {
           });
 
           loggedOnComponent.forEach(component => {
-            ret.componentLoggedOn.set(component.BATCHID, {
+            ret.componentLoggedOn.set(component.POS, {
               batchName: component.BATCHID,
               batchQty: component.REMAINQTY,
               bomItem: component.POS,

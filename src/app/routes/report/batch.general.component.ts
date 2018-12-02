@@ -6,7 +6,7 @@ import { Batch, Buffer } from '@core/hydra/interface/batch.interface';
 import { STColumn } from '@delon/abc';
 import { BatchReportService } from '@core/hydra/report/batch.report.service';
 import { finalize } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
+import { forkJoin, interval } from 'rxjs';
 import { BPClient } from 'blocking-proxy';
 
 @Component({
@@ -48,7 +48,7 @@ export class BatchGeneralComponent implements OnInit {
   originalData: Batch[] = [];
   buffers: Buffer[] = [];
   tableData: Batch[] = [];
-  chartDataView: any;
+  chartDataView: any = new DataSet().createView();
   level = 0;
   loading = false;
 
@@ -157,16 +157,18 @@ export class BatchGeneralComponent implements OnInit {
   //#region Implemented methods
 
   ngOnInit(): void {
-    forkJoin(this.batchRptService.getMaterialBuffers(), this.batchRptService.getBatches()).pipe(
-      finalize(() => this.loading = false)
-    ).subscribe(array => {
-      [this.buffers, this.originalData] = array;
+    this.level = 0;
+    this.currentBufferName = this.currentMaterial = '';
 
-      this.level = 0;
-      this.currentBufferName = this.currentMaterial = '';
+    interval(10000).subscribe(() => {
+      forkJoin(this.batchRptService.getMaterialBuffers(), this.batchRptService.getBatches()).pipe(
+        finalize(() => this.loading = false)
+      ).subscribe(array => {
+        [this.buffers, this.originalData] = array;
 
-      this.tableData = this.generateTableData(this.currentMaterial, this.currentBufferName);
-      this.chartDataView = this.generateChartData(this.level, null);
+        this.tableData = this.generateTableData(this.currentMaterial, this.currentBufferName);
+        this.chartDataView = this.generateChartData(this.level, null);
+      });
     });
   }
 
@@ -192,19 +194,19 @@ export class BatchGeneralComponent implements OnInit {
 
     if (this.level === 0) {
       this.currentMaterial = item.x;
-    } else {
-      this.currentBufferName = item.x;
     }
 
     if (this.level > 0) {
       // Find Direct Children Buffers
       directChildren = this.buffers.filter(b => {
-        if (b.parentBuffer === this.currentBufferName) {
+        if (b.parentBuffer === item.x) {
           return b;
         }
       });
 
       if (directChildren.length === 0) return;
+
+      this.currentBufferName = item.x;
     }
 
     this.level++;

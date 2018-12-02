@@ -64,10 +64,7 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
   @Input() allowInteract = false;
 
   @Input() padding: number[];
-  @Input() data: Array<{
-    x: any; y: any;
-    [key: string]: any
-  }>;
+  @Input() data: any;
 
   @Input()
   set autoLabel(value: any) {
@@ -93,8 +90,14 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
   }
 
   private install() {
+    let dataLength = 0;
+
+    if (this.data) {
+      dataLength = this.data.isDataView ? this.data.origin.length : this.data.length;
+    }
+
     const canvasWidth = this.el.nativeElement.clientWidth;
-    const minWidth = this.data.length * 30;
+    const minWidth = dataLength * 30;
 
     if (canvasWidth <= minWidth) {
       if (!this.autoHideXLabels) {
@@ -104,7 +107,7 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
       this.autoHideXLabels = false;
     }
 
-    if (!this.data || (this.data && this.data.length < 1)) return;
+    if (!this.data || (this.data && dataLength < 1)) return;
     this.node.nativeElement.innerHTML = '';
 
     const chart = new G2.Chart({

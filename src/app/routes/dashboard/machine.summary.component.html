@@ -1,4 +1,4 @@
-<nz-card [nzTitle]="('app.machine.summary.general' | translate) + ': ' + machine.name" [nzBodyStyle]="{padding: '0px'}">
+<nz-card [nzTitle]="('app.machine.summary.general' | translate) + ': ' + machine.description" [nzBodyStyle]="{padding: '0px'}">
   <div class="mb-md" style='margin: 10px;'>
     <div class="rounded-md" [ngStyle]="getMachineColor(machine)">
       <div class="p-md text-white">
@@ -8,7 +8,7 @@
   </div>
   <div nz-row [nzGutter]="24" style='padding-top: 1px;'>
     <div nz-col nzXs="24" nzSm="12" nzMd="12" nzLg="6">
-      <fw-g2-card [title]="'app.machine.summary.workOrder' | translate" [total]="machine.nextOperation?.name"
+      <fw-g2-card [title]="'app.machine.summary.workOrder' | translate" [total]="machine.currentOperation?.name"
         contentHeight="87px" [footer]="footer1">
         <p class="text-truncate mb0">
           {{'app.machine.summary.targetQty' | translate}} / {{'app.machine.summary.finishedQty' | translate}}:
@@ -31,7 +31,7 @@
       </fw-g2-card>
     </div>
     <div nz-col nzXs="24" nzSm="12" nzMd="12" nzLg="6">
-      <fw-g2-card [title]="'app.machine.summary.shift.output' | translate" [total]="machine.currentHourYield"
+      <fw-g2-card [title]="'app.machine.summary.shift.output' | translate" [total]="machine.displayCurrentShiftYield"
         contentHeight="87px" [footer]="footer2">
         <p class="text-truncate mb0">
           {{'app.machine.summary.outputPerHour' | translate}}:
@@ -41,13 +41,13 @@
         <ng-template #footer2>
           <fw-g2-trend [flag]="getPerformanceFlag(machine)" [reverseColor]='true' style="display:block; margin-top:2px;">
             {{'app.machine.summary.compareToLastHour' | translate}}:
-            <span class="ml-sm">{{getPerformanceComparedToLastHour(machine)}}%</span>
+            <span class="ml-sm">{{getPerformanceComparedToLastHalfHour(machine)}}%</span>
           </fw-g2-trend>
         </ng-template>
       </fw-g2-card>
     </div>
     <div nz-col nzXs="24" nzSm="12" nzMd="12" nzLg="6">
-      <fw-g2-card [title]="'app.machine.summary.shift.scrap' | translate" [total]="machine.currentHourScrap"
+      <fw-g2-card [title]="'app.machine.summary.shift.scrap' | translate" [total]="machine.displayCurrentShiftScrap"
         contentHeight="87px" [footer]="footer3">
         <p class="text-truncate mb0">
           {{'app.machine.summary.scrapPerHour' | translate}}:
@@ -57,7 +57,7 @@
         <ng-template #footer3>
           <fw-g2-trend [flag]="getScrapFlag(machine)" style="display:block; margin-top:2px;">
             {{'app.machine.summary.compareToLastHour' | translate}}:
-            <span class="ml-sm">{{getScrapComparedToLastHour(machine)}}%</span>
+            <span class="ml-sm">{{getScrapComparedToLastHalfHour(machine)}}%</span>
           </fw-g2-trend>
         </ng-template>
       </fw-g2-card>
@@ -65,7 +65,7 @@
     <div nz-col nzXs="24" nzSm="12" nzMd="12" nzLg="6">
       <fw-g2-card [title]="'app.machine.summary.oee' | translate" contentHeight="87px">
         <fw-g2-gauge [height]="180" [lower]='machine.alarmSetting?.oeeLower' [upper]='machine.alarmSetting?.oeeUpper'
-          [percent]="machine.currentShiftOEE.overAll"></fw-g2-gauge>
+          [percent]="machine.currentShiftOEE?.overAll"></fw-g2-gauge>
       </fw-g2-card>
     </div>
   </div>
@@ -76,7 +76,7 @@
       <div nz-row>
         <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24">
           <div class="bar">
-            <fw-g2-bar-line height="295" [colorOverLimit]="'red'" [colorBelowLimit]="'lime'" limit='8' [data]="machine.scrapTrend"></fw-g2-bar-line>
+            <fw-g2-bar-line height="295" [colorOverLimit]="'red'" [colorBelowLimit]="'lime'" [data]="machine.scrapTrend"></fw-g2-bar-line>
           </div>
         </div>
       </div>
@@ -86,7 +86,7 @@
       <div nz-row>
         <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24">
           <div class="bar">
-            <fw-g2-bar-line height="295" [colorOverLimit]="'lime'" [colorBelowLimit]="'red'" limit='900' [data]="machine.yieldTrend"></fw-g2-bar-line>
+            <fw-g2-bar-line height="295" [colorOverLimit]="'lime'" [colorBelowLimit]="'red'" [data]="machine.yieldTrend"></fw-g2-bar-line>
           </div>
         </div>
       </div>

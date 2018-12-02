@@ -36,5 +36,14 @@ export class VBoardService {
     });
   }
 
+  GetCurrentShiftMachineRejectsData(machineName: string) {
+    return this.http.get<any>(`${this._url}/GetCurrentShiftMachineRejectsDataJSON`, {
+      params: {
+        Machine_Number: machineName
+      }
+    });
+  }
+
+
   //#endregion
 }

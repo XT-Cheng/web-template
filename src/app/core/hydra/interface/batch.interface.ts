@@ -13,6 +13,6 @@ export class Buffer {
   description: string;
   bufferLevel: number;
   parentBuffer: string;
-  parentBuffers: string[];
+  parentBuffers: string[] = [];
   leadBuffer: string;
 }

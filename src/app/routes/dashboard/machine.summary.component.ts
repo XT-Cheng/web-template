@@ -5,6 +5,8 @@ import { STColumn, STColumnTag } from '@delon/abc';
 import { I18NService } from '@core/i18n/i18n.service';
 import { Machine } from '@core/hydra/interface/machine.interface';
 import { format } from 'date-fns';
+import { interval } from 'rxjs';
+import { MachineReportService } from '@core/hydra/report/machine.report.service';
 
 const TAG: STColumnTag = {
   1: { text: 'Success', color: 'green' },
@@ -75,18 +77,16 @@ export class MachineSummaryComponent implements OnInit {
   machine: Machine = new Machine();
 
   constructor(
-    private http: _HttpClient,
+    private _machineRptService: MachineReportService,
     public msg: NzMessageService,
     @Inject(ALAIN_I18N_TOKEN) private i18n: I18NService,
   ) { }
 
   ngOnInit() {
-    this.http.get('/machine').subscribe((res: any) => {
-      this.machine = res;
-    });
-
-    this.http.get('/batches').subscribe((res: any) => {
-      console.log(res);
+    interval(10000).subscribe(() => {
+      this._machineRptService.getMachine('KM000001').subscribe((machine: any) => {
+        this.machine = machine;
+      });
     });
   }
 
@@ -100,22 +100,22 @@ export class MachineSummaryComponent implements OnInit {
     return 'red';
   }
 
-  getPerformanceComparedToLastHour(machine: Machine) {
-    return Math.abs(machine.performanceComparedToLastHour);
+  getPerformanceComparedToLastHalfHour(machine: Machine) {
+    return Math.abs(machine.performanceComparedToLastHalfHour);
   }
 
   getPerformanceFlag(machine: Machine) {
-    if (machine.performanceComparedToLastHour > 0) return 'up';
+    if (machine.performanceComparedToLastHalfHour > 0) return 'up';
 
     return 'down';
   }
 
-  getScrapComparedToLastHour(machine: Machine) {
-    return Math.abs(machine.scrapComparedToLastHour);
+  getScrapComparedToLastHalfHour(machine: Machine) {
+    return Math.abs(machine.scrapComparedToLastHalfHour);
   }
 
   getScrapFlag(machine: Machine) {
-    if (machine.scrapComparedToLastHour > 0) return 'up';
+    if (machine.scrapComparedToLastHalfHour > 0) return 'up';
 
     return 'down';
   }

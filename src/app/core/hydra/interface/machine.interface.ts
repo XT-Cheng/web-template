@@ -11,10 +11,11 @@ export class Machine {
   private _hourlyPerformance = [];
 
   name: string;
+  description: string;
   currentStatusNr: number;
   currentStatus: string;
   currentOperation: Operation;
-  nextOperation: Operation;
+  nextOperation: string;
   currentLeadOrder: string;
   nextLeadOrder: string;
   currentShiftOEE: MachineOEE = new MachineOEE();
@@ -23,33 +24,44 @@ export class Machine {
   operatorLoggedOn: Map<number, IOperatorLoggedOn> = new Map<number, IOperatorLoggedOn>();
   currentShift: number;
   machineYieldAndScrap: Map<Date, IMachineYieldAndScrap> = new Map<Date, IMachineYieldAndScrap>();
-
   alarmSetting: IMachineAlarmSetting;
 
   get averageHourYield(): number {
+    if (!this.currentOperation) return null;
+
     return toNumber((this._yieldTrend.reduce((previousValue, currentValue, currentIndex, array) => {
       previousValue += currentValue.y;
       return previousValue;
-    }, 0) / this._yieldTrend.length).toFixed());
+    }, 0) / this._yieldTrend.length * 2.0).toFixed());
   }
 
   get averageHourScrap(): number {
+    if (!this.currentOperation) return null;
+
     return toNumber((this._scrapTrend.reduce((previousValue, currentValue, currentIndex, array) => {
       previousValue += currentValue.y;
       return previousValue;
-    }, 0) / this._scrapTrend.length).toFixed());
+    }, 0) / this._scrapTrend.length * 2.0).toFixed());
   }
 
-  get currentHourYield(): number {
-    if (this._yieldTrend.length === 0) return 0;
+  get currentShiftYield(): number {
+    if (!this.currentShiftOEE) return 0;
 
-    return this._yieldTrend[this._yieldTrend.length - 1].y;
+    return this.currentShiftOEE.yield;
   }
 
-  get currentHourScrap(): number {
-    if (this._scrapTrend.length === 0) return 0;
+  get displayCurrentShiftYield(): string {
+    return this.currentShiftYield.toFixed();
+  }
 
-    return this._scrapTrend[this._scrapTrend.length - 1].y;
+  get currentShiftScrap(): number {
+    if (!this.currentShiftOEE) return 0;
+
+    return this.currentShiftOEE.scrap;
+  }
+
+  get displayCurrentShiftScrap(): string {
+    return this.currentShiftScrap.toFixed();
   }
 
   get yieldTrend() {
@@ -64,8 +76,8 @@ export class Machine {
     return this._componentLoggedOnTable;
   }
 
-  get performanceComparedToLastHour(): number {
-    if (this._hourlyPerformance.length === 0) return 0;
+  get performanceComparedToLastHalfHour(): number {
+    if (this._hourlyPerformance.length === 0) return null;
 
     const perc = toNumber((this._hourlyPerformance[this._hourlyPerformance.length - 1].y
       / this._hourlyPerformance[this._hourlyPerformance.length - 2].y * 100).toFixed(2));
@@ -73,8 +85,8 @@ export class Machine {
     return toNumber((perc - 100).toFixed(2));
   }
 
-  get scrapComparedToLastHour(): number {
-    if (this._scrapTrend.length === 0) return 0;
+  get scrapComparedToLastHalfHour(): number {
+    if (this._scrapTrend.length === 0) return null;
 
     const perc = toNumber((this._scrapTrend[this._scrapTrend.length - 1].y
       / this._scrapTrend[this._scrapTrend.length - 2].y * 100).toFixed(2));
@@ -83,6 +95,8 @@ export class Machine {
   }
 
   caculate() {
+    if (!this.currentOperation) return;
+
     this._yieldTrend = this.calculateYieldTrend();
     this._scrapTrend = this.calculateScrapTrend();
     this._hourlyPerformance = this.calculateHourlyPerformance();
@@ -91,94 +105,43 @@ export class Machine {
   }
 
   private calculateHourlyPerformance() {
-    const performance = new Array<{ x: Date, y: number }>();
+    const performance = new Array<{ x: string, y: number }>();
     this.machineYieldAndScrap.forEach((value, key) => {
       performance.push({
-        x: key,
+        x: format(key, 'HH:mm'),
         y: value.performance
       });
     });
 
-    let count = 0;
-    let firstPassed = false;
-    return performance.reduce((previousValue, currentValue, currentIndex, array) => {
-      if (currentValue.x.getMinutes() > 0 && !firstPassed) {
-        return previousValue;
-      }
-
-      firstPassed = true;
-      count++;
-
-      if (count % 2 === 0) {
-        previousValue[previousValue.length - 1].y = toNumber(((previousValue[previousValue.length - 1].y + currentValue.y) / 2).toFixed());
-      } else {
-        previousValue.push({ x: format(currentValue.x, 'HH:00'), y: currentValue.y });
-      }
-
-      return previousValue;
-    }, []).reverse();
+    return performance.slice(((performance.length + 1) / 2), performance.length);
   }
 
   private calculateYieldTrend() {
     const yields = new Array<{
-      x: Date; y: number
+      x: string; y: number
     }>();
     this.machineYieldAndScrap.forEach((value, key) => {
       yields.push({
-        x: key,
+        x: format(key, 'HH:mm'),
         y: value.yield
       });
     });
 
-    let count = 0;
-    let firstPassed = false;
-    return yields.reduce((previousValue, currentValue, currentIndex, array) => {
-      if (currentValue.x.getMinutes() > 0 && !firstPassed) {
-        return previousValue;
-      }
-
-      firstPassed = true;
-      count++;
-
-      if (count % 2 === 0) {
-        previousValue[previousValue.length - 1].y += currentValue.y;
-      } else {
-        previousValue.push({ x: format(currentValue.x, 'HH:00'), y: currentValue.y });
-      }
-
-      return previousValue;
-    }, []).reverse();
+    return yields.slice(((yields.length + 1) / 2), yields.length);
   }
 
   private calculateScrapTrend() {
     const scraps = new Array<{
-      x: Date; y: number
+      x: string; y: number
     }>();
     this.machineYieldAndScrap.forEach((value, key) => {
       scraps.push({
-        x: key,
+        x: format(key, 'HH:mm'),
         y: value.scrap
       });
     });
 
-    let count = 0;
-    let firstPassed = false;
-    return scraps.reduce((previousValue, currentValue, currentIndex, array) => {
-      if (currentValue.x.getMinutes() > 0 && !firstPassed) {
-        return previousValue;
-      }
-
-      firstPassed = true;
-      count++;
-
-      if (count % 2 === 0) {
-        previousValue[previousValue.length - 1].y += currentValue.y;
-      } else {
-        previousValue.push({ x: format(currentValue.x, 'HH:00'), y: currentValue.y });
-      }
-
-      return previousValue;
-    }, []).reverse();
+    return scraps.slice(((scraps.length + 1) / 2), scraps.length);
   }
 
   private calculateComponentLoggedOnTable() {
@@ -264,9 +227,11 @@ export interface IMachineYieldAndScrap {
 }
 
 export class MachineOEE {
-  availability: number;
-  performance: number;
-  quality: number;
+  yield = 0;
+  scrap = 0;
+  availability = 0;
+  performance = 0;
+  quality = 0;
   get overAll(): number {
     return toNumber(((this.availability * this.performance * this.quality) / 10000.0).toFixed());
   }
