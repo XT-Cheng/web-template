@@ -1,6 +1,7 @@
 export class Batch {
   name: string;
   bufferName: string;
+  bufferDescription: string;
   parentBuffer: string;
   quantity: number;
   material: string;

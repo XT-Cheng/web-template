@@ -21,7 +21,8 @@ export class BatchReportService {
 
   getBatches(): Observable<Batch[]> {
     const batchSql =
-      `SELECT BATCH.LOSNR AS BATCHNAME, (BATCH.BEARB_DATE %2B BATCH.BEARB_TIME / 24 / 3600) AS LASTCHANGED,BATCH.MAT_PUF AS BUFFERNAME, ` +
+      `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, (BATCH.BEARB_DATE %2B BATCH.BEARB_TIME / 24 / 3600) AS LASTCHANGED,` +
+      ` BATCH.MAT_PUF AS BUFFERNAME, ` +
       ` BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH, ` +
       ` LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER ` +
       ` WHERE BATCH.STATUS IN ('F','L') AND BATCH.RESTMENGE > 0 AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916'`;
@@ -34,6 +35,7 @@ export class BatchReportService {
           const data = Object.assign(new Batch(), {
             name: batch.BATCHNAME,
             bufferName: batch.BUFFERNAME,
+            bufferDescription: batch.DESCRIPTION,
             parentBuffer: batch.PARENT_BUFFERNAME,
             quantity: batch.QUANTITY,
             material: batch.MATERIAL,

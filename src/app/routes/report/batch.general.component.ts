@@ -7,7 +7,6 @@ import { STColumn } from '@delon/abc';
 import { BatchReportService } from '@core/hydra/report/batch.report.service';
 import { finalize } from 'rxjs/operators';
 import { forkJoin, interval } from 'rxjs';
-import { BPClient } from 'blocking-proxy';
 
 @Component({
   selector: 'app-batch-general',
@@ -24,7 +23,7 @@ export class BatchGeneralComponent implements OnInit {
 
   columns: STColumn[] = [
     { title: '批次号', index: 'name' },
-    { title: '存储位置', index: 'bufferName' },
+    { title: '存储位置', index: 'bufferDescription' },
     {
       title: '数量',
       index: 'quantity',
@@ -53,6 +52,7 @@ export class BatchGeneralComponent implements OnInit {
   loading = false;
 
   currentBufferName = '';
+  currentBufferDescription = '';
   currentMaterial = '';
 
   //#endregion
@@ -135,12 +135,13 @@ export class BatchGeneralComponent implements OnInit {
 
         if (toAddBuffer) {
           // 2. Chart Data handle
-          if (chartData.find(d => d.x === toAddBuffer.name)) {
-            const found = chartData.find(d => d.x === toAddBuffer.name);
+          if (chartData.find(d => d.bufferName === toAddBuffer.name)) {
+            const found = chartData.find(d => d.bufferName === toAddBuffer.name);
             found.y += batch.quantity;
           } else {
             chartData.push({
-              x: toAddBuffer.name,
+              bufferName: toAddBuffer.name,
+              x: toAddBuffer.description,
               y: batch.quantity
             });
           }
@@ -158,7 +159,7 @@ export class BatchGeneralComponent implements OnInit {
 
   ngOnInit(): void {
     this.level = 0;
-    this.currentBufferName = this.currentMaterial = '';
+    this.currentBufferDescription = this.currentBufferName = this.currentMaterial = '';
 
     forkJoin(this.batchRptService.getMaterialBuffers(), this.batchRptService.getBatches()).pipe(
       finalize(() => this.loading = false)
@@ -183,15 +184,16 @@ export class BatchGeneralComponent implements OnInit {
 
   //#endregion
 
-  //#region Private methods
+  //#region Public methods
   gotoUpperLevel() {
     this.level--;
     const buffer = this.buffers.find(b => b.name === this.currentBufferName);
 
     if (this.level === 0) {
-      this.currentMaterial = this.currentBufferName = '';
+      this.currentMaterial = this.currentBufferName = this.currentBufferDescription = '';
     } else {
       this.currentBufferName = buffer ? buffer.parentBuffer : '';
+      this.currentBufferDescription = buffer ? this.getBufferDescription(buffer.parentBuffer) : '';
     }
 
     this.tableData = this.generateTableData(this.currentMaterial, this.currentBufferName);
@@ -208,14 +210,15 @@ export class BatchGeneralComponent implements OnInit {
     if (this.level > 0) {
       // Find Direct Children Buffers
       directChildren = this.buffers.filter(b => {
-        if (b.parentBuffer === item.x) {
+        if (b.parentBuffer === item.bufferName) {
           return b;
         }
       });
 
       if (directChildren.length === 0) return;
 
-      this.currentBufferName = item.x;
+      this.currentBufferName = item.bufferName;
+      this.currentBufferDescription = this.getBufferDescription(this.currentBufferName);
     }
 
     this.level++;
@@ -223,5 +226,15 @@ export class BatchGeneralComponent implements OnInit {
     this.chartDataView = this.generateChartData(this.level, this.currentBufferName);
   }
 
+  //#endregion
+
+  //#region Private methods
+  private getBufferDescription(bufferName: string) {
+    const found = this.buffers.find(buffer => buffer.name === bufferName);
+
+    if (found) return found.description;
+
+    return '';
+  }
   //#endregion
 }

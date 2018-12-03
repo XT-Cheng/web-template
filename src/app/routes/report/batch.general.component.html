@@ -8,13 +8,13 @@
 </nz-card>
 <ng-template #extraTemplate>
   <div nz-row>
-    <div nz-col nzSpan="8">
+    <div nz-col nzSpan="12">
       <p>当前物料:{{currentMaterial}}</p>
     </div>
-    <div nz-col nzSpan="8">
-      <p>当前物料区:{{currentBufferName}}</p>
+    <div nz-col nzSpan="12">
+      <p>当前物料区:{{currentBufferDescription}}</p>
     </div>
-    <div nz-col nzSpan="8">
+    <div nz-col>
       <button nz-button nzSize='small' [disabled]='level === 0' [nzType]="'primary'" (click)='gotoUpperLevel()'>
         <i nz-icon type="up"></i>
       </button>

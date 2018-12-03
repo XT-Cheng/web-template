@@ -24,6 +24,7 @@ export enum DialogTypeEnum {
   CHANGE_MACHINE_STATUS = 'M_MST',
   STROKE_POST = 'M_AST',
 
+  CREATE_NETWORK = 'ANETZ.INSERT',
   //#region MPL Master
 
   MPL_CREATE_BUFFER = 'MATPUF.INSERT',

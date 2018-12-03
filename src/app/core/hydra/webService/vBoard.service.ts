@@ -8,7 +8,7 @@ import { IMachineYieldAndScrap, MachineOEE } from '../interface/machine.interfac
 export class VBoardService {
   //#region Private members
 
-  private _url = 'http://cne35db03/vBoard/vBoardWS.asmx';
+  private _url = 'http://cne35db03:8903/vBoard/vBoardWS.asmx';
 
   //#endregion
 
