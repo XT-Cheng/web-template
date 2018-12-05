@@ -23,6 +23,7 @@ export enum DialogTypeEnum {
   LOGOFF_TOOL = 'RES_AB',
   CHANGE_MACHINE_STATUS = 'M_MST',
   STROKE_POST = 'M_AST',
+  DELETE_BATCH = 'CNR.DELETE',
 
   CREATE_NETWORK = 'ANETZ.INSERT',
   //#region MPL Master

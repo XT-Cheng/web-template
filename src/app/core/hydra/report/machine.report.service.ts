@@ -5,6 +5,7 @@ import { map, concatMap, combineLatest, delay } from 'rxjs/operators';
 import { FetchService } from '../fetch.service';
 import { Machine, Operation } from '../interface/machine.interface';
 import { VBoardService } from '../webService/vBoard.service';
+import { toNumber } from 'ng-zorro-antd';
 
 @Injectable()
 export class MachineReportService {
@@ -148,9 +149,9 @@ export class MachineReportService {
           }
 
           if (currentShiftOEE.length > 0) {
-            ret.currentShiftOEE.availability = currentShiftOEE[0].AVAILABILITY_RATE;
-            ret.currentShiftOEE.performance = currentShiftOEE[0].PERFORMANCE_RATE;
-            ret.currentShiftOEE.quality = currentShiftOEE[0].QUALITY_RATE;
+            ret.currentShiftOEE.availability = toNumber(currentShiftOEE[0].AVAILABILITY_RATE * 100, 2);
+            ret.currentShiftOEE.performance = toNumber(currentShiftOEE[0].PERFORMANCE_RATE * 100, 2);
+            ret.currentShiftOEE.quality = toNumber(currentShiftOEE[0].QUALITY_RATE * 100, 2);
           }
 
           if (currentShiftOutput.length > 0) {

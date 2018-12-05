@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { _HttpClient, ALAIN_I18N_TOKEN } from '@delon/theme';
-import { NzMessageService } from 'ng-zorro-antd';
+import { NzMessageService, toNumber } from 'ng-zorro-antd';
 import { I18NService } from '@core/i18n/i18n.service';
 import { Batch, Buffer } from '@core/hydra/interface/batch.interface';
 import { STColumn } from '@delon/abc';
@@ -100,6 +100,13 @@ export class BatchGeneralComponent implements OnInit {
         }
       )
         .transform({
+          type: 'map',
+          callback(row) { // 加工数据后返回新的一行，默认返回行数据本身
+            row.total = toNumber((<number>row.total).toFixed(2), 0);
+            return row;
+          }
+        })
+        .transform({
           type: 'rename',
           map: {
             material: 'x', // row.xxx 会被替换成 row.yyy
@@ -149,6 +156,9 @@ export class BatchGeneralComponent implements OnInit {
         toAddBuffer = null;
       });
 
+      chartData.forEach(d => {
+        d.y = toNumber((<number>d.y).toFixed(2), 0);
+      });
       return new DataSet().createView().source(chartData);
     }
   }
