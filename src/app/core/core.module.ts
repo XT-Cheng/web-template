@@ -3,21 +3,11 @@ import { throwIfAlreadyLoaded } from './module-import-guard';
 
 import { I18NService } from './i18n/i18n.service';
 import { AuthService } from './auth/providers/auth.service';
-import { FetchService } from './hydra/fetch.service';
-import { BapiService } from './hydra/bapi.service';
-import { MachineReportService } from './hydra/report/machine.report.service';
-import { VBoardService } from './hydra/webService/vBoard.service';
-import { BatchReportService } from './hydra/report/batch.report.service';
 
 @NgModule({
   providers: [
     I18NService,
     AuthService,
-    FetchService,
-    BapiService,
-    MachineReportService,
-    BatchReportService,
-    VBoardService
   ]
 })
 export class CoreModule {

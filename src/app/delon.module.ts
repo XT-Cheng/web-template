@@ -22,10 +22,9 @@ import { DelonUtilModule } from '@delon/util';
 import { DelonMockModule } from '@delon/mock';
 import * as MOCKDATA from '../../_mock';
 import { environment } from '@env/environment';
-// const MOCK_MODULES = !environment.production
-//   ? [DelonMockModule.forRoot({ data: MOCKDATA })]
-//   : [];
-const MOCK_MODULES = [DelonMockModule.forRoot({ data: MOCKDATA })];
+const MOCK_MODULES = !environment.production
+  ? [DelonMockModule.forRoot({ data: MOCKDATA })]
+  : [];
 
 // #endregion
 
@@ -63,8 +62,6 @@ import { DelonAuthConfig } from '@delon/auth';
 export function fnDelonAuthConfig(): DelonAuthConfig {
   return Object.assign(new DelonAuthConfig(), <DelonAuthConfig>{
     login_url: '/passport/login',
-    ignores: [/\/login/, /assets\//, /passport\//, /bapi/, /import/, /fetch/,
-      /cne35db03/, /dashboard/, /chart/, /machine/, /buffers/, /batches/, /reports/]
   });
 }
 
