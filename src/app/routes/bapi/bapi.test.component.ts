@@ -4,6 +4,7 @@ import { BapiService } from '@core/hydra/bapi.service';
 import { finalize } from 'rxjs/operators';
 import { MachineReportService } from '@core/hydra/report/machine.report.service';
 import { VBoardService } from '@core/hydra/webService/vBoard.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-bapi-test',
@@ -21,6 +22,7 @@ export class BAPITestComponent {
   //#region Constructor
 
   constructor(private _fb: FormBuilder, private _bapiService: BapiService,
+    private _http: HttpClient,
     private _machineRptService: MachineReportService, private _vBoardService: VBoardService) {
     this.bapiTestForm = this._fb.group({
       type: ['', [Validators.required]],
@@ -35,6 +37,7 @@ export class BAPITestComponent {
 
   submitForm = ($event, value) => {
     $event.preventDefault();
+
     // tslint:disable-next-line:forin
     for (const key in this.bapiTestForm.controls) {
       this.bapiTestForm.controls[key].markAsDirty();
