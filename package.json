@@ -41,7 +41,6 @@
     "@delon/mock": "^2.0.0-rc.1",
     "@delon/theme": "^2.0.0-rc.1",
     "@delon/util": "^2.0.0-rc.1",
-    "@ngrx/store": "^6.1.2",
     "@ngx-translate/core": "^10.0.1",
     "@ngx-translate/http-loader": "^3.0.1",
     "ajv": "^6.4.0",

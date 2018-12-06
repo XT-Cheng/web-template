@@ -20,8 +20,6 @@ import { LayoutModule } from './layout/layout.module';
 import { RoutesModule } from './routes/routes.module';
 import { SharedModule } from './shared/shared.module';
 import { JWTInterceptor } from '@delon/auth';
-import { StoreModule } from '@ngrx/store';
-import { reducers, metaReducers } from './core/store/reducers';
 
 // #region default language
 // 参考：https://ng-alain.com/docs/i18n
@@ -107,8 +105,7 @@ const APPINIT_PROVIDES = [
     RoutesModule,
     ...I18NSERVICE_MODULES,
     ...FORM_MODULES,
-    ...GLOBAL_THIRD_MDOULES,
-    StoreModule.forRoot(reducers, { metaReducers })
+    ...GLOBAL_THIRD_MDOULES
   ],
   providers: [
     ...LANG_PROVIDES,

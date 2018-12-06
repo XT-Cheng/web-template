@@ -1,8 +1,8 @@
 import { App } from '@delon/theme';
 
 const appInfo: App = {
-  name: 'Web Template',
-  description: 'Web Template',
+  name: 'Cable Assmelby Portal',
+  description: 'Cable Assmelby Portal',
   year: 2018,
 };
 

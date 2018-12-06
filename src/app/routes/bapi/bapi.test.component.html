@@ -1,0 +1,31 @@
+<nz-card nzTitle="BAPI Test">
+  <nz-spin [nzSpinning]="isExecuting">
+    <form nz-form [nzLayout]="'vertical'" [formGroup]="bapiTestForm" (ngSubmit)="submitForm($event,bapiTestForm.value)">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="type">Type</nz-form-label>
+        <nz-form-control>
+          <input fwAutoFocus nz-input formControlName="type" name="type" id="type" placeholder="BAPI Type">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="dialog">Dialog String</nz-form-label>
+        <nz-form-control>
+          <textarea name="dialog" formControlName="dialog" id="dialog" placeholder="Dialog String" rows="6" nz-input
+            [nzAutosize]="{ minRows: 2, maxRows: 6 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <textarea name="result" formControlName="result" id="result" placeholder="Result" rows="6" nz-input disabled
+            [nzAutosize]="{ minRows: 2, maxRows: 6 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button nz-button nzType="primary" [disabled]="!bapiTestForm.valid">Submit</button>
+          <button nz-button (click)="resetForm($event)">Reset</button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-spin>
+</nz-card>
