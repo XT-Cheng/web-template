@@ -207,6 +207,7 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
       forceFit: true,
       height: this.height,
       padding: [10, 10, 30, 10],
+      animate: false, // 关闭图表动画
     });
     chart.source(data);
 

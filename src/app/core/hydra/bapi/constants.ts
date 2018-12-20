@@ -4,6 +4,7 @@ export enum DialogTypeEnum {
   CREATE_BATCH = 'C_GEN',
   MOVE_BATCH = 'C_UMB',
   SPLIT_BATCH = 'CNR.SPLITCREATE',
+  GOODS_MOVMENT = 'C_MBEW',
   UPDATE_BATCH = 'CNR.UPDATE',
   SCRAP_BATCH = '',
   BONUS_BATCH = '',

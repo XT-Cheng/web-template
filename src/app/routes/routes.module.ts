@@ -18,6 +18,11 @@ import { MachineSummaryComponent } from './dashboard/machine.summary.component';
 import { DelonChartModule } from '@delon/chart';
 import { ImportPersonComponent } from './import/import.person.component';
 import { BatchGeneralComponent } from './report/batch.general.component';
+import { ScrapPerHourComponent } from './dashboard/widget/scrapPerHour.component';
+import { OutputPerHourComponent } from './dashboard/widget/outputPerHour.component';
+import { MaterialPreparationComponent } from './dashboard/widget/materialPreparation.component';
+import { NextOperationsComponent } from './dashboard/widget/nextOperations.component';
+import { ImportBapiComponent } from './import/import.bapi.exec.component';
 
 const BAPI = [
   BAPITestComponent
@@ -29,11 +34,16 @@ const REPORT = [
 
 const IMPORT = [
   ImportBufferComponent,
-  ImportPersonComponent
+  ImportPersonComponent,
+  ImportBapiComponent,
 ];
 
 const COMPONENTS = [
   MachineSummaryComponent,
+  ScrapPerHourComponent,
+  OutputPerHourComponent,
+  MaterialPreparationComponent,
+  NextOperationsComponent,
   // passport pages
   UserLoginComponent,
   UserRegisterComponent,

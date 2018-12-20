@@ -26,6 +26,8 @@ export class Machine {
   machineYieldAndScrap: Map<Date, IMachineYieldAndScrap> = new Map<Date, IMachineYieldAndScrap>();
   alarmSetting: IMachineAlarmSetting;
 
+  nextOperations: Operation[] = [];
+
   get averageHourYield(): number {
     if (!this.currentOperation) return null;
 
@@ -185,6 +187,7 @@ export class Machine {
 
 export class Operation {
   name: string;
+  leadOrder: string;
   targetQty: number;
   totalYield: number;
   totalScrap: number;

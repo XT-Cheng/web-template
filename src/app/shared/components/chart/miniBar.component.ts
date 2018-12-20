@@ -72,6 +72,7 @@ export class ChartMiniBarComponent implements OnDestroy, OnChanges {
       height: +this.height,
       padding: this.padding,
       legend: null,
+      animate: false, // 关闭图表动画
     });
 
     chart.axis(false);

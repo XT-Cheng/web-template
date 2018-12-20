@@ -64,6 +64,15 @@ export class ChartCardComponent {
       typeof value === 'number' ? (this._height = `${value}px`) : value;
   }
 
+  _totalHeight = 'auto';
+  _orgTotalHeight: any;
+  @Input()
+  set totalHeight(value: number | string) {
+    this._orgTotalHeight = value;
+    this._totalHeight =
+      typeof value === 'number' ? (this._totalHeight = `${value}px`) : value;
+  }
+
   _footer = '';
   _footerTpl: TemplateRef<any>;
   @Input()

@@ -116,6 +116,7 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
       height: this._title || this._titleTpl ? this.height - 41 : this.height,
       // legend: null,
       padding: this.padding || 'auto',
+      animate: false, // 关闭图表动画
     });
 
     // chart.axis('x', !this.autoHideXLabels);

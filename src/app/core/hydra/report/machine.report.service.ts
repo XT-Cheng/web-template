@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError, forkJoin } from 'rxjs';
-import { map, concatMap, combineLatest, delay } from 'rxjs/operators';
+import { Observable, of, throwError, forkJoin, BehaviorSubject } from 'rxjs';
+import { map, concatMap, combineLatest, delay, tap } from 'rxjs/operators';
 import { FetchService } from '../fetch.service';
 import { Machine, Operation } from '../interface/machine.interface';
 import { VBoardService } from '../webService/vBoard.service';
@@ -11,15 +11,20 @@ import { toNumber } from 'ng-zorro-antd';
 export class MachineReportService {
   //#region Private members
 
+  private machineSub$: BehaviorSubject<Machine> = new BehaviorSubject<Machine>(new Machine());
+
   //#endregion
 
   //#region Constructor
 
-  constructor(protected _fetchService: FetchService, protected _vBoardService: VBoardService) { }
+  constructor(protected _httpClient: HttpClient, protected _fetchService: FetchService, protected _vBoardService: VBoardService) { }
 
   //#endregion
 
   //#region Public methods
+  get machine$(): Observable<Machine> {
+    return this.machineSub$.asObservable();
+  }
 
   getMachine(machineName: string) {
     const machineAlarmSql =
@@ -50,10 +55,12 @@ export class MachineReportService {
 
     const machineNextOPSql =
       `SELECT OP.AUFTRAG_NR AS NEXTOPERATION, OP.USER_C_55 AS LEADORDER, ` +
+      `STATUS.GUT_BAS AS YIELD, STATUS.AUS_BAS AS SCRAP, OP.SOLL_MENGE_BAS AS TARGETQTY, OP.SOLL_DAUER AS TARGET_CYCLE,` +
+      `(OP.ERREND_DAT %2B OP.ERREND_ZEIT / 24 / 3600) AS PLANNED_FINISHED ` +
       ` (OP.TERM_ANF_DAT %2B OP.TERM_ANF_ZEIT / 3600 / 24) AS STARTDATE ` +
       ` FROM AUFTRAGS_BESTAND OP, AUFTRAG_STATUS STATUS ` +
       ` WHERE OP.MASCH_NR = '${machineName}' AND OP.AUFTRAG_NR = STATUS.AUFTRAG_NR ` +
-      ` AND STATUS.A_STATUS <> 'L'  ORDER BY TERM_ANF_DAT, TERM_ANF_ZEIT`;
+      ` AND STATUS.PROD_KENN <> 'L' AND STATUS.PROD_KENN <> 'E' ORDER BY TERM_ANF_DAT, TERM_ANF_ZEIT`;
 
     const loggedOnOperatorSql = `SELECT PERSONALNUMMER AS PERSON, NAME, KARTEN_NUMMER AS BADGE ` +
       `FROM HYBUCH,PERSONALSTAMM ` +
@@ -69,6 +76,11 @@ export class MachineReportService {
       `SELECT SUBKEY1 AS MACHINE, SUBKEY2 AS OPERATION, SUBKEY6 AS RESOURCEID,RES_NR AS TOOLNAME, RES_NR_M AS REQUIREDRESOURCE ` +
       `FROM HYBUCH, RES_BEDARFSZUORD, RES_BESTAND ` +
       `WHERE KEY_TYPE = 'O' AND SUBKEY1 = '${machineName}' AND RES_ID = SUBKEY6 AND RES_NR_T(%2B) = RES_NR`;
+
+    return this._httpClient.get('/machine').pipe(
+      tap((machine: Machine) => {
+        this.machineSub$.next(machine);
+      }));
 
     return forkJoin(
       this._fetchService.query(machineSql),
@@ -118,6 +130,7 @@ export class MachineReportService {
               targetQty: machineCurrentOP[0].TARGETQTY,
               totalYield: machineCurrentOP[0].YIELD,
               totalScrap: machineCurrentOP[0].SCRAP,
+              leadOrder: machineCurrentOP[0].LEADORDER,
               targetCycleTime: machineCurrentOP[0].TARGET_CYCLE,
               scheduleCompleted: new Date(machineCurrentOP[0].PLANNED_FINISHED)
             });
@@ -203,6 +216,9 @@ export class MachineReportService {
 
           ret.caculate();
           return ret;
+        }),
+        tap((machine) => {
+          this.machineSub$.next(machine);
         }));
   }
 

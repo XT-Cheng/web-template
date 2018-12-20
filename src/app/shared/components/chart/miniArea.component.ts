@@ -60,7 +60,7 @@ export class ChartMiniAreaComponent implements OnDestroy, OnChanges {
   set animate(value: any) {
     this._animate = toBoolean(value);
   }
-  private _animate = true;
+  private _animate = false;
 
   @Input()
   xAxis: any;

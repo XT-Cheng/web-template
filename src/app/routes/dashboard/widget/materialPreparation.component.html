@@ -1,0 +1,7 @@
+<st [data]="(machineRptService.machine$ | async).componentLoggedOnTable" [columns]="materialCols" size="small" ps="5"
+  [page]="{toTop:false}">
+  <ng-template st-row="percentages" let-item let-index="index">
+    <fw-g2-mini-progress [percent]="item.percentage" strokeWidth="15" [target]="getMaterialLimit(item.material)"
+      [color]="getMaterialStatusColor(item.percentage)"></fw-g2-mini-progress>
+  </ng-template>
+</st>

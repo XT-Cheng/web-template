@@ -102,13 +102,13 @@ export class MachineSummaryComponent implements OnInit {
       this.machine = machine;
     });
 
-    interval(10000).subscribe(() => {
-      if (this.machineName) {
-        this._machineRptService.getMachine(this.machineName).subscribe((machine: any) => {
-          this.machine = machine;
-        });
-      }
-    });
+    // interval(10000).subscribe(() => {
+    //   if (this.machineName) {
+    //     this._machineRptService.getMachine(this.machineName).subscribe((machine: any) => {
+    //       this.machine = machine;
+    //     });
+    //   }
+    // });
   }
 
   getMaterialLimit(material: string) {
@@ -157,7 +157,7 @@ export class MachineSummaryComponent implements OnInit {
   format(date) {
     if (!date) return ``;
 
-    return format(date, 'YYYY-MM-DD HH:MM');
+    return format(date, 'MM-DD HH:MM');
   }
 
   getMachineColor(machine: Machine) {

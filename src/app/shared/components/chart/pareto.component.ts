@@ -126,6 +126,7 @@ export class ParetoComponent implements OnDestroy, OnChanges {
       forceFit: true,
       height: this._title || this._titleTpl ? this.height - 41 : this.height,
       padding: this.padding || 'auto',
+      animate: false, // 关闭图表动画
     });
 
     // chart.axis('mark', true);

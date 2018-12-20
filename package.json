@@ -52,6 +52,7 @@
     "ng-zorro-antd": "^1.7.1",
     "prettier": "^1.12.1",
     "prettier-stylelint": "^0.4.2",
+    "qrious": "^4.0.2",
     "redux": "^4.0.1",
     "redux-logger": "^3.0.6",
     "redux-observable": "^1.0.0",

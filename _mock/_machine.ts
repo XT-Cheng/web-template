@@ -28,6 +28,17 @@ function getMachineWithOperation() {
     scrapUpper: 8,
   };
 
+  for (let i = 0; i < 5; i++) {
+    const nextOP = Object.assign(new Operation(), {
+      name: `200218137807000${i}0010`,
+      targetQty: Math.floor(Math.random() * 1000),
+      targetCycleTime: Math.floor(Math.random() * 1000),
+      leadOrder: `20028888888888880010`,
+      scheduleCompleted: new Date(now.getTime() + (1 * 24 * 60 * 60 * 1000)),
+    });
+    data.nextOperations.push(nextOP);
+  }
+
   data.currentOperation = Object.assign(new Operation(), {
     name: '2002181378070010',
     targetQty: 1000,
