@@ -8,6 +8,7 @@ import { BapiService } from './hydra/bapi.service';
 import { MachineReportService } from './hydra/report/machine.report.service';
 import { VBoardService } from './hydra/webService/vBoard.service';
 import { BatchReportService } from './hydra/report/batch.report.service';
+import { MachineService } from './hydra/service/machine.service';
 
 @NgModule({
   providers: [
@@ -16,6 +17,7 @@ import { BatchReportService } from './hydra/report/batch.report.service';
     FetchService,
     BapiService,
     MachineReportService,
+    MachineService,
     BatchReportService,
     VBoardService
   ]

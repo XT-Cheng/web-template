@@ -27,6 +27,7 @@ export class Machine {
   alarmSetting: IMachineAlarmSetting;
 
   nextOperations: Operation[] = [];
+  currentOperations: Operation[] = [];
 
   get averageHourYield(): number {
     if (!this.currentOperation) return null;

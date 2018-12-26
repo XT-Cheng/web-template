@@ -1,24 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { MachineReportService } from '@core/hydra/report/machine.report.service';
-import { Machine } from '@core/hydra/interface/machine.interface';
-import { STColumn, STColumnTag } from '@delon/abc';
+import { STColumn } from '@delon/abc';
 import { format } from 'date-fns';
-
-const MAT_TAG: STColumnTag = {
-  1: { text: 'In Use', color: 'green' },
-  2: { text: 'No Mat.', color: 'red' },
-  3: { text: 'Need Replenish', color: 'blue' },
-};
+import { MachineService } from '@core/hydra/service/machine.service';
+import { Machine } from '@core/hydra/entity/machine';
+import { Operation } from '@core/hydra/entity/operation';
 
 @Component({
   selector: 'fw-widget-next-op',
   templateUrl: './nextOperations.component.html',
   styleUrls: ['./nextOperations.component.less']
 })
-export class NextOperationsComponent {
-  selectedOperation: string;
+export class NextOperationsComponent implements OnInit {
+  //#region Fields
+
+  selectedOperation = ``;
   operationCols: STColumn[] = [
-    { title: 'Opeartion', index: 'name' },
+    { title: 'Opeartion', index: 'order' },
     { title: 'Lead Order', index: 'leadOrder' },
     {
       title: 'Target Qty.',
@@ -26,20 +23,42 @@ export class NextOperationsComponent {
     },
     { title: 'Target Cycle.', index: 'targetCycleTime' },
     {
-      title: 'Sch. Complete', index: 'scheduleCompleted', format: (value) => {
-        return format(value.scheduleCompleted, 'MM-DD HH:MM');
+      title: 'Sch. Complete', index: 'scheduleCompleted', format: (value: Operation) => {
+        return format(value.planEnd, 'MM-DD HH:MM');
       }
     },
   ];
+  machine: Machine;
+  data: any[];
+
+  //#endregion
+
+  //#region Constructor
 
   constructor(
-    public machineRptService: MachineReportService
+    public machineService: MachineService
   ) {
 
   }
 
+  //#endregion
+
+  //#region Implemented interface
+
+  ngOnInit() {
+    this.machineService.machine$.subscribe((machine) => {
+      this.machine = machine;
+      this.data = this.machine.nextOperations;
+    });
+  }
+
+  //#endregion
+
+  //#region Event handlers
+
   opClick(event) {
     this.selectedOperation = event.click.item.name;
-    console.log(event);
   }
+
+  //#endregion
 }

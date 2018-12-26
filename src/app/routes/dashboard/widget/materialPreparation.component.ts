@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { MachineReportService } from '@core/hydra/report/machine.report.service';
-import { Machine } from '@core/hydra/interface/machine.interface';
 import { STColumn, STColumnTag } from '@delon/abc';
+import { MachineService } from '@core/hydra/service/machine.service';
+import { Machine } from '@core/hydra/entity/machine';
+import { toNumber } from '@delon/util';
 
 const MAT_TAG: STColumnTag = {
   1: { text: 'In Use', color: 'green' },
@@ -14,7 +15,17 @@ const MAT_TAG: STColumnTag = {
   templateUrl: './materialPreparation.component.html',
   styleUrls: ['./materialPreparation.component.less']
 })
-export class MaterialPreparationComponent {
+export class MaterialPreparationComponent implements OnInit {
+
+  //#region static Fields
+
+  static COMP_REMAIN_TIME = 30 * 60;
+  static COMP_REMAIN_PERCENTAGE = 20;
+
+  //#endregion
+
+  //#region Fields
+
   materialCols: STColumn[] = [
     { title: 'Batch', index: 'batchName' },
     {
@@ -26,19 +37,80 @@ export class MaterialPreparationComponent {
     { title: 'Status', index: 'loaded', type: 'tag', tag: MAT_TAG },
   ];
 
+  machine: Machine;
+  data: any[];
+
+  //#endregion
+
+  //#region Constructor
+
   constructor(
-    public machineRptService: MachineReportService
+    public machineService: MachineService
   ) {
 
   }
 
-  getMaterialLimit(material: string) {
-    return Machine.COMP_REMAIN_PERCENTAGE;
+  //#endregion
+
+  //#region Implemented interface
+
+  ngOnInit() {
+    this.machineService.machine$.subscribe((machine) => {
+      this.machine = machine;
+      this.data = this.componentLoggedOnTable;
+    });
+  }
+
+  //#endregion
+
+  //#region Compoent logged on
+
+  get componentLoggedOnTable(): any[] {
+    const ret: any[] = [];
+
+    if (this.machine.currentOperation) {
+      const op = this.machine.currentOperation;
+      op.componentStatus.forEach((comp, key) => {
+        // 1: 'In Use',
+        // 2: 'No Mat.',
+        // 3: 'Need Replenish',
+        let percentage = 0;
+        let loaded = -1;
+        if (!comp.batchName) {
+          loaded = 2;
+        } else {
+          const bomItem = op.bomItems.get(key);
+          const remainTime = toNumber((comp.batchQty / bomItem.quantity * op.targetCycleTime).toFixed());
+          percentage = toNumber(((remainTime / MaterialPreparationComponent.COMP_REMAIN_TIME) * 100).toFixed());
+          if (percentage > MaterialPreparationComponent.COMP_REMAIN_PERCENTAGE) {
+            loaded = 1;
+          } else {
+            loaded = 3;
+          }
+        }
+
+        ret.push({
+          batchName: comp.batchName,
+          batchQty: comp.batchQty,
+          material: comp.material,
+          percentage: percentage,
+          loaded: loaded
+        });
+      });
+    }
+
+    return ret;
+  }
+
+  getMaterialLimit() {
+    return MaterialPreparationComponent.COMP_REMAIN_PERCENTAGE;
   }
 
   getMaterialStatusColor(percentage: number) {
-    if (percentage && percentage > Machine.COMP_REMAIN_PERCENTAGE) return 'green';
+    if (percentage && percentage > MaterialPreparationComponent.COMP_REMAIN_PERCENTAGE) return 'green';
 
     return 'red';
   }
+
+  //#endregion
 }

@@ -1,28 +1,12 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { _HttpClient, ALAIN_I18N_TOKEN } from '@delon/theme';
+import { Component, OnInit } from '@angular/core';
+import { _HttpClient } from '@delon/theme';
 import { NzMessageService } from 'ng-zorro-antd';
-import { STColumn, STColumnTag } from '@delon/abc';
-import { I18NService } from '@core/i18n/i18n.service';
-import { Machine } from '@core/hydra/interface/machine.interface';
 import { format } from 'date-fns';
-import { interval } from 'rxjs';
-import { MachineReportService } from '@core/hydra/report/machine.report.service';
-import { Router, ActivationEnd, ActivatedRoute } from '@angular/router';
-import { filter } from 'rxjs/operators';
-
-const TAG: STColumnTag = {
-  1: { text: 'Success', color: 'green' },
-  2: { text: 'Error', color: 'red' },
-  3: { text: 'Ongoing', color: 'blue' },
-  4: { text: 'Default', color: '' },
-  5: { text: 'Warn', color: 'orange' },
-};
-
-const MAT_TAG: STColumnTag = {
-  1: { text: 'In Use', color: 'green' },
-  2: { text: 'No Mat.', color: 'red' },
-  3: { text: 'Need Replenish', color: 'blue' },
-};
+import { ActivatedRoute } from '@angular/router';
+import { MachineService } from '@core/hydra/service/machine.service';
+import { OperationExt as Operation } from './operation';
+import { Machine } from '@core/hydra/entity/machine';
+import { toNumber } from '@delon/util';
 
 @Component({
   selector: 'fw-machine-summary',
@@ -32,132 +16,181 @@ const MAT_TAG: STColumnTag = {
 export class MachineSummaryComponent implements OnInit {
   //#region Check List
 
-  prepareData = [{
-    name: 'Fix. Prep.',
-    desc: `Fix. Prep.`,
-    finished: 1,
-  }, {
-    name: 'Mat. Prep.',
-    desc: `Mat. Prep.`,
-    finished: 2,
-  }, {
-    name: 'WI Prep.',
-    desc: `WI Prep.`,
-    finished: 5,
-  }, {
-    name: 'Leader Confirm.',
-    desc: `Leader Confirm.`,
-    finished: 3,
-  }];
-
-  prepareCols: STColumn[] = [
-    { title: 'Name', index: 'name' },
-    {
-      title: 'Desc',
-      index: 'desc',
-    },
-    { title: 'Status', index: 'finished', type: 'tag', tag: TAG },
-  ];
-
   //#endregion
 
   //#region Material Prpare
 
-  materialCols: STColumn[] = [
-    { title: 'Batch', index: 'batchName' },
-    {
-      title: 'Material',
-      index: 'material',
-    },
-    { title: 'Qty', index: 'batchQty' },
-    { title: 'Remain.', render: 'percentages' },
-    { title: 'Status', index: 'loaded', type: 'tag', tag: MAT_TAG },
-  ];
-
   //#endregion
+
+  //#region Fields
 
   machine: Machine = new Machine();
   machineName = '';
 
+  //#endregion
+
+  //#region Constructor
+
   constructor(
-    private _machineRptService: MachineReportService,
+    public machineService: MachineService,
     public msg: NzMessageService,
-    private router: Router,
     private route: ActivatedRoute,
-    @Inject(ALAIN_I18N_TOKEN) private i18n: I18NService,
   ) {
-    // this.router.events
-    //   .pipe(filter(e => e instanceof ActivationEnd))
-    //   .subscribe(() => {
-    //     this.machineName = this.router.url.substr(this.router.url.lastIndexOf('?') + 1);
-    //     this._machineRptService.getMachine(this.machineName).subscribe((machine: any) => {
-    //       this.machine = machine;
-    //     });
-    //   });
   }
+
+  //#endregion
+
+  //#region Implemented interface
 
   ngOnInit() {
     this.machineName = this.route.snapshot.paramMap.get('machineName');
-    this._machineRptService.getMachine(this.machineName).subscribe((machine: any) => {
+    this.machineService.machine$.subscribe((machine) => {
       this.machine = machine;
     });
 
-    // interval(10000).subscribe(() => {
-    //   if (this.machineName) {
-    //     this._machineRptService.getMachine(this.machineName).subscribe((machine: any) => {
-    //       this.machine = machine;
-    //     });
-    //   }
-    // });
+    this.machineService.getMachine(this.machineName);
+    // this.machineService.getMachineWithMock(this.machineName);
   }
 
-  getMaterialLimit(material: string) {
-    return Machine.COMP_REMAIN_PERCENTAGE;
+  //#endregion
+
+  //#region Machine related properties
+
+  //#region Average Yield / Scrap by Hour
+
+  get averageHourYield(): number {
+    if (this.machine.output.size === 0) return 0;
+
+    let totalYield = 0;
+    this.machine.output.forEach(item => {
+      totalYield += item.yield;
+    });
+
+    return toNumber((totalYield / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT));
   }
 
-  getMaterialStatusColor(percentage: number) {
-    if (percentage && percentage > Machine.COMP_REMAIN_PERCENTAGE) return 'green';
+  get averageHourScrap(): number {
+    if (this.machine.output.size === 0) return 0;
 
-    return 'red';
+    let totalScrap = 0;
+    this.machine.output.forEach(item => {
+      totalScrap += item.scrap;
+    });
+
+    return toNumber((totalScrap / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT));
   }
 
-  getPerformanceComparedToLastHalfHour(machine: Machine) {
-    return Math.abs(machine.performanceComparedToLastHalfHour);
+  //#endregion
+
+  //#region Machine based Yield / Scrap trend of 48 hours
+
+  get yieldTrend() {
+    const yields = new Array<{
+      x: string; y: number
+    }>();
+    this.machine.output.forEach((value, key) => {
+      yields.push({
+        x: format(key, 'HH:mm'),
+        y: value.yield
+      });
+    });
+
+    return yields.slice(((yields.length + 1) / 2), yields.length);
   }
 
-  getPerformanceFlag(machine: Machine) {
-    if (machine.performanceComparedToLastHalfHour > 0) return 'up';
+  get scrapTrend() {
+    const scraps = new Array<{
+      x: string; y: number
+    }>();
+    this.machine.output.forEach((value, key) => {
+      scraps.push({
+        x: format(key, 'HH:mm'),
+        y: value.scrap
+      });
+    });
+
+    return scraps.slice(((scraps.length + 1) / 2), scraps.length);
+  }
+
+  //#endregion
+
+  //#region Machine based Performance trend of 48 hours
+
+  get performanceTrend() {
+    const performances = new Array<{
+      x: string; y: number
+    }>();
+    this.machine.output.forEach((value, key) => {
+      performances.push({
+        x: format(key, 'HH:mm'),
+        y: value.scrap
+      });
+    });
+
+    return performances.slice(((performances.length + 1) / 2), performances.length);
+  }
+
+  //#endregion
+
+  //#region Compare Scrap to last half hour
+
+  get scrapComparedToLastHalfHour(): number {
+    if (this.scrapTrend.length < 2) return 100;
+
+    const perc = toNumber((this.scrapTrend[this.scrapTrend.length - 1].y
+      / this.scrapTrend[this.scrapTrend.length - 2].y * 100).toFixed(Operation.FRACTION_DIGIT));
+
+    return toNumber((perc - 100).toFixed(Operation.FRACTION_DIGIT));
+  }
+
+  //#endregion
+
+  //#region Compare Performance to last half hour
+
+  get performanceComparedToLastHalfHour(): number {
+    if (this.performanceTrend.length < 2) return 100;
+
+    const perc = toNumber((this.performanceTrend[this.performanceTrend.length - 1].y
+      / this.performanceTrend[this.performanceTrend.length - 2].y * 100).toFixed(Operation.FRACTION_DIGIT));
+
+    return toNumber((perc - 100).toFixed(Operation.FRACTION_DIGIT));
+  }
+
+
+  //#endregion
+
+  //#endregion
+
+  //#region Style methods
+  format(date) {
+    if (!date) return ``;
+
+    return format(date, 'MM-DD HH:MM');
+  }
+
+  get performanceFlag() {
+    if (this.performanceComparedToLastHalfHour > 0) return 'up';
 
     return 'down';
   }
 
-  getScrapComparedToLastHalfHour(machine: Machine) {
-    return Math.abs(machine.scrapComparedToLastHalfHour);
+  get scrapFlag() {
+    if (this.scrapComparedToLastHalfHour > 0) return 'up';
+
+    return 'down';
   }
 
-  getScrapFlag(machine: Machine) {
-    if (machine.scrapComparedToLastHalfHour > 0) return 'up';
+  getTrendFlag(actual, expected) {
+    if (actual < expected) return 'up';
 
     return 'down';
   }
 
   getProgressColor(actual, expected) {
-    if (actual > expected) {
-      return 'lime';
+    if (actual < expected) {
+      return 'red';
     }
-    return 'red';
-  }
-
-  getTrendFlag(actual, expected) {
-    if (actual > expected) return 'down';
-
-    return 'up';
-  }
-
-  format(date) {
-    if (!date) return ``;
-
-    return format(date, 'MM-DD HH:MM');
+    return 'lime';
   }
 
   getMachineColor(machine: Machine) {
@@ -180,4 +213,6 @@ export class MachineSummaryComponent implements OnInit {
 
     return { 'background-color': color };
   }
+
+  //#endregion
 }

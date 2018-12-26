@@ -1,10 +1,9 @@
 <nz-row nzType='flex' nzAlign="middle" nzJustify="center" [nzGutter]="8">
-  <nz-col [nzSpan]="16">
-    <st [data]="(machineRptService.machine$ | async).nextOperations" (change)="opClick($event)" [columns]="operationCols"
-      size="small" ps="5" [page]="{toTop:false}">
+  <nz-col [nzSpan]="17">
+    <st [data]="data" (change)="opClick($event)" [columns]="operationCols" size="small" ps="5" [page]="{toTop:false}">
     </st>
   </nz-col>
-  <nz-col [nzSpan]="8" style="text-align: center;">
-    <qr [value]="selectedOperation"></qr>
+  <nz-col [nzSpan]="7" style="text-align: center;">
+    <qr *ngIf='!!selectedOperation' [value]="selectedOperation"></qr>
   </nz-col>
 </nz-row>
