@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FetchService } from '../fetch.service';
+import { FetchService } from '../service/fetch.service';
 import { _HttpClient } from '@delon/theme';
 import { map } from 'rxjs/operators';
 import { Batch, Buffer } from '../interface/batch.interface';

@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
 import { Machine, MachineAlarmSetting, MachineOutput, MachineOEE } from '../entity/machine';
 import { HttpClient } from '@angular/common/http';
-import { FetchService } from '../fetch.service';
-import { VBoardService } from '../webService/vBoard.service';
+import { FetchService } from './fetch.service';
+import { VBoardService } from './vBoard.service';
 import { map, switchMap } from 'rxjs/operators';
 import { Operation } from '../entity/operation';
 import { toNumber } from '@delon/util';
 import { CheckList, CheckListItem, ProcessType, CheckListResult } from '../entity/checkList';
+import { format } from 'date-fns';
 
 @Injectable()
 export class MachineService {
@@ -19,6 +20,9 @@ export class MachineService {
   static shiftStartTBR = '$shiftStart';
   static shiftNbrTBR = '$shiftNbr';
   static operationsTBR = '$operations';
+
+  static dateFormatOracle = 'YYYY-MM-DD HH:MI:ss';
+  static dateFormat = 'YYYY-MM-DD HH:M:ss';
 
   //#region SQLs
   static machineAlarmSql =
@@ -37,7 +41,7 @@ export class MachineService {
 
   static machineCurrentOPSql =
     `SELECT MACHINE.MASCH_NR AS MACHINE,OPERATION.USER_C_55 AS LEADORDER, ` +
-    `OPERATION.AUNR AS WORKORDER, OPERATION.AGNR AS SEQUENCE, ` +
+    `OPERATION.AUNR AS WORKORDER, OPERATION.AGNR AS SEQUENCE,OPERATION.ARTIKEL AS ARTICLE, ` +
     `OP_STATUS.GUT_BAS AS YIELD, OP_STATUS.AUS_BAS AS SCRAP, OPERATION.SOLL_MENGE_BAS AS TARGETQTY, OPERATION.SOLL_DAUER AS TARGET_CYCLE,` +
     `(OPERATION.FRUEH_ANF_DAT %2B OPERATION.FRUEH_ANF_ZEIT / 60 / 60 / 24) AS EARLIEST_START, ` +
     `(OPERATION.FRUEH_END_DAT %2B OPERATION.FRUEH_END_ZEIT / 60 / 60 / 24) AS EARLIEST_FINISH, ` +
@@ -53,6 +57,12 @@ export class MachineService {
     ` AND HYBUCH.SUBKEY2 = OPERATION.AUFTRAG_NR ` +
     ` AND HYBUCH.SUBKEY1  = MACHINE.MASCH_NR AND HYBUCH.KEY_TYPE = 'A'`;
 
+  static machinePreviousOPSql =
+    `SELECT OPERATION.AUFTRAG_NR AS OPERATIONNAME, OPERATION.ARTIKEL AS ARTICLE FROM (SELECT AUFTRAG_NR AS OPERATIONNAME ` +
+    `FROM ADE_PROTOKOLL WHERE MASCH_NR = '${MachineService.machineNameTBR}' AND SATZ_ART = 'A' ` +
+    `ORDER BY  ANMELD_DAT DESC,ANMELDZEIT DESC) LASTLOGGEDON, AUFTRAGS_BESTAND OPERATION ` +
+    `WHERE ROWNUM < 3 AND OPERATION.AUFTRAG_NR = OPERATIONNAME`;
+
   static operationBOMItemsSql =
     `SELECT AUFTRAG_NR AS OPERATION, ARTIKEL AS MATERIAL, POS AS POS, SOLL_MENGE AS QUANTITY, SOLL_EINH AS UNIT ` +
     ` FROM MLST_HY WHERE KENNZ = 'M' AND AUFTRAG_NR IN ` +
@@ -65,7 +75,7 @@ export class MachineService {
 
   static machineNextOPSql =
     `SELECT OPERATION.USER_C_55 AS LEADORDER, ` +
-    `OPERATION.AUNR AS WORKORDER, OPERATION.AGNR AS SEQUENCE, ` +
+    `OPERATION.AUNR AS WORKORDER, OPERATION.AGNR AS SEQUENCE, OPERATION.ARTIKEL AS ARTICLE, ` +
     `STATUS.GUT_BAS AS YIELD, STATUS.AUS_BAS AS SCRAP, OPERATION.SOLL_MENGE_BAS AS TARGETQTY, OPERATION.SOLL_DAUER AS TARGET_CYCLE,` +
     `(OPERATION.FRUEH_ANF_DAT %2B OPERATION.FRUEH_ANF_ZEIT / 60 / 60 / 24) AS EARLIEST_START, ` +
     `(OPERATION.FRUEH_END_DAT %2B OPERATION.FRUEH_END_ZEIT / 60 / 60 / 24) AS EARLIEST_FINISH, ` +
@@ -123,7 +133,8 @@ export class MachineService {
     `ON AGT1.GRUNDTEXT_NR = AP.AUS_GRUND ` +
     `WHERE (AP.GUT_PRI   <> 0 ` +
     `OR AP.AUS_PRI       <> 0 ) ` +
-    `AND MST.DATUM = '${MachineService.shiftDateTBR}' AND MST.SCHICHTNR = '${MachineService.shiftNbrTBR}' ` +
+    `AND MST.DATUM = TO_DATE('${MachineService.shiftDateTBR}', '${MachineService.dateFormatOracle}') ` +
+    `AND MST.SCHICHTNR = '${MachineService.shiftNbrTBR}' ` +
     `AND MST.MASCH_NR = '${MachineService.machineNameTBR}'  ` +
     `AND AP.AUFTRAG_NR IN ('${MachineService.operationsTBR}') ` +
     `GROUP BY MST.MASCH_NR, ` +
@@ -170,7 +181,8 @@ export class MachineService {
     `THEN HBZ.WERT ` +
     `ELSE 0 ` +
     `END) <> 0 ` +
-    `AND MST.DATUM = '${MachineService.shiftDateTBR}' AND MST.SCHICHTNR = '${MachineService.shiftNbrTBR}' ` +
+    `AND MST.DATUM = TO_DATE('${MachineService.shiftDateTBR}', '${MachineService.dateFormatOracle}') ` +
+    `AND MST.SCHICHTNR = '${MachineService.shiftNbrTBR}' ` +
     `AND MST.MASCH_NR = '${MachineService.machineNameTBR}'  ` +
     `AND AP.AUFTRAG_NR IN (${MachineService.operationsTBR}) ` +
     `GROUP BY MST.MASCH_NR, ` +
@@ -236,22 +248,26 @@ export class MachineService {
     `PART_DESCRIPTION, RESOURCE_NUMBER,OPERATION_NUMBER,OPERATION_DESCRIPTION,CHECKLIST_QUESTION,CHECKLIST_ANSWER, ` +
     `TOLERANCES_REQUIRED, TOLERANCES_COMPARER, TOLERANCES_INPUT, STEP_START_TIMESTAMP, STEP_START_USER,STEP_END_TIMESTAMP, ` +
     `STEP_END_USER,STEP_COMMENT,ORIGINAL_CHECKLIST_ITEM_STRING,ORIGINAL_HEADER_STRING,CHECKLIST_IS_CRITICAL_ANSWER, ` +
-    `CHECKLIST_CRITICAL_ANSWERS, SSRW_EVENT_ID ` +
-    `FROM U_TE_PMDM_CHECKLIST_RESULTS WHERE MACHINE_NUMBER = '${MachineService.machineNameTBR}' ` +
+    `CHECKLIST_CRITICAL_ANSWERS, SSRW_EVENT_ID, PERSONALSTAMM.NAME ` +
+    `FROM U_TE_PMDM_CHECKLIST_RESULTS, PERSONALSTAMM WHERE MACHINE_NUMBER = '${MachineService.machineNameTBR}' ` +
     `AND PMDM_HEADER_ID =  '${MachineService.headerIdTBR}' ` +
-    `AND STEP_END_TIMESTAMP IS NOT NULL AND CHECKLIST_TIMESTAMP > '${MachineService.shiftStartTBR}' ` +
-    `ORDER BY CHECKLIST_TIMESTAMP DESC, CHECKLIST_SEQUENCE`;
+    `AND STEP_END_TIMESTAMP IS NOT NULL ` +
+    `AND STEP_END_TIMESTAMP > TO_DATE('${MachineService.shiftStartTBR}', '${MachineService.dateFormatOracle}') ` +
+    `AND PERSONALSTAMM.PERSONALNUMMER(%2B) = U_TE_PMDM_CHECKLIST_RESULTS.STEP_END_USER ` +
+    `ORDER BY STEP_END_TIMESTAMP DESC, CHECKLIST_SEQUENCE`;
 
   static machineCheckListDoneOfChangeOver =
     `SELECT TERMINAL_NR,PMDM_HEADER_ID,CHECKLIST_TYPE,CHECKLIST_TIMESTAMP,CHECKLIST_SEQUENCE,MACHINE_NUMBER,PART_NUMBER, ` +
     `PART_DESCRIPTION, RESOURCE_NUMBER,OPERATION_NUMBER,OPERATION_DESCRIPTION,CHECKLIST_QUESTION,CHECKLIST_ANSWER, ` +
     `TOLERANCES_REQUIRED, TOLERANCES_COMPARER, TOLERANCES_INPUT, STEP_START_TIMESTAMP, STEP_START_USER,STEP_END_TIMESTAMP, ` +
     `STEP_END_USER,STEP_COMMENT,ORIGINAL_CHECKLIST_ITEM_STRING,ORIGINAL_HEADER_STRING,CHECKLIST_IS_CRITICAL_ANSWER, ` +
-    `CHECKLIST_CRITICAL_ANSWERS, SSRW_EVENT_ID ` +
-    `FROM U_TE_PMDM_CHECKLIST_RESULTS WHERE MACHINE_NUMBER = '${MachineService.machineNameTBR}' ` +
+    `CHECKLIST_CRITICAL_ANSWERS, SSRW_EVENT_ID, PERSONALSTAMM.NAME ` +
+    `FROM U_TE_PMDM_CHECKLIST_RESULTS, PERSONALSTAMM  WHERE MACHINE_NUMBER = '${MachineService.machineNameTBR}' ` +
     `AND PMDM_HEADER_ID =  '${MachineService.headerIdTBR}' ` +
+    `AND STEP_END_TIMESTAMP IS NOT NULL ` +
     `AND OPERATION_NUMBER = '${MachineService.operationNameTBR}' ` +
-    `ORDER BY CHECKLIST_TIMESTAMP DESC, CHECKLIST_SEQUENCE`;
+    `AND PERSONALSTAMM.PERSONALNUMMER(%2B) = U_TE_PMDM_CHECKLIST_RESULTS.STEP_END_USER ` +
+    `ORDER BY STEP_END_TIMESTAMP DESC, CHECKLIST_SEQUENCE`;
 
   //#endregion
 
@@ -293,10 +309,11 @@ export class MachineService {
       this._fetchService.query(MachineService.loggedOnComponentSql.replace(MachineService.machineNameTBR, machineName)),
       this._fetchService.query(MachineService.loggedOnToolSql.replace(MachineService.machineNameTBR, machineName)),
       this._fetchService.query(MachineService.machineCheckListItemSql.replace(MachineService.machineNameTBR, machineName)),
+      this._fetchService.query(MachineService.machinePreviousOPSql.replace(MachineService.machineNameTBR, machineName)),
       this._vBoardService.Get24HoursMachineMRAData(machineName),
       this._vBoardService.GetCurrentShiftMachineOEEData(machineName),
       this._vBoardService.GetCurrentShiftMachineRejectsData(machineName),
-      this._fetchService.query(MachineService.machineAlarmSql))
+      this._fetchService.query(MachineService.machineAlarmSql.replace(MachineService.machineNameTBR, machineName)))
       .pipe(
         map((array: Array<Array<any>>) => {
           const [
@@ -309,6 +326,7 @@ export class MachineService {
             loggedOnComponent,
             loggedOnTool,
             checkListItems,
+            machinePreviousOP,
             mraData,
             currentShiftOEE,
             currentShiftOutput,
@@ -337,6 +355,7 @@ export class MachineService {
             const operation = Object.assign(new Operation(), {
               order: rec.WORKORDER,
               sequence: rec.SEQUENCE,
+              article: rec.ARTICLE,
               targetQty: rec.TARGETQTY,
               totalYield: rec.YIELD,
               totalScrap: rec.SCRAP,
@@ -413,11 +432,27 @@ export class MachineService {
 
           //#endregion
 
+          //#region Setup Previous Article
+          if (machineRet.currentOperation) {
+            machinePreviousOP.map(rec => {
+              if (rec.OPERATIONNAME === machineRet.currentOperation.name) {
+                return;
+              } else {
+                machineRet.previousOperation = rec.OPERATIONNAME;
+                machineRet.previousArticle = rec.ARTICLE;
+              }
+            });
+          } else if (machinePreviousOP.length > 0) {
+            machineRet.previousOperation = machinePreviousOP[0].OPERATIONNAME;
+            machineRet.previousArticle = machinePreviousOP[0].ARTICLE;
+          }
+
           //#region Setup Next Operations
           machineNextOP.forEach(rec => {
             const operation = Object.assign(new Operation(), {
               order: rec.WORKORDER,
               sequence: rec.SEQUENCE,
+              article: rec.ARTICLE,
               targetQty: rec.TARGETQTY,
               totalYield: rec.YIELD,
               totalScrap: rec.SCRAP,
@@ -534,13 +569,12 @@ export class MachineService {
         //#region Fetch Shift Change Check List Results
         switchMap((machine) => {
           const checkList = machine.checkLists.get(ProcessType.CHANGESHIFT);
-
+          const ds = format(machine.currentShiftStart, MachineService.dateFormat);
           if (!checkList) return of([]);
-
           return this._fetchService.query(MachineService.machineCheckListDoneOfCurrentShift
             .replace(MachineService.machineNameTBR, machine.machineName)
             .replace(MachineService.headerIdTBR, checkList.headerId.toString())
-            .replace(MachineService.shiftDateTBR, machine.currentShiftStart.toDateString()));
+            .replace(MachineService.shiftStartTBR, format(machine.currentShiftStart, MachineService.dateFormat)));
         }),
         map((checkListResults: any[]) => {
           checkListResults.map(rec => {
@@ -548,7 +582,7 @@ export class MachineService {
             result.headerId = rec.PMDM_HEADER_ID;
             result.sequence = rec.CHECKLIST_SEQUENCE;
             result.finishedAt = new Date(rec.STEP_END_TIMESTAMP);
-            result.finishedBy = rec.STEP_END_USER;
+            result.finishedBy = rec.NAME;
             result.checkListType = rec.CHECKLIST_TYPE;
             result.comment = rec.STEP_COMMENT;
             result.operationName = rec.OPERATION_NUMBER;
@@ -585,7 +619,7 @@ export class MachineService {
             result.headerId = rec.PMDM_HEADER_ID;
             result.sequence = rec.CHECKLIST_SEQUENCE;
             result.finishedAt = new Date(rec.STEP_END_TIMESTAMP);
-            result.finishedBy = rec.STEP_END_USER;
+            result.finishedBy = rec.NAME;
             result.checkListType = rec.CHECKLIST_TYPE;
             result.comment = rec.STEP_COMMENT;
             result.operationName = rec.OPERATION_NUMBER;
@@ -611,7 +645,7 @@ export class MachineService {
           machine.currentOperations.map((op) => operationNames.push(`'` + op.name + `'`));
           return this._fetchService.query(MachineService.operationShiftOutputSql
             .replace(MachineService.machineNameTBR, machine.machineName)
-            .replace(MachineService.shiftDateTBR, machine.currentShiftDate.toDateString())
+            .replace(MachineService.shiftDateTBR, format(machine.currentShiftDate, MachineService.dateFormat))
             .replace(MachineService.shiftNbrTBR, machine.currentShift.toString())
             .replace(MachineService.operationsTBR, operationNames.join(',')));
         }),
@@ -649,12 +683,12 @@ export class MachineService {
   //#region Private methods
   private processCheckListItems(data: string) {
     const ret = [];
-    const lines = data.split(`/n`);
-    const fields = lines[0].split(`/t`);
+    const lines = data.split(`\n`);
+    const fields = lines[0].split(`\t`);
 
     for (let index = 1; index < lines.length; index++) {
       const column = lines[index];
-      const parsed = column.split(`/t`);
+      const parsed = column.split(`\t`);
       const item = new CheckListItem();
       for (let colIndex = 0; colIndex < fields.length; colIndex++) {
         switch (fields[colIndex]) {

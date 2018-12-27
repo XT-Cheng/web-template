@@ -130,5 +130,7 @@
   "app.machine.summary.changeOver": "Check List Items",
   "app.machine.summary.materialPreparation": "Mat. Prep.",
   "app.machine.summary.finishedQty": "Fin.",
-  "app.machine.summary.nextOperations": "Next Operations"
+  "app.machine.summary.nextOperations": "Next Operations",
+  "app.machine.summary.checkListOfShiftChange": "Shift Change Check List",
+  "app.machine.summary.checkListOfChangeOver": "Change Over Check List"
 }

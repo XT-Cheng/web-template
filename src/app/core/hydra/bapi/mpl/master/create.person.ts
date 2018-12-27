@@ -1,5 +1,5 @@
 import { DialogTypeEnum } from '@core/hydra/bapi/constants';
-import { DialogBase } from '@core/hydra/dialog.base';
+import { DialogBase } from '@core/hydra/bapi/dialog.base';
 
 export class CreatePersonBapi extends DialogBase {
   constructor() {

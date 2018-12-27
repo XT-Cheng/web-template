@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { BapiService } from '@core/hydra/bapi.service';
+import { BapiService } from '@core/hydra/service/bapi.service';
 import { finalize } from 'rxjs/operators';
-import { MachineReportService } from '@core/hydra/report/machine.report.service';
-import { VBoardService } from '@core/hydra/webService/vBoard.service';
+import { VBoardService } from '@core/hydra/service/vBoard.service';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
@@ -21,9 +20,7 @@ export class BAPITestComponent {
 
   //#region Constructor
 
-  constructor(private _fb: FormBuilder, private _bapiService: BapiService,
-    private _http: HttpClient,
-    private _machineRptService: MachineReportService, private _vBoardService: VBoardService) {
+  constructor(private _fb: FormBuilder, private _bapiService: BapiService) {
     this.bapiTestForm = this._fb.group({
       type: ['', [Validators.required]],
       dialog: ['', [Validators.required]],

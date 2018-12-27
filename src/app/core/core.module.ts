@@ -3,10 +3,9 @@ import { throwIfAlreadyLoaded } from './module-import-guard';
 
 import { I18NService } from './i18n/i18n.service';
 import { AuthService } from './auth/providers/auth.service';
-import { FetchService } from './hydra/fetch.service';
-import { BapiService } from './hydra/bapi.service';
-import { MachineReportService } from './hydra/report/machine.report.service';
-import { VBoardService } from './hydra/webService/vBoard.service';
+import { FetchService } from './hydra/service/fetch.service';
+import { BapiService } from './hydra/service/bapi.service';
+import { VBoardService } from './hydra/service/vBoard.service';
 import { BatchReportService } from './hydra/report/batch.report.service';
 import { MachineService } from './hydra/service/machine.service';
 
@@ -16,7 +15,6 @@ import { MachineService } from './hydra/service/machine.service';
     AuthService,
     FetchService,
     BapiService,
-    MachineReportService,
     MachineService,
     BatchReportService,
     VBoardService

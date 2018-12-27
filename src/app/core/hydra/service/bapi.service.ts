@@ -1,14 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of, OperatorFunction } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
-import { IBapiResult, DialogTypeEnum } from '@core/hydra/bapi/constants';
-import { FetchService } from './fetch.service';
-import { TestBapi } from './bapi/test.bapi';
-import { CreateBufferBapi } from './bapi/mpl/master/create.buffer';
-import { DeleteBufferBapi } from './bapi/mpl/master/delete.buffer';
-import { CreatePersonBapi } from './bapi/mpl/master/create.person';
-import { DeletePersonBapi } from './bapi/mpl/master/delete.person';
+import { DialogTypeEnum } from '@core/hydra/bapi/constants';
+import { TestBapi } from '../bapi/test.bapi';
+import { CreateBufferBapi } from '../bapi/mpl/master/create.buffer';
+import { DeleteBufferBapi } from '../bapi/mpl/master/delete.buffer';
+import { CreatePersonBapi } from '../bapi/mpl/master/create.person';
+import { DeletePersonBapi } from '../bapi/mpl/master/delete.person';
 
 @Injectable()
 export class BapiService {
@@ -18,7 +15,7 @@ export class BapiService {
 
   //#region Constructor
 
-  constructor(protected _http: HttpClient, private _fetchService: FetchService) {
+  constructor(protected _http: HttpClient) {
   }
 
   //#endregion
@@ -59,22 +56,6 @@ export class BapiService {
   //#region Delete Person
   deleteHRPerson() {
     return new DeletePersonBapi().execute(this._http);
-  }
-  //#endregion
-
-  //#endregion
-
-  //#endregion
-
-  //#region Private methods
-
-  private getResult(res: any) {
-    return {
-      isSuccess: res.isSuccess,
-      error: res.error,
-      description: res.description,
-      content: res.content
-    };
   }
 
   //#endregion

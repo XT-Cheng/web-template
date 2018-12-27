@@ -23,6 +23,8 @@ import { OutputPerHourComponent } from './dashboard/widget/outputPerHour.compone
 import { MaterialPreparationComponent } from './dashboard/widget/materialPreparation.component';
 import { NextOperationsComponent } from './dashboard/widget/nextOperations.component';
 import { ImportBapiComponent } from './import/import.bapi.exec.component';
+import { CheckListOfShiftChangeComponent } from './dashboard/widget/checkListOfShiftChange.component';
+import { CheckListOfChangeOverComponent } from './dashboard/widget/checkListOfChangeOver.component';
 
 const BAPI = [
   BAPITestComponent
@@ -44,6 +46,8 @@ const COMPONENTS = [
   OutputPerHourComponent,
   MaterialPreparationComponent,
   NextOperationsComponent,
+  CheckListOfShiftChangeComponent,
+  CheckListOfChangeOverComponent,
   // passport pages
   UserLoginComponent,
   UserRegisterComponent,

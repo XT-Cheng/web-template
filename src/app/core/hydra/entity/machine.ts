@@ -14,6 +14,9 @@ export class Machine {
   currentShift = -1;
   currentShiftDate = new Date();
 
+  previousOperation = '';
+  previousArticle = '';
+
   currentShiftStart = new Date();
   currentShiftEnd = new Date();
 

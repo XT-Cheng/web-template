@@ -4,9 +4,9 @@ import { NzMessageService } from 'ng-zorro-antd';
 import { format } from 'date-fns';
 import { ActivatedRoute } from '@angular/router';
 import { MachineService } from '@core/hydra/service/machine.service';
-import { OperationExt as Operation } from './operation';
 import { Machine } from '@core/hydra/entity/machine';
 import { toNumber } from '@delon/util';
+import { Operation } from '@core/hydra/entity/operation';
 
 @Component({
   selector: 'fw-machine-summary',
@@ -134,8 +134,12 @@ export class MachineSummaryComponent implements OnInit {
 
   //#region Compare Scrap to last half hour
 
+  get absoluteScrapComparedToLastHalfHour(): number {
+    return Math.abs(this.scrapComparedToLastHalfHour);
+  }
+
   get scrapComparedToLastHalfHour(): number {
-    if (this.scrapTrend.length < 2) return 100;
+    if (this.scrapTrend.length < 2) return 0;
 
     const perc = toNumber((this.scrapTrend[this.scrapTrend.length - 1].y
       / this.scrapTrend[this.scrapTrend.length - 2].y * 100).toFixed(Operation.FRACTION_DIGIT));
@@ -146,9 +150,12 @@ export class MachineSummaryComponent implements OnInit {
   //#endregion
 
   //#region Compare Performance to last half hour
+  get absolutePerformanceComparedToLastHalfHour(): number {
+    return Math.abs(this.performanceComparedToLastHalfHour);
+  }
 
   get performanceComparedToLastHalfHour(): number {
-    if (this.performanceTrend.length < 2) return 100;
+    if (this.performanceTrend.length < 2) return 0;
 
     const perc = toNumber((this.performanceTrend[this.performanceTrend.length - 1].y
       / this.performanceTrend[this.performanceTrend.length - 2].y * 100).toFixed(Operation.FRACTION_DIGIT));
@@ -161,7 +168,17 @@ export class MachineSummaryComponent implements OnInit {
 
   //#endregion
 
-  //#region Style methods
+  //#region Public methods
+  get isChangeOverCheckListVisible(): boolean {
+    if (!this.machine.currentOperation) return false;
+
+    if (this.machine.previousArticle === this.machine.currentOperation.article) {
+      return false;
+    }
+
+    return true;
+  }
+
   format(date) {
     if (!date) return ``;
 
@@ -169,12 +186,16 @@ export class MachineSummaryComponent implements OnInit {
   }
 
   get performanceFlag() {
+    if (this.performanceComparedToLastHalfHour === 0) return '';
+
     if (this.performanceComparedToLastHalfHour > 0) return 'up';
 
     return 'down';
   }
 
   get scrapFlag() {
+    if (this.scrapComparedToLastHalfHour === 0) return '';
+
     if (this.scrapComparedToLastHalfHour > 0) return 'up';
 
     return 'down';

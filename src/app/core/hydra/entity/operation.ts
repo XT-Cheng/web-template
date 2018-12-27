@@ -7,6 +7,7 @@ export class Operation {
   //#region Fields
 
   order = '';
+  article = '';
   sequence = '';
   leadOrder = '';
   targetQty = -1;

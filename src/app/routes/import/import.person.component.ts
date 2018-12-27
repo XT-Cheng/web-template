@@ -2,7 +2,7 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import { XlsxService, STColumn } from '@delon/abc';
 import { HttpClient } from '@angular/common/http';
 import { ImportHandleBase } from '@shared/components/import.handle.base';
-import { BapiService } from '@core/hydra/bapi.service';
+import { BapiService } from '@core/hydra/service/bapi.service';
 
 @Component({
   selector: 'app-import-person',
