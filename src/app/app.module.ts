@@ -40,7 +40,7 @@ const LANG_PROVIDES = [
 // #region i18n services
 // 加载i18n语言文件
 export function I18nHttpLoaderFactory(http: HttpClient) {
-  return new TranslateHttpLoader(http, `assets/tmp/i18n/`, '.json');
+  return new TranslateHttpLoader(http, `assets/i18n/`, '.json');
 }
 
 const I18NSERVICE_MODULES = [

@@ -127,7 +127,9 @@
   "app.machine.summary.compareToLastHour": "Comp. to last Hour",
   "app.machine.summary.outputPerHour": "Output per Hour",
   "app.machine.summary.scrapPerHour": "Scrap per Hour",
-  "app.machine.summary.changeOver": "Check List Items",
   "app.machine.summary.materialPreparation": "Mat. Prep.",
-  "app.machine.summary.finishedQty": "Fin. Qty"
+  "app.machine.summary.finishedQty": "Fin. Qty",
+  "app.machine.summary.nextOperations": "Next OP.",
+  "app.machine.summary.checkListOfShiftChange": "Chang Shift Check.",
+  "app.machine.summary.checkListOfChangeOver": "Chang Over Check."
 }
