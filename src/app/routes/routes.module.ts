@@ -17,7 +17,7 @@ import { ImportBufferComponent } from './import/import.buffer.component';
 import { MachineSummaryComponent } from './dashboard/machine.summary.component';
 import { DelonChartModule } from '@delon/chart';
 import { ImportPersonComponent } from './import/import.person.component';
-import { BatchGeneralComponent } from './report/batch.general.component';
+import { BatchGeneralComponent } from './report/batch/batch.general.component';
 import { ScrapPerHourComponent } from './dashboard/widget/scrapPerHour.component';
 import { OutputPerHourComponent } from './dashboard/widget/outputPerHour.component';
 import { MaterialPreparationComponent } from './dashboard/widget/materialPreparation.component';

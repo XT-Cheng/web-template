@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable, Injector } from '@angular/core';
 import { ACLService } from '@delon/acl';
-import { DA_SERVICE_TOKEN, ITokenService } from '@delon/auth';
 import { ALAIN_I18N_TOKEN, MenuService, SettingsService, TitleService } from '@delon/theme';
 import { TranslateService } from '@ngx-translate/core';
 import { NzIconService } from 'ng-zorro-antd';
@@ -26,16 +25,13 @@ export class StartupService {
     private settingService: SettingsService,
     private aclService: ACLService,
     private titleService: TitleService,
-    @Inject(DA_SERVICE_TOKEN) private tokenService: ITokenService,
-    private httpClient: HttpClient,
-    private injector: Injector
-  ) {
+    private httpClient: HttpClient) {
     iconSrv.addIcon(...ICONS_AUTO, ...ICONS);
   }
 
   private viaHttp(resolve: any) {
     zip(
-      this.httpClient.get(`assets/i18n/${this.i18n.defaultLang}.json`),
+      this.httpClient.get(`/assets/i18n/${this.i18n.defaultLang}.json`),
       this.httpClient.get('/appInfo'),
       this.httpClient.get('/menuInfo'),
       this.httpClient.get(`/userAccess/${this.settingService.user.id}`)
@@ -50,8 +46,6 @@ export class StartupService {
       this.translate.setTranslation(this.i18n.defaultLang, langData);
       this.translate.setDefaultLang(this.i18n.defaultLang);
 
-      // application data
-      const res: any = appData;
       // 应用信息：包括站点名、描述、年份
       this.settingService.setApp(appData);
       // ACL：设置权限
@@ -70,7 +64,7 @@ export class StartupService {
   load(): Promise<any> {
     // only works with promises
     // https://github.com/angular/angular/issues/15088
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       this.viaHttp(resolve);
     });
   }

@@ -1,8 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
-import { map, concatMap, combineLatest, delay } from 'rxjs/operators';
-import { IMachineYieldAndScrap, MachineOEE } from '../interface/machine.interface';
 
 @Injectable()
 export class VBoardService {

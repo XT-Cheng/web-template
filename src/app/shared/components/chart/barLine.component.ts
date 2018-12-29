@@ -107,7 +107,7 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
       this.autoHideXLabels = false;
     }
 
-    if (!this.data || (this.data && dataLength < 1)) return;
+    if (!this.data) return;
     this.node.nativeElement.innerHTML = '';
 
     const chart = new G2.Chart({
@@ -133,6 +133,7 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
       },
       y: {
         min: 0,
+        range: [0, 1.1]
       },
     });
 
@@ -142,8 +143,6 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
     chart
       .interval()
       .position('x*y')
-      // .color('y')
-      // .color(this.color)
       .color('y', (y) => { // 通过回调函数
         if (y > this.limit) {
           return this.colorOverLimit;
@@ -157,6 +156,8 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
         };
       })
       .label('y', {
+        // offset: 200,
+        position: 'top',
         textStyle: {
           textAlign: 'center', // 文本对齐方向，可取值为： start middle end
           // fill: '#404040', // 文本的颜色

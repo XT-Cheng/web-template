@@ -15,15 +15,15 @@ export class NextOperationsComponent implements OnInit {
 
   selectedOperation = ``;
   operationCols: STColumn[] = [
-    { title: 'Opeartion', index: 'order' },
-    { title: 'Lead Order', index: 'leadOrder' },
+    { title: 'Opeartion', index: 'order', i18n: 'app.operation.name' },
+    { title: 'Lead Order', index: 'leadOrder', i18n: 'app.operation.leadOrder' },
     {
       title: 'Target Qty.',
-      index: 'targetQty',
+      index: 'targetQty', i18n: 'app.operation.targetQty'
     },
-    { title: 'Target Cycle.', index: 'targetCycleTime' },
+    { title: 'Target Cycle.', index: 'targetCycleTime', i18n: 'app.operation.targetCycleTime' },
     {
-      title: 'Sch. Complete', index: 'scheduleCompleted', format: (value: Operation) => {
+      title: 'Sch. Complete', i18n: 'app.operation.scheduleCompleted', index: 'scheduleCompleted', format: (value: Operation) => {
         return format(value.planEnd, 'MM-DD HH:MM');
       }
     },

@@ -19,7 +19,7 @@ export class FetchService {
   //#region Public methods
 
   query(sql: string) {
-    return this.http.get(`${this._url}?sql=${sql}`).pipe(
+    return this.http.post(`${this._url}`, { sql: sql }).pipe(
       map((res: any) => {
         return res;
       })

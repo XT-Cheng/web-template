@@ -43,13 +43,14 @@ export class MachineSummaryComponent implements OnInit {
   //#region Implemented interface
 
   ngOnInit() {
-    this.machineName = this.route.snapshot.paramMap.get('machineName');
+    this.route.paramMap.subscribe(param => {
+      this.machineName = param.get('machineName');
+      // this.machineService.getMachineWithMock(this.machineName);
+      this.machineService.getMachine(this.machineName);
+    });
     this.machineService.machine$.subscribe((machine) => {
       this.machine = machine;
     });
-
-    this.machineService.getMachine(this.machineName);
-    // this.machineService.getMachineWithMock(this.machineName);
   }
 
   //#endregion

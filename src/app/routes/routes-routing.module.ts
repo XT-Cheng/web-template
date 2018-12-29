@@ -18,7 +18,7 @@ import { Exception500Component } from './exception/500.component';
 import { BAPITestComponent } from './bapi/bapi.test.component';
 import { ImportBufferComponent } from './import/import.buffer.component';
 import { MachineSummaryComponent } from './dashboard/machine.summary.component';
-import { BatchGeneralComponent } from './report/batch.general.component';
+import { BatchGeneralComponent } from './report/batch/batch.general.component';
 import { ImportBapiComponent } from './import/import.bapi.exec.component';
 
 const routes: Routes = [

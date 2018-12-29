@@ -7,6 +7,7 @@ export class Batch {
   material: string;
   SAPBatch: string;
   dateCode: string;
+  lastChanged: Date;
 }
 
 export class Buffer {

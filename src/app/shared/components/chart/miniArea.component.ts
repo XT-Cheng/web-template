@@ -86,7 +86,7 @@ export class ChartMiniAreaComponent implements OnDestroy, OnChanges {
   constructor(private zone: NgZone) { }
 
   private install() {
-    if (!this.data || (this.data && this.data.length < 1)) return;
+    if (!this.data) return;
 
     this.node.nativeElement.innerHTML = '';
 

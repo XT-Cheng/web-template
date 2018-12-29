@@ -1,0 +1,75 @@
+<div class="alain-default__content-title">
+  <h1>{{'app.report.batch.general' | translate}}</h1>
+</div>
+<nz-collapse>
+  <nz-collapse-panel [nzActive]="isConditionActive" [nzHeader]="'app.report.condition' | translate">
+    <form nz-form [formGroup]="searchForm">
+      <div nz-row [nzGutter]="24">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item nzFlex>
+            <nz-form-label nzFor="material">{{'app.report.condition.material' | translate}}</nz-form-label>
+            <nz-form-control style='width: 100%;'>
+              <nz-select nzMode="default" nzPlaceHolder="Select Material" formControlName="material" nzAllowClear
+                nzShowSearch>
+                <ng-container *ngFor="let o of matList">
+                  <nz-option [nzValue]="o" [nzLabel]="o"></nz-option>
+                </ng-container>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item nzFlex>
+            <nz-form-label nzFor="buffer">{{'app.report.condition.buffer' | translate}}</nz-form-label>
+            <nz-form-control style='width: 100%;'>
+              <nz-select nzMode="default" nzPlaceHolder="Select Buffer" formControlName="buffer" nzAllowClear
+                nzShowSearch>
+                <ng-container *ngFor="let o of buffers">
+                  <nz-option [nzValue]="o" [nzLabel]="o.description"></nz-option>
+                </ng-container>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item nzFlex>
+            <nz-form-label nzFor="lastChanged">{{'app.report.condition.lastChanged' | translate}}</nz-form-label>
+            <nz-form-control style='width: 100%;'>
+              <nz-date-picker formControlName="lastChanged"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div nz-row>
+        <div nz-col [nzSpan]="24" style="text-align: right;">
+          <button nz-button [nzType]="'primary'" (click)="submitForm()">{{'app.report.button.search' | translate}}</button>
+          <button nz-button (click)="resetForm()">{{'app.report.button.clear' | translate}}</button>
+        </div>
+      </div>
+    </form>
+  </nz-collapse-panel>
+  <nz-collapse-panel [nzActive]="isChartActive" [nzHeader]="'app.report.chart' | translate">
+    <nz-card [nzTitle]="'app.report.batch.summary' | translate" [nzExtra]="extraTemplate">
+      <fw-g2-bar-line (barClicked)='barClicked($event)' height="295" [colorOverLimit]="'red'" [colorBelowLimit]="'lime'"
+        [data]="chartDataView"></fw-g2-bar-line>
+    </nz-card>
+  </nz-collapse-panel>
+  <nz-collapse-panel [nzActive]="isTableActive" [nzHeader]="'app.report.table' | translate">
+    <st #st [data]="tableData" [ps]="50" [columns]="columns" class="mt-sm"></st>
+  </nz-collapse-panel>
+</nz-collapse>
+<ng-template #extraTemplate>
+  <div nz-row>
+    <div nz-col nzSpan="12">
+      <p>{{'app.report.batch.currentMaterial' | translate}}:{{currentMaterial}}</p>
+    </div>
+    <div nz-col nzSpan="12">
+      <p>{{'app.report.batch.currentBuffer' | translate}}:{{currentBufferDescription}}</p>
+    </div>
+    <div nz-col>
+      <button nz-button nzSize='small' [disabled]='level === 0' [nzType]="'primary'" (click)='gotoUpperLevel()'>
+        <i nz-icon type="up"></i>
+      </button>
+    </div>
+  </div>
+</ng-template>

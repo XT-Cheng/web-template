@@ -9,6 +9,7 @@ import { Operation } from '../entity/operation';
 import { toNumber } from '@delon/util';
 import { CheckList, CheckListItem, ProcessType, CheckListResult } from '../entity/checkList';
 import { format } from 'date-fns';
+import { replaceAll } from '@core/utils/helpers';
 
 @Injectable()
 export class MachineService {
@@ -21,8 +22,8 @@ export class MachineService {
   static shiftNbrTBR = '$shiftNbr';
   static operationsTBR = '$operations';
 
-  static dateFormatOracle = 'YYYY-MM-DD HH:MI:ss';
-  static dateFormat = 'YYYY-MM-DD HH:M:ss';
+  static dateFormatOracle = 'YYYY-MM-DD HH24:MI:ss';
+  static dateFormat = 'YYYY-MM-DD HH:mm:ss';
 
   //#region SQLs
   static machineAlarmSql =
@@ -33,8 +34,8 @@ export class MachineService {
   static machineSql =
     `SELECT MACHINE.MASCH_NR AS MACHINE, MACHINE.BEZ_LANG AS DESCRIPTION, STATUS.M_STATUS AS STATUS, ` +
     `TEXT.STOER_TEXT AS TEXT, STATUS.SCHICHTNR AS SHIFTNR, STATUS.DATUM AS SHIFTDATE, ` +
-    `(STATUS.DATUM %2B STATUS.SCHICHTANF / 60 / 60 / 24) AS SHIFTSTART, ` +
-    `(STATUS.DATUM %2B STATUS.SCHICHTEND / 60 / 60 / 24) AS SHIFTEND ` +
+    `(STATUS.DATUM + STATUS.SCHICHTANF / 60 / 60 / 24) AS SHIFTSTART, ` +
+    `(STATUS.DATUM + STATUS.SCHICHTEND / 60 / 60 / 24) AS SHIFTEND ` +
     `FROM MASCHINEN MACHINE, MASCHINEN_STATUS STATUS, STOERTEXTE TEXT ` +
     `WHERE MACHINE.MASCH_NR = '${MachineService.machineNameTBR}' ` +
     `AND STATUS.MASCH_NR = MACHINE.MASCH_NR AND TEXT.STOERTXT_NR = STATUS.M_STATUS`;
@@ -43,15 +44,15 @@ export class MachineService {
     `SELECT MACHINE.MASCH_NR AS MACHINE,OPERATION.USER_C_55 AS LEADORDER, ` +
     `OPERATION.AUNR AS WORKORDER, OPERATION.AGNR AS SEQUENCE,OPERATION.ARTIKEL AS ARTICLE, ` +
     `OP_STATUS.GUT_BAS AS YIELD, OP_STATUS.AUS_BAS AS SCRAP, OPERATION.SOLL_MENGE_BAS AS TARGETQTY, OPERATION.SOLL_DAUER AS TARGET_CYCLE,` +
-    `(OPERATION.FRUEH_ANF_DAT %2B OPERATION.FRUEH_ANF_ZEIT / 60 / 60 / 24) AS EARLIEST_START, ` +
-    `(OPERATION.FRUEH_END_DAT %2B OPERATION.FRUEH_END_ZEIT / 60 / 60 / 24) AS EARLIEST_FINISH, ` +
-    `(OPERATION.SPAET_ANF_DAT %2B OPERATION.SPAET_ANF_ZEIT / 60 / 60 / 24) AS LATEST_START, ` +
-    `(OPERATION.SPAET_END_DAT %2B OPERATION.SPAET_END_ZEIT / 60 / 60 / 24) AS LATEST_FINISH, ` +
-    `(OPERATION.TERM_ANF_DAT %2B OPERATION.TERM_ANF_ZEIT / 60 / 60 / 24)  AS SCHEDULE_START, ` +
-    `(OPERATION.TERM_END_DAT %2B OPERATION.TERM_END_ZEIT / 60 / 60 / 24)  AS SCHEDULE_FINISH, ` +
-    `(OPERATION.ERRANF_DAT %2B OPERATION.ERRANF_ZEIT / 60 / 60 / 24)    AS PLAN_START, ` +
-    `(OPERATION.ERREND_DAT %2B OPERATION.ERREND_ZEIT / 60 / 60 / 24)    AS PLAN_FINISH, ` +
-    `(OP_STATUS.PROT_DAT %2B OP_STATUS.PROT_ZEIT / 60 / 60 / 24) AS LAST_LOGGEDON ` +
+    `(OPERATION.FRUEH_ANF_DAT + OPERATION.FRUEH_ANF_ZEIT / 60 / 60 / 24) AS EARLIEST_START, ` +
+    `(OPERATION.FRUEH_END_DAT + OPERATION.FRUEH_END_ZEIT / 60 / 60 / 24) AS EARLIEST_FINISH, ` +
+    `(OPERATION.SPAET_ANF_DAT + OPERATION.SPAET_ANF_ZEIT / 60 / 60 / 24) AS LATEST_START, ` +
+    `(OPERATION.SPAET_END_DAT + OPERATION.SPAET_END_ZEIT / 60 / 60 / 24) AS LATEST_FINISH, ` +
+    `(OPERATION.TERM_ANF_DAT + OPERATION.TERM_ANF_ZEIT / 60 / 60 / 24)  AS SCHEDULE_START, ` +
+    `(OPERATION.TERM_END_DAT + OPERATION.TERM_END_ZEIT / 60 / 60 / 24)  AS SCHEDULE_FINISH, ` +
+    `(OPERATION.ERRANF_DAT + OPERATION.ERRANF_ZEIT / 60 / 60 / 24)    AS PLAN_START, ` +
+    `(OPERATION.ERREND_DAT + OPERATION.ERREND_ZEIT / 60 / 60 / 24)    AS PLAN_FINISH, ` +
+    `(OP_STATUS.PROT_DAT + OP_STATUS.PROT_ZEIT / 60 / 60 / 24) AS LAST_LOGGEDON ` +
     ` FROM MASCHINEN MACHINE,HYBUCH,AUFTRAGS_BESTAND OPERATION,AUFTRAG_STATUS OP_STATUS ` +
     `WHERE MACHINE.MASCH_NR = '${MachineService.machineNameTBR}' AND OPERATION.AUFTRAG_NR = OP_STATUS.AUFTRAG_NR ` +
     ` AND HYBUCH.SUBKEY2 = OPERATION.AUFTRAG_NR ` +
@@ -77,15 +78,15 @@ export class MachineService {
     `SELECT OPERATION.USER_C_55 AS LEADORDER, ` +
     `OPERATION.AUNR AS WORKORDER, OPERATION.AGNR AS SEQUENCE, OPERATION.ARTIKEL AS ARTICLE, ` +
     `STATUS.GUT_BAS AS YIELD, STATUS.AUS_BAS AS SCRAP, OPERATION.SOLL_MENGE_BAS AS TARGETQTY, OPERATION.SOLL_DAUER AS TARGET_CYCLE,` +
-    `(OPERATION.FRUEH_ANF_DAT %2B OPERATION.FRUEH_ANF_ZEIT / 60 / 60 / 24) AS EARLIEST_START, ` +
-    `(OPERATION.FRUEH_END_DAT %2B OPERATION.FRUEH_END_ZEIT / 60 / 60 / 24) AS EARLIEST_FINISH, ` +
-    `(OPERATION.SPAET_ANF_DAT %2B OPERATION.SPAET_ANF_ZEIT / 60 / 60 / 24) AS LATEST_START, ` +
-    `(OPERATION.SPAET_END_DAT %2B OPERATION.SPAET_END_ZEIT / 60 / 60 / 24) AS LATEST_FINISH, ` +
-    `(OPERATION.TERM_ANF_DAT %2B OPERATION.TERM_ANF_ZEIT / 60 / 60 / 24)  AS SCHEDULE_START, ` +
-    `(OPERATION.TERM_END_DAT %2B OPERATION.TERM_END_ZEIT / 60 / 60 / 24)  AS SCHEDULE_FINISH, ` +
-    `(OPERATION.ERRANF_DAT %2B OPERATION.ERRANF_ZEIT / 60 / 60 / 24) AS PLAN_START, ` +
-    `(OPERATION.ERREND_DAT %2B OPERATION.ERREND_ZEIT / 60 / 60 / 24) AS PLAN_FINISH, ` +
-    `(STATUS.PROT_DAT %2B STATUS.PROT_ZEIT / 60 / 60 / 24) AS LAST_LOGGEDON ` +
+    `(OPERATION.FRUEH_ANF_DAT + OPERATION.FRUEH_ANF_ZEIT / 60 / 60 / 24) AS EARLIEST_START, ` +
+    `(OPERATION.FRUEH_END_DAT + OPERATION.FRUEH_END_ZEIT / 60 / 60 / 24) AS EARLIEST_FINISH, ` +
+    `(OPERATION.SPAET_ANF_DAT + OPERATION.SPAET_ANF_ZEIT / 60 / 60 / 24) AS LATEST_START, ` +
+    `(OPERATION.SPAET_END_DAT + OPERATION.SPAET_END_ZEIT / 60 / 60 / 24) AS LATEST_FINISH, ` +
+    `(OPERATION.TERM_ANF_DAT + OPERATION.TERM_ANF_ZEIT / 60 / 60 / 24)  AS SCHEDULE_START, ` +
+    `(OPERATION.TERM_END_DAT + OPERATION.TERM_END_ZEIT / 60 / 60 / 24)  AS SCHEDULE_FINISH, ` +
+    `(OPERATION.ERRANF_DAT + OPERATION.ERRANF_ZEIT / 60 / 60 / 24) AS PLAN_START, ` +
+    `(OPERATION.ERREND_DAT + OPERATION.ERREND_ZEIT / 60 / 60 / 24) AS PLAN_FINISH, ` +
+    `(STATUS.PROT_DAT + STATUS.PROT_ZEIT / 60 / 60 / 24) AS LAST_LOGGEDON ` +
     ` FROM AUFTRAGS_BESTAND OPERATION, AUFTRAG_STATUS STATUS ` +
     ` WHERE OPERATION.MASCH_NR = '${MachineService.machineNameTBR}' AND OPERATION.AUFTRAG_NR = STATUS.AUFTRAG_NR ` +
     ` AND STATUS.PROD_KENN <> 'L' AND STATUS.PROD_KENN <> 'E' ORDER BY ERRANF_DAT, ERRANF_ZEIT`;
@@ -103,7 +104,7 @@ export class MachineService {
   static loggedOnToolSql =
     `SELECT SUBKEY1 AS MACHINE, SUBKEY2 AS OPERATION, SUBKEY6 AS RESOURCEID,RES_NR AS TOOLNAME, RES_NR_M AS REQUIREDRESOURCE ` +
     `FROM HYBUCH, RES_BEDARFSZUORD, RES_BESTAND ` +
-    `WHERE KEY_TYPE = 'O' AND SUBKEY1 = '${MachineService.machineNameTBR}' AND RES_ID = SUBKEY6 AND RES_NR_T(%2B) = RES_NR`;
+    `WHERE KEY_TYPE = 'O' AND SUBKEY1 = '${MachineService.machineNameTBR}' AND RES_ID = SUBKEY6 AND RES_NR_T(+) = RES_NR`;
 
   static operationShiftOutputSql =
     `SELECT NVL(ADE.MACHINE_NUMBER, HBZ.MACHINE_NUMBER) MACHINE_NUMBER, ` +
@@ -136,7 +137,7 @@ export class MachineService {
     `AND MST.DATUM = TO_DATE('${MachineService.shiftDateTBR}', '${MachineService.dateFormatOracle}') ` +
     `AND MST.SCHICHTNR = '${MachineService.shiftNbrTBR}' ` +
     `AND MST.MASCH_NR = '${MachineService.machineNameTBR}'  ` +
-    `AND AP.AUFTRAG_NR IN ('${MachineService.operationsTBR}') ` +
+    `AND AP.AUFTRAG_NR IN (${MachineService.operationsTBR}) ` +
     `GROUP BY MST.MASCH_NR, ` +
     `MST.DATUM, ` +
     `MST.SCHICHTNR, ` +
@@ -160,7 +161,7 @@ export class MachineService {
     `THEN HBZ.WERT ` +
     `ELSE 0 ` +
     `END) REJECTS , ` +
-    `AP.AUFTRAG_NR OPERATION, ` +
+    `HBZ.SUBKEY2 OPERATION, ` +
     `HBZ.GRUND REASON_CODE , ` +
     `AGT2.GRUNDTEXT REASON_TEXT ` +
     `FROM MASCHINEN_STATUS MST ` +
@@ -184,11 +185,11 @@ export class MachineService {
     `AND MST.DATUM = TO_DATE('${MachineService.shiftDateTBR}', '${MachineService.dateFormatOracle}') ` +
     `AND MST.SCHICHTNR = '${MachineService.shiftNbrTBR}' ` +
     `AND MST.MASCH_NR = '${MachineService.machineNameTBR}'  ` +
-    `AND AP.AUFTRAG_NR IN (${MachineService.operationsTBR}) ` +
+    `AND HBZ.SUBKEY2 IN (${MachineService.operationsTBR}) ` +
     `GROUP BY MST.MASCH_NR, ` +
     `MST.DATUM, ` +
     `MST.SCHICHTNR, ` +
-    `AP.AUFTRAG_NR, ` +
+    `HBZ.SUBKEY2, ` +
     `HBZ.GRUND, ` +
     `AGT2.GRUNDTEXT ` +
     `) HBZ ON ADE.MACHINE_NUMBER = HBZ.MACHINE_NUMBER ` +
@@ -199,7 +200,7 @@ export class MachineService {
     `SHIFT_DATE, ` +
     `SHIFT_NUMBER, ` +
     `OPERATION, ` +
-    `REASON_CODE;`;
+    `REASON_CODE`;
 
   static machineCheckListItemSql =
     `SELECT CHECKLIST_TYPE.PMDM_HEADER_ID,CHECKLIST_TYPE.MACHINE_NUMBER,CHECKLIST_TYPE.CHECKLIST_TYPE, ` +
@@ -253,7 +254,7 @@ export class MachineService {
     `AND PMDM_HEADER_ID =  '${MachineService.headerIdTBR}' ` +
     `AND STEP_END_TIMESTAMP IS NOT NULL ` +
     `AND STEP_END_TIMESTAMP > TO_DATE('${MachineService.shiftStartTBR}', '${MachineService.dateFormatOracle}') ` +
-    `AND PERSONALSTAMM.PERSONALNUMMER(%2B) = U_TE_PMDM_CHECKLIST_RESULTS.STEP_END_USER ` +
+    `AND PERSONALSTAMM.PERSONALNUMMER(+) = U_TE_PMDM_CHECKLIST_RESULTS.STEP_END_USER ` +
     `ORDER BY STEP_END_TIMESTAMP DESC, CHECKLIST_SEQUENCE`;
 
   static machineCheckListDoneOfChangeOver =
@@ -266,7 +267,7 @@ export class MachineService {
     `AND PMDM_HEADER_ID =  '${MachineService.headerIdTBR}' ` +
     `AND STEP_END_TIMESTAMP IS NOT NULL ` +
     `AND OPERATION_NUMBER = '${MachineService.operationNameTBR}' ` +
-    `AND PERSONALSTAMM.PERSONALNUMMER(%2B) = U_TE_PMDM_CHECKLIST_RESULTS.STEP_END_USER ` +
+    `AND PERSONALSTAMM.PERSONALNUMMER(+) = U_TE_PMDM_CHECKLIST_RESULTS.STEP_END_USER ` +
     `ORDER BY STEP_END_TIMESTAMP DESC, CHECKLIST_SEQUENCE`;
 
   //#endregion
@@ -300,20 +301,20 @@ export class MachineService {
   getMachine(machineName: string) {
     let machineRet: Machine;
     forkJoin(
-      this._fetchService.query(MachineService.machineSql.replace(MachineService.machineNameTBR, machineName)),
-      this._fetchService.query(MachineService.machineCurrentOPSql.replace(MachineService.machineNameTBR, machineName)),
-      this._fetchService.query(MachineService.operationBOMItemsSql.replace(MachineService.machineNameTBR, machineName)),
-      this._fetchService.query(MachineService.operationToolItemsSql.replace(MachineService.machineNameTBR, machineName)),
-      this._fetchService.query(MachineService.machineNextOPSql.replace(MachineService.machineNameTBR, machineName)),
-      this._fetchService.query(MachineService.loggedOnOperatorSql.replace(MachineService.machineNameTBR, machineName)),
-      this._fetchService.query(MachineService.loggedOnComponentSql.replace(MachineService.machineNameTBR, machineName)),
-      this._fetchService.query(MachineService.loggedOnToolSql.replace(MachineService.machineNameTBR, machineName)),
-      this._fetchService.query(MachineService.machineCheckListItemSql.replace(MachineService.machineNameTBR, machineName)),
-      this._fetchService.query(MachineService.machinePreviousOPSql.replace(MachineService.machineNameTBR, machineName)),
+      this._fetchService.query(replaceAll(MachineService.machineSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.machineCurrentOPSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.operationBOMItemsSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.operationToolItemsSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.machineNextOPSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.loggedOnOperatorSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.loggedOnComponentSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.loggedOnToolSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.machineCheckListItemSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.machinePreviousOPSql, [MachineService.machineNameTBR], [machineName])),
       this._vBoardService.Get24HoursMachineMRAData(machineName),
       this._vBoardService.GetCurrentShiftMachineOEEData(machineName),
       this._vBoardService.GetCurrentShiftMachineRejectsData(machineName),
-      this._fetchService.query(MachineService.machineAlarmSql.replace(MachineService.machineNameTBR, machineName)))
+      this._fetchService.query(replaceAll(MachineService.machineAlarmSql, [MachineService.machineNameTBR], [machineName])))
       .pipe(
         map((array: Array<Array<any>>) => {
           const [
@@ -571,10 +572,9 @@ export class MachineService {
           const checkList = machine.checkLists.get(ProcessType.CHANGESHIFT);
           const ds = format(machine.currentShiftStart, MachineService.dateFormat);
           if (!checkList) return of([]);
-          return this._fetchService.query(MachineService.machineCheckListDoneOfCurrentShift
-            .replace(MachineService.machineNameTBR, machine.machineName)
-            .replace(MachineService.headerIdTBR, checkList.headerId.toString())
-            .replace(MachineService.shiftStartTBR, format(machine.currentShiftStart, MachineService.dateFormat)));
+          return this._fetchService.query(replaceAll(MachineService.machineCheckListDoneOfCurrentShift
+            , [MachineService.machineNameTBR, MachineService.headerIdTBR, MachineService.shiftStartTBR]
+            , [machine.machineName, checkList.headerId.toString(), format(machine.currentShiftStart, MachineService.dateFormat)]));
         }),
         map((checkListResults: any[]) => {
           checkListResults.map(rec => {
@@ -608,10 +608,10 @@ export class MachineService {
 
           if (!machine.currentOperation) return of([]);
 
-          return this._fetchService.query(MachineService.machineCheckListDoneOfChangeOver
-            .replace(MachineService.machineNameTBR, machine.machineName)
-            .replace(MachineService.headerIdTBR, checkList.headerId.toString())
-            .replace(MachineService.operationNameTBR, machine.currentOperation.name));
+          return this._fetchService.query(replaceAll(MachineService.machineCheckListDoneOfChangeOver
+            , [MachineService.machineNameTBR, MachineService.headerIdTBR, MachineService.operationNameTBR]
+            , [machine.machineName, checkList.headerId.toString(), machine.currentOperation.name]));
+
         }),
         map((checkListResults: any[]) => {
           checkListResults.map(rec => {
@@ -643,11 +643,11 @@ export class MachineService {
 
           const operationNames = [];
           machine.currentOperations.map((op) => operationNames.push(`'` + op.name + `'`));
-          return this._fetchService.query(MachineService.operationShiftOutputSql
-            .replace(MachineService.machineNameTBR, machine.machineName)
-            .replace(MachineService.shiftDateTBR, format(machine.currentShiftDate, MachineService.dateFormat))
-            .replace(MachineService.shiftNbrTBR, machine.currentShift.toString())
-            .replace(MachineService.operationsTBR, operationNames.join(',')));
+
+          return this._fetchService.query(replaceAll(MachineService.operationShiftOutputSql
+            , [MachineService.machineNameTBR, MachineService.shiftDateTBR, MachineService.shiftNbrTBR, MachineService.operationsTBR]
+            , [machine.machineName, format(machine.currentShiftDate, MachineService.dateFormat), machine.currentShift.toString()
+              , operationNames.join(',')]));
         }),
         map((opShiftOutput: any[]) => {
           if (opShiftOutput.length === 0) return machineRet;

@@ -6,7 +6,7 @@ const menuInfo: Menu[] = [{
   /** 图标 */
   icon: `anticon anticon-rocket`,
   children: [{
-    text: 'Dashboard',
+    text: '仪表盘',
     group: true,
     icon: `anticon anticon-dashboard`,
     children: [{
@@ -95,11 +95,11 @@ const menuInfo: Menu[] = [{
     }]
   },
   {
-    text: 'Reports',
+    text: '报表',
     group: true,
     icon: `anticon anticon-area-chart`,
     children: [{
-      text: 'Batch Summary',
+      text: '物料批次概览',
       group: false,
       /** 图标 */
       icon: `anticon anticon-rocket`,

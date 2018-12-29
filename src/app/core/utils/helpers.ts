@@ -1,177 +1,195 @@
 //#region Decode related
 export function urlBase64Decode(str: string): string {
-    let output = str.replace(/-/g, '+').replace(/_/g, '/');
-    switch (output.length % 4) {
-        case 0: { break; }
-        case 2: { output += '=='; break; }
-        case 3: { output += '='; break; }
-        default: {
-            throw new Error('Illegal base64url string!');
-        }
+  let output = str.replace(/-/g, '+').replace(/_/g, '/');
+  switch (output.length % 4) {
+    case 0: { break; }
+    case 2: { output += '=='; break; }
+    case 3: { output += '='; break; }
+    default: {
+      throw new Error('Illegal base64url string!');
     }
-    return b64DecodeUnicode(output);
+  }
+  return b64DecodeUnicode(output);
 }
 
 export function b64decode(str: string): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-    let output = '';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+  let output = '';
 
-    str = String(str).replace(/=+$/, '');
+  str = String(str).replace(/=+$/, '');
 
-    if (str.length % 4 === 1) {
-        throw new Error(`'atob' failed: The string to be decoded is not correctly encoded.`);
-    }
+  if (str.length % 4 === 1) {
+    throw new Error(`'atob' failed: The string to be decoded is not correctly encoded.`);
+  }
 
-    for (
-        // initialize result and counters
-        let bc = 0, bs: any, buffer: any, idx = 0;
-        // get next character
-        buffer = str.charAt(idx++);
-        // character found in table? initialize bit storage and add its ascii value;
-        // tslint:disable-next-line:no-bitwise
-        ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
-            // and if not first of each 4 characters,
-            // convert the first 8 bits to one ascii character
-            // tslint:disable-next-line:no-bitwise
-            bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
-    ) {
-        // try to find character in table (0-63, not found => -1)
-        buffer = chars.indexOf(buffer);
-    }
-    return output;
+  for (
+    // initialize result and counters
+    let bc = 0, bs: any, buffer: any, idx = 0;
+    // get next character
+    buffer = str.charAt(idx++);
+    // character found in table? initialize bit storage and add its ascii value;
+    // tslint:disable-next-line:no-bitwise
+    ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
+      // and if not first of each 4 characters,
+      // convert the first 8 bits to one ascii character
+      // tslint:disable-next-line:no-bitwise
+      bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
+  ) {
+    // try to find character in table (0-63, not found => -1)
+    buffer = chars.indexOf(buffer);
+  }
+  return output;
 }
 
 // https://developer.mozilla.org/en/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
 export function b64DecodeUnicode(str: any) {
-    return decodeURIComponent(Array.prototype.map.call(b64decode(str), (c: any) => {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+  return decodeURIComponent(Array.prototype.map.call(b64decode(str), (c: any) => {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
 }
 //#endregion
 
 //#region Object related
 
 export function getDeepFromObject(object = {}, name: string, defaultValue?: any) {
-    const keys = name.split('.');
-    // clone the object
-    let level = deepExtend({}, object || {});
-    keys.forEach((k) => {
-        if (level && typeof level[k] !== 'undefined') {
-            level = level[k];
-        } else {
-            level = undefined;
-        }
-    });
+  const keys = name.split('.');
+  // clone the object
+  let level = deepExtend({}, object || {});
+  keys.forEach((k) => {
+    if (level && typeof level[k] !== 'undefined') {
+      level = level[k];
+    } else {
+      level = undefined;
+    }
+  });
 
-    return typeof level === 'undefined' ? defaultValue : level;
+  return typeof level === 'undefined' ? defaultValue : level;
 }
 
 const deepExtend = function (...objects: any[]): any {
-    if (arguments.length < 1 || typeof arguments[0] !== 'object') {
-        return false;
+  if (arguments.length < 1 || typeof arguments[0] !== 'object') {
+    return false;
+  }
+
+  if (arguments.length < 2) {
+    return arguments[0];
+  }
+
+  const target = arguments[0];
+
+  // convert arguments to array and cut off target object
+  const args = Array.prototype.slice.call(arguments, 1);
+
+  let val, src;
+
+  args.forEach(function (obj: any) {
+    // skip argument if it is array or isn't object
+    if (typeof obj !== 'object' || Array.isArray(obj)) {
+      return;
     }
 
-    if (arguments.length < 2) {
-        return arguments[0];
-    }
+    Object.keys(obj).forEach(function (key) {
+      src = target[key]; // source value
+      val = obj[key]; // new value
 
-    const target = arguments[0];
+      // recursion prevention
+      if (val === target) {
+        return;
 
-    // convert arguments to array and cut off target object
-    const args = Array.prototype.slice.call(arguments, 1);
+        /**
+         * if new value isn't object then just overwrite by new value
+         * instead of extending.
+         */
+      } else if (typeof val !== 'object' || val === null) {
+        target[key] = val;
 
-    let val, src;
+        return;
 
-    args.forEach(function (obj: any) {
-        // skip argument if it is array or isn't object
-        if (typeof obj !== 'object' || Array.isArray(obj)) {
-            return;
-        }
+        // just clone arrays (and recursive clone objects inside)
+      } else if (Array.isArray(val)) {
+        target[key] = deepCloneArray(val);
 
-        Object.keys(obj).forEach(function (key) {
-            src = target[key]; // source value
-            val = obj[key]; // new value
+        return;
 
-            // recursion prevention
-            if (val === target) {
-                return;
+        // custom cloning and overwrite for specific objects
+      } else if (isSpecificValue(val)) {
+        target[key] = cloneSpecificValue(val);
 
-                /**
-                 * if new value isn't object then just overwrite by new value
-                 * instead of extending.
-                 */
-            } else if (typeof val !== 'object' || val === null) {
-                target[key] = val;
+        return;
 
-                return;
+        // overwrite by new value if source isn't object or array
+      } else if (typeof src !== 'object' || src === null || Array.isArray(src)) {
+        target[key] = deepExtend({}, val);
 
-                // just clone arrays (and recursive clone objects inside)
-            } else if (Array.isArray(val)) {
-                target[key] = deepCloneArray(val);
+        return;
 
-                return;
+        // source value and new value is objects both, extending...
+      } else {
+        target[key] = deepExtend(src, val);
 
-                // custom cloning and overwrite for specific objects
-            } else if (isSpecificValue(val)) {
-                target[key] = cloneSpecificValue(val);
-
-                return;
-
-                // overwrite by new value if source isn't object or array
-            } else if (typeof src !== 'object' || src === null || Array.isArray(src)) {
-                target[key] = deepExtend({}, val);
-
-                return;
-
-                // source value and new value is objects both, extending...
-            } else {
-                target[key] = deepExtend(src, val);
-
-                return;
-            }
-        });
+        return;
+      }
     });
+  });
 
-    return target;
+  return target;
 };
 
 /**
  * Recursive cloning array.
  */
 function deepCloneArray(arr: any[]): any {
-    const clone: any[] = [];
-    arr.forEach(function (item: any, index: any) {
-        if (typeof item === 'object' && item !== null) {
-            if (Array.isArray(item)) {
-                clone[index] = deepCloneArray(item);
-            } else if (isSpecificValue(item)) {
-                clone[index] = cloneSpecificValue(item);
-            } else {
-                clone[index] = deepExtend({}, item);
-            }
-        } else {
-            clone[index] = item;
-        }
-    });
+  const clone: any[] = [];
+  arr.forEach(function (item: any, index: any) {
+    if (typeof item === 'object' && item !== null) {
+      if (Array.isArray(item)) {
+        clone[index] = deepCloneArray(item);
+      } else if (isSpecificValue(item)) {
+        clone[index] = cloneSpecificValue(item);
+      } else {
+        clone[index] = deepExtend({}, item);
+      }
+    } else {
+      clone[index] = item;
+    }
+  });
 
-    return clone;
+  return clone;
 }
 
 function isSpecificValue(val: any) {
-    return (
-        val instanceof Date
-        || val instanceof RegExp
-    ) ? true : false;
+  return (
+    val instanceof Date
+    || val instanceof RegExp
+  ) ? true : false;
 }
 
 function cloneSpecificValue(val: any): any {
-    if (val instanceof Date) {
-        return new Date(val.getTime());
-    } else if (val instanceof RegExp) {
-        return new RegExp(val);
-    } else {
-        throw new Error('cloneSpecificValue: Unexpected situation');
-    }
+  if (val instanceof Date) {
+    return new Date(val.getTime());
+  } else if (val instanceof RegExp) {
+    return new RegExp(val);
+  } else {
+    throw new Error('cloneSpecificValue: Unexpected situation');
+  }
+}
+
+//#endregion
+
+//#region String related
+
+export function replaceAll(str: string, finds: string[], replaces: string[]) {
+  let final = str;
+
+  for (let i = 0; i < finds.length; i++) {
+    final = final.replace(new RegExp(escapeRegExp(finds[i]), 'g'), replaces[i]);
+  }
+
+  return final;
+}
+
+function escapeRegExp(str) {
+  return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
 }
 
 //#endregion

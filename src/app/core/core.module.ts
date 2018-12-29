@@ -6,7 +6,7 @@ import { AuthService } from './auth/providers/auth.service';
 import { FetchService } from './hydra/service/fetch.service';
 import { BapiService } from './hydra/service/bapi.service';
 import { VBoardService } from './hydra/service/vBoard.service';
-import { BatchReportService } from './hydra/report/batch.report.service';
+import { BatchService } from './hydra/service/batch.service';
 import { MachineService } from './hydra/service/machine.service';
 
 @NgModule({
@@ -16,7 +16,7 @@ import { MachineService } from './hydra/service/machine.service';
     FetchService,
     BapiService,
     MachineService,
-    BatchReportService,
+    BatchService,
     VBoardService
   ]
 })

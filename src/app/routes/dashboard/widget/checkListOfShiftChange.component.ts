@@ -25,22 +25,22 @@ export class CheckListOfShiftChangeComponent implements OnInit {
   //#region Fields
 
   checkListCols: STColumn[] = [
-    { title: 'Seq', index: 'sequence' },
+    { title: 'Seq', index: 'sequence', i18n: 'app.checklist.sequence' },
     {
       title: 'Description',
-      index: 'shortText',
+      index: 'shortText', i18n: 'app.checklist.description'
     },
-    { title: 'Finished By', index: 'finishedBy' },
+    { title: 'Finished By', index: 'finishedBy', i18n: 'app.checklist.finishedBy' },
     {
-      title: 'Finished At.', index: 'finishedAt', format: (value) => {
+      title: 'Finished At.', index: 'finishedAt', i18n: 'app.checklist.finishedAt', format: (value) => {
         if (value.finishedAt) {
           return format(value.finishedAt, 'YYYY-MM-DD HH:M:ss');
         }
         return ``;
       }
     },
-    { title: 'Comment', index: 'comment' },
-    { title: 'Status', index: 'completed', type: 'tag', tag: CHECK_TAG },
+    { title: 'Comment', index: 'comment', i18n: 'app.checklist.comment' },
+    { title: 'Status', index: 'completed', i18n: 'app.checklist.completed', type: 'tag', tag: CHECK_TAG },
   ];
 
   machine: Machine;

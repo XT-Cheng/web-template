@@ -27,14 +27,15 @@ export class MaterialPreparationComponent implements OnInit {
   //#region Fields
 
   materialCols: STColumn[] = [
-    { title: 'Batch', index: 'batchName' },
+    { title: 'Batch', index: 'batchName', i18n: 'app.material.batchName' },
     {
       title: 'Material',
       index: 'material',
+      i18n: 'app.material.material'
     },
-    { title: 'Qty', index: 'batchQty' },
-    { title: 'Remain.', render: 'percentages' },
-    { title: 'Status', index: 'loaded', type: 'tag', tag: MAT_TAG },
+    { title: 'Qty', index: 'batchQty', i18n: 'app.material.batchQty' },
+    { title: 'Remain.', render: 'percentages', i18n: 'app.material.percentage' },
+    { title: 'Status', index: 'loaded', i18n: 'app.material.status', type: 'tag', tag: MAT_TAG },
   ];
 
   machine: Machine;
