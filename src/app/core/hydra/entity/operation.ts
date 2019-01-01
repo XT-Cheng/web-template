@@ -4,6 +4,23 @@ import { MachineOutput } from './machine';
 export class Operation {
   static FRACTION_DIGIT = 2;
 
+  //#region Constructor
+
+  constructor() {
+    const now = new Date();
+    const interval = 1000 * 60 * 30;
+    const beginDay = (new Date(now.getTime() - (now.getTime() % interval))).getTime();
+
+    for (let i = 48; i >= 0; i -= 1) {
+      this.output.set(new Date(beginDay - interval * i), {
+        yield: 0,
+        scrap: 0,
+        performance: 0,
+      });
+    }
+  }
+
+  //#endregion
   //#region Fields
 
   order = '';

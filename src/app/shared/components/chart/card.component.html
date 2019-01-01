@@ -11,7 +11,7 @@
             <ng-container *ngIf="_action; else _actionTpl">{{ _action }}</ng-container>
           </span>
         </div>
-        <p *ngIf="total" class="g2-card__total" style='font-size: 18px;' [innerHTML]="total"></p>
+        <p *ngIf='totalVisible' class="g2-card__total" style='font-size: 18px;' [innerHTML]="total"></p>
       </div>
     </div>
     <div class="g2-card__desc" [ngStyle]="{'height':_height}">

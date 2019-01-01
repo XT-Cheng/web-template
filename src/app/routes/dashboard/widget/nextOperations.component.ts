@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { STColumn } from '@delon/abc';
 import { format } from 'date-fns';
 import { MachineService } from '@core/hydra/service/machine.service';
@@ -28,7 +28,13 @@ export class NextOperationsComponent implements OnInit {
       }
     },
   ];
-  machine: Machine;
+  private _machine: Machine = new Machine();
+
+  @Input()
+  set machine(value: Machine) {
+    this._machine = value;
+    this.data = this._machine.nextOperations;
+  }
   data: any[];
 
   //#endregion
@@ -46,10 +52,6 @@ export class NextOperationsComponent implements OnInit {
   //#region Implemented interface
 
   ngOnInit() {
-    this.machineService.machine$.subscribe((machine) => {
-      this.machine = machine;
-      this.data = this.machine.nextOperations;
-    });
   }
 
   //#endregion

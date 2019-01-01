@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { format } from 'date-fns';
@@ -10,8 +10,12 @@ import { format } from 'date-fns';
 })
 export class OutputPerHourComponent implements OnInit {
   //#region Fields
+  private _machine: Machine = new Machine();
 
-  machine: Machine;
+  @Input()
+  set machine(value: Machine) {
+    this._machine = value;
+  }
 
   //#endregion
 
@@ -28,9 +32,6 @@ export class OutputPerHourComponent implements OnInit {
   //#region Implemented interface
 
   ngOnInit() {
-    this.machineService.machine$.subscribe((machine) => {
-      this.machine = machine;
-    });
   }
 
   //#endregion
@@ -43,7 +44,7 @@ export class OutputPerHourComponent implements OnInit {
     const yields = new Array<{
       x: string; y: number
     }>();
-    this.machine.output.forEach((value, key) => {
+    this._machine.output.forEach((value, key) => {
       yields.push({
         x: format(key, 'HH:mm'),
         y: value.yield

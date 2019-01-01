@@ -127,6 +127,8 @@
   "app.machine.summary.compareToLastHour": "Comp. to last Hour",
   "app.machine.summary.outputPerHour": "Output per Hour",
   "app.machine.summary.scrapPerHour": "Scrap per Hour",
+  "app.machine.summary.hourOutput": "Hourly Output",
+  "app.machine.summary.hourScrap": "Hourly Scrap",
   "app.machine.summary.materialPreparation": "Mat. Prep.",
   "app.machine.summary.finishedQty": "Fin. Qty",
   "app.machine.summary.nextOperations": "Next OP.",

@@ -39,7 +39,25 @@ export class Machine {
 
   alarmSetting: MachineAlarmSetting = new MachineAlarmSetting();
 
-  //#region Fields
+  //#endregion
+
+  //#region Constructor
+
+  constructor() {
+    const now = new Date();
+    const interval = 1000 * 60 * 30;
+    const beginDay = (new Date(now.getTime() - (now.getTime() % interval))).getTime();
+
+    for (let i = 48; i >= 0; i -= 1) {
+      this.output.set(new Date(beginDay - interval * i), {
+        yield: 0,
+        scrap: 0,
+        performance: 0,
+      });
+    }
+  }
+
+  //#endregion
 
   //#region Properties
 
@@ -62,13 +80,13 @@ export class Machine {
   get currentOperation(): Operation {
     if (this.currentOperations.length === 0) return null;
 
-    return this.currentOperations.sort((a, b) => a.lastLoggedOn > b.lastLoggedOn ? 1 : 0)[0];
+    return this.currentOperations[0];
   }
 
   get nextOperation(): Operation {
     if (this.nextOperations.length === 0) return null;
 
-    return this.nextOperations.sort((a, b) => a.planStart > b.planStart ? 1 : 0)[0];
+    return this.nextOperations[0];
   }
 
   //#endregion

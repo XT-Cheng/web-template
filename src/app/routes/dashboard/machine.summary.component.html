@@ -1,94 +1,96 @@
-<nz-card [nzTitle]="('app.machine.summary.general' | translate) + ': ' + machine.description">
-  <div class="mb-md" style='margin: 10px;'>
-    <div class="rounded-md" [ngStyle]="getMachineColor(machine)">
-      <div class="p-md text-white">
-        <div class="h2 mt0">{{machine.currentStatus}}</div>
+<nz-spin [nzSpinning]="isLoading">
+  <nz-card [nzTitle]="('app.machine.summary.general' | translate) + ': ' + machine.description">
+    <div class="mb-md" style='margin: 10px;'>
+      <div class="rounded-md" [ngStyle]="getMachineColor(machine)">
+        <div class="p-md text-white">
+          <div class="h2 mt0">{{machine.currentStatus}}</div>
+        </div>
       </div>
     </div>
-  </div>
-  <div nzType="flex" nz-row [nzGutter]="8" style='padding-top: 1px;'>
-    <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
-      <fw-g2-card [bordered]='true' [title]="'app.machine.summary.workOrder' | translate" [total]="machine.currentOperation?.name"
-        totalHeight="200px" contentHeight="50px" [footer]="footer1">
-        <p class="text-truncate mb0">
-          {{'app.machine.summary.targetQty' | translate}} / {{'app.machine.summary.finishedQty' | translate}}:
-          <span class="ml-sm">{{machine.currentOperation?.targetQty}} /
-            {{machine.currentOperation?.totalYield}}</span>
-        </p>
-        <fw-g2-mini-progress *ngIf='machine.currentOperation' [percent]="machine.currentOperation?.finishRate"
-          strokeWidth="28" [target]="machine.currentOperation?.expectFinishRate" [color]="getProgressColor(machine.currentOperation?.finishRate, machine.currentOperation?.expectFinishRate)"></fw-g2-mini-progress>
-        <ng-template #footer1>
+    <div nzType="flex" nz-row [nzGutter]="8" style='padding-top: 1px;'>
+      <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
+        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.workOrder' | translate" [total]="machine.currentOperation?.name"
+          totalHeight="200px" contentHeight="50px" [footer]="footer1">
           <p class="text-truncate mb0">
-            {{'app.machine.summary.scheduleCompltedAt' | translate}}:
-            <span class="ml-sm">{{format(machine.currentOperation?.planEnd)}}</span>
+            {{'app.machine.summary.targetQty' | translate}} / {{'app.machine.summary.finishedQty' | translate}}:
+            <span class="ml-sm">{{machine.currentOperation?.targetQty}} /
+              {{machine.currentOperation?.totalYield}}</span>
           </p>
-          <fw-g2-trend *ngIf='machine.currentOperation' [reverseColor]='true' [flag]="getTrendFlag(machine.currentOperation?.estimatedFinishedAt, machine.currentOperation?.planEnd)"
-            style="display:block; margin-top:2px;">
-            {{'app.machine.summary.estimateFinishedAt' | translate}}:
-            <span class="ml-sm">{{format(machine.currentOperation?.estimatedFinishedAt)}}</span>
-          </fw-g2-trend>
-        </ng-template>
-      </fw-g2-card>
+          <fw-g2-mini-progress *ngIf='machine.currentOperation' [percent]="machine.currentOperation?.finishRate"
+            strokeWidth="28" [target]="machine.currentOperation?.expectFinishRate" [color]="getProgressColor(machine.currentOperation?.finishRate, machine.currentOperation?.expectFinishRate)"></fw-g2-mini-progress>
+          <ng-template #footer1>
+            <p class="text-truncate mb0">
+              {{'app.machine.summary.scheduleCompltedAt' | translate}}:
+              <span class="ml-sm">{{format(machine.currentOperation?.planEnd)}}</span>
+            </p>
+            <fw-g2-trend *ngIf='machine.currentOperation' [reverseColor]='true' [flag]="getTrendFlag(machine.currentOperation?.estimatedFinishedAt, machine.currentOperation?.planEnd)"
+              style="display:block; margin-top:2px;">
+              {{'app.machine.summary.estimateFinishedAt' | translate}}:
+              <span class="ml-sm">{{format(machine.currentOperation?.estimatedFinishedAt)}}</span>
+            </fw-g2-trend>
+          </ng-template>
+        </fw-g2-card>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
+        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.shift.output' | translate" [total]="machine.currentShiftYield"
+          totalHeight="200px" contentHeight="50px" [footer]="footer2">
+          <p class="text-truncate mb0">
+            {{'app.machine.summary.outputPerHour' | translate}}:
+            <span class="ml-sm">{{averageHourYield}}</span>
+          </p>
+          <fw-g2-mini-area color="#975FE4" height="40" [data]="yieldTrend"></fw-g2-mini-area>
+          <ng-template #footer2>
+            <fw-g2-trend [flag]="performanceFlag" [reverseColor]='true' style="display:block; margin-top:2px;">
+              {{'app.machine.summary.compareToLastHour' | translate}}:
+              <span class="ml-sm">{{absolutePerformanceComparedToLastHalfHour}}%</span>
+            </fw-g2-trend>
+          </ng-template>
+        </fw-g2-card>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
+        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.shift.scrap' | translate" [total]="machine.currentShiftScrap"
+          totalHeight="200px" contentHeight="50px" [footer]="footer3">
+          <p class="text-truncate mb0">
+            {{'app.machine.summary.scrapPerHour' | translate}}:
+            <span class="ml-sm">{{averageHourScrap}}</span>
+          </p>
+          <fw-g2-mini-bar height="40" [data]="scrapTrend"></fw-g2-mini-bar>
+          <ng-template #footer3>
+            <fw-g2-trend [flag]="scrapFlag" style="display:block; margin-top:2px;">
+              {{'app.machine.summary.compareToLastHour' | translate}}:
+              <span class="ml-sm">{{absoluteScrapComparedToLastHalfHour}}%</span>
+            </fw-g2-trend>
+          </ng-template>
+        </fw-g2-card>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
+        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.oee' | translate" totalHeight="200px" contentHeight="87px">
+          <fw-g2-gauge [height]="150" [lower]='machine.alarmSetting?.oeeLower' [upper]='machine.alarmSetting?.oeeUpper'
+            [percent]="machine.currentShiftOEE?.overAll"></fw-g2-gauge>
+        </fw-g2-card>
+      </div>
     </div>
-    <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
-      <fw-g2-card [bordered]='true' [title]="'app.machine.summary.shift.output' | translate" [total]="machine.currentShiftYield"
-        totalHeight="200px" contentHeight="50px" [footer]="footer2">
-        <p class="text-truncate mb0">
-          {{'app.machine.summary.outputPerHour' | translate}}:
-          <span class="ml-sm">{{averageHourYield}}</span>
-        </p>
-        <fw-g2-mini-area color="#975FE4" height="40" [data]="yieldTrend"></fw-g2-mini-area>
-        <ng-template #footer2>
-          <fw-g2-trend [flag]="performanceFlag" [reverseColor]='true' style="display:block; margin-top:2px;">
-            {{'app.machine.summary.compareToLastHour' | translate}}:
-            <span class="ml-sm">{{absolutePerformanceComparedToLastHalfHour}}%</span>
-          </fw-g2-trend>
-        </ng-template>
-      </fw-g2-card>
-    </div>
-    <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
-      <fw-g2-card [bordered]='true' [title]="'app.machine.summary.shift.scrap' | translate" [total]="machine.currentShiftScrap"
-        totalHeight="200px" contentHeight="50px" [footer]="footer3">
-        <p class="text-truncate mb0">
-          {{'app.machine.summary.scrapPerHour' | translate}}:
-          <span class="ml-sm">{{averageHourScrap}}</span>
-        </p>
-        <fw-g2-mini-bar height="40" [data]="scrapTrend"></fw-g2-mini-bar>
-        <ng-template #footer3>
-          <fw-g2-trend [flag]="scrapFlag" style="display:block; margin-top:2px;">
-            {{'app.machine.summary.compareToLastHour' | translate}}:
-            <span class="ml-sm">{{absoluteScrapComparedToLastHalfHour}}%</span>
-          </fw-g2-trend>
-        </ng-template>
-      </fw-g2-card>
-    </div>
-    <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
-      <fw-g2-card [bordered]='true' [title]="'app.machine.summary.oee' | translate" totalHeight="200px" contentHeight="87px">
-        <fw-g2-gauge [height]="150" [lower]='machine.alarmSetting?.oeeLower' [upper]='machine.alarmSetting?.oeeUpper'
-          [percent]="machine.currentShiftOEE?.overAll"></fw-g2-gauge>
-      </fw-g2-card>
-    </div>
-  </div>
-</nz-card>
-<nz-card [nzBordered]="false">
-  <nz-tabset>
-    <nz-tab [nzTitle]="'app.machine.summary.scrapPerHour' | translate">
-      <fw-widget-hour-scrap></fw-widget-hour-scrap>
-    </nz-tab>
-    <nz-tab [nzTitle]="'app.machine.summary.outputPerHour' | translate">
-      <fw-widget-hour-output></fw-widget-hour-output>
-    </nz-tab>
-    <nz-tab [nzTitle]="'app.machine.summary.materialPreparation' | translate">
-      <fw-widget-mat-prep></fw-widget-mat-prep>
-    </nz-tab>
-    <nz-tab [nzTitle]="'app.machine.summary.nextOperations' | translate">
-      <fw-widget-next-op></fw-widget-next-op>
-    </nz-tab>
-    <nz-tab [nzTitle]="'app.machine.summary.checkListOfShiftChange' | translate">
-      <fw-widget-check-shift></fw-widget-check-shift>
-    </nz-tab>
-    <nz-tab *ngIf='isChangeOverCheckListVisible' [nzTitle]="'app.machine.summary.checkListOfChangeOver' | translate">
-      <fw-widget-check-changeover></fw-widget-check-changeover>
-    </nz-tab>
-  </nz-tabset>
-</nz-card>
+  </nz-card>
+  <nz-card [nzBordered]="false">
+    <nz-tabset>
+      <nz-tab [nzTitle]="'app.machine.summary.hourScrap' | translate">
+        <fw-widget-hour-scrap [machine]='machine'></fw-widget-hour-scrap>
+      </nz-tab>
+      <nz-tab [nzTitle]="'app.machine.summary.hourOutput' | translate">
+        <fw-widget-hour-output [machine]='machine'></fw-widget-hour-output>
+      </nz-tab>
+      <nz-tab [nzTitle]="'app.machine.summary.materialPreparation' | translate">
+        <fw-widget-mat-prep [machine]='machine'></fw-widget-mat-prep>
+      </nz-tab>
+      <nz-tab [nzTitle]="'app.machine.summary.nextOperations' | translate">
+        <fw-widget-next-op [machine]='machine'></fw-widget-next-op>
+      </nz-tab>
+      <nz-tab [nzTitle]="'app.machine.summary.checkListOfShiftChange' | translate">
+        <fw-widget-check-shift [machine]='machine'></fw-widget-check-shift>
+      </nz-tab>
+      <nz-tab *ngIf='isChangeOverCheckListVisible' [nzTitle]="'app.machine.summary.checkListOfChangeOver' | translate">
+        <fw-widget-check-changeover [machine]='machine'></fw-widget-check-changeover>
+      </nz-tab>
+    </nz-tabset>
+  </nz-card>
+</nz-spin>

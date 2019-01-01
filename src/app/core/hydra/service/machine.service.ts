@@ -51,17 +51,22 @@ export class MachineService {
     `(OPERATION.TERM_ANF_DAT + OPERATION.TERM_ANF_ZEIT / 60 / 60 / 24)  AS SCHEDULE_START, ` +
     `(OPERATION.TERM_END_DAT + OPERATION.TERM_END_ZEIT / 60 / 60 / 24)  AS SCHEDULE_FINISH, ` +
     `(OPERATION.ERRANF_DAT + OPERATION.ERRANF_ZEIT / 60 / 60 / 24)    AS PLAN_START, ` +
-    `(OPERATION.ERREND_DAT + OPERATION.ERREND_ZEIT / 60 / 60 / 24)    AS PLAN_FINISH, ` +
-    `(OP_STATUS.PROT_DAT + OP_STATUS.PROT_ZEIT / 60 / 60 / 24) AS LAST_LOGGEDON ` +
+    `(OPERATION.ERREND_DAT + OPERATION.ERREND_ZEIT / 60 / 60 / 24)    AS PLAN_FINISH` +
     ` FROM MASCHINEN MACHINE,HYBUCH,AUFTRAGS_BESTAND OPERATION,AUFTRAG_STATUS OP_STATUS ` +
     `WHERE MACHINE.MASCH_NR = '${MachineService.machineNameTBR}' AND OPERATION.AUFTRAG_NR = OP_STATUS.AUFTRAG_NR ` +
     ` AND HYBUCH.SUBKEY2 = OPERATION.AUFTRAG_NR ` +
     ` AND HYBUCH.SUBKEY1  = MACHINE.MASCH_NR AND HYBUCH.KEY_TYPE = 'A'`;
 
+  static machineCurrentOPLoggedOnDateSql =
+    `SELECT AUFTRAG_NR AS OPERATION, (PROTOCOL.ABMELD_DAT + PROTOCOL.ABMELDZEIT / 60 / 60 / 24) AS LOGGEDONDATE ` +
+    `FROM ADE_PROTOKOLL PROTOCOL ` +
+    `WHERE PROTOCOL.AUFTRAG_NR IN (${MachineService.operationsTBR}) AND SATZ_ART = 'A' AND CHARGEN_NR IS NOT NULL ` +
+    `ORDER BY AUFTRAG_NR, (ABMELD_DAT + ABMELDZEIT / 60 / 60 / 24) DESC`;
+
   static machinePreviousOPSql =
     `SELECT OPERATION.AUFTRAG_NR AS OPERATIONNAME, OPERATION.ARTIKEL AS ARTICLE FROM (SELECT AUFTRAG_NR AS OPERATIONNAME ` +
     `FROM ADE_PROTOKOLL WHERE MASCH_NR = '${MachineService.machineNameTBR}' AND SATZ_ART = 'A' ` +
-    `ORDER BY  ANMELD_DAT DESC,ANMELDZEIT DESC) LASTLOGGEDON, AUFTRAGS_BESTAND OPERATION ` +
+    `ORDER BY  (ABMELD_DAT + ABMELDZEIT / 60 / 60 / 24) DESC) LASTLOGGEDON, AUFTRAGS_BESTAND OPERATION ` +
     `WHERE ROWNUM < 3 AND OPERATION.AUFTRAG_NR = OPERATIONNAME`;
 
   static operationBOMItemsSql =
@@ -77,7 +82,7 @@ export class MachineService {
   static machineNextOPSql =
     `SELECT OPERATION.USER_C_55 AS LEADORDER, ` +
     `OPERATION.AUNR AS WORKORDER, OPERATION.AGNR AS SEQUENCE, OPERATION.ARTIKEL AS ARTICLE, ` +
-    `STATUS.GUT_BAS AS YIELD, STATUS.AUS_BAS AS SCRAP, OPERATION.SOLL_MENGE_BAS AS TARGETQTY, OPERATION.SOLL_DAUER AS TARGET_CYCLE,` +
+    `OP_STATUS.GUT_BAS AS YIELD, OP_STATUS.AUS_BAS AS SCRAP, OPERATION.SOLL_MENGE_BAS AS TARGETQTY, OPERATION.SOLL_DAUER AS TARGET_CYCLE,` +
     `(OPERATION.FRUEH_ANF_DAT + OPERATION.FRUEH_ANF_ZEIT / 60 / 60 / 24) AS EARLIEST_START, ` +
     `(OPERATION.FRUEH_END_DAT + OPERATION.FRUEH_END_ZEIT / 60 / 60 / 24) AS EARLIEST_FINISH, ` +
     `(OPERATION.SPAET_ANF_DAT + OPERATION.SPAET_ANF_ZEIT / 60 / 60 / 24) AS LATEST_START, ` +
@@ -85,11 +90,10 @@ export class MachineService {
     `(OPERATION.TERM_ANF_DAT + OPERATION.TERM_ANF_ZEIT / 60 / 60 / 24)  AS SCHEDULE_START, ` +
     `(OPERATION.TERM_END_DAT + OPERATION.TERM_END_ZEIT / 60 / 60 / 24)  AS SCHEDULE_FINISH, ` +
     `(OPERATION.ERRANF_DAT + OPERATION.ERRANF_ZEIT / 60 / 60 / 24) AS PLAN_START, ` +
-    `(OPERATION.ERREND_DAT + OPERATION.ERREND_ZEIT / 60 / 60 / 24) AS PLAN_FINISH, ` +
-    `(STATUS.PROT_DAT + STATUS.PROT_ZEIT / 60 / 60 / 24) AS LAST_LOGGEDON ` +
-    ` FROM AUFTRAGS_BESTAND OPERATION, AUFTRAG_STATUS STATUS ` +
-    ` WHERE OPERATION.MASCH_NR = '${MachineService.machineNameTBR}' AND OPERATION.AUFTRAG_NR = STATUS.AUFTRAG_NR ` +
-    ` AND STATUS.PROD_KENN <> 'L' AND STATUS.PROD_KENN <> 'E' ORDER BY ERRANF_DAT, ERRANF_ZEIT`;
+    `(OPERATION.ERREND_DAT + OPERATION.ERREND_ZEIT / 60 / 60 / 24) AS PLAN_FINISH ` +
+    ` FROM AUFTRAGS_BESTAND OPERATION, AUFTRAG_STATUS OP_STATUS ` +
+    ` WHERE OPERATION.MASCH_NR = '${MachineService.machineNameTBR}' AND OPERATION.AUFTRAG_NR = OP_STATUS.AUFTRAG_NR ` +
+    ` AND OP_STATUS.PROD_KENN <> 'L' AND OP_STATUS.PROD_KENN <> 'E' ORDER BY (ERRANF_DAT + ERRANF_ZEIT / 60 / 60 / 24)`;
 
   static loggedOnOperatorSql = `SELECT SUBKEY2 AS OPERATION,PERSONALNUMMER AS PERSON, NAME, KARTEN_NUMMER AS BADGE ` +
     `FROM HYBUCH,PERSONALSTAMM ` +
@@ -274,8 +278,6 @@ export class MachineService {
 
   //#region Private members
 
-  private machineSub$: BehaviorSubject<Machine> = new BehaviorSubject<Machine>(new Machine());
-
   //#endregion
 
   //#region Constructor
@@ -287,20 +289,15 @@ export class MachineService {
 
   //#region Public methods
 
-  get machine$(): Observable<Machine> {
-    return this.machineSub$.asObservable();
+  getMachineWithMock(): Observable<Machine> {
+    return this._httpClient.get('/machine').pipe(
+      map(rec => <Machine>rec)
+    );
   }
 
-  getMachineWithMock() {
-    this._httpClient.get('/machine').subscribe(
-      (machine: Machine) => {
-        this.machineSub$.next(machine);
-      });
-  }
-
-  getMachine(machineName: string) {
+  getMachine(machineName: string): Observable<Machine> {
     let machineRet: Machine;
-    forkJoin(
+    return forkJoin(
       this._fetchService.query(replaceAll(MachineService.machineSql, [MachineService.machineNameTBR], [machineName])),
       this._fetchService.query(replaceAll(MachineService.machineCurrentOPSql, [MachineService.machineNameTBR], [machineName])),
       this._fetchService.query(replaceAll(MachineService.operationBOMItemsSql, [MachineService.machineNameTBR], [machineName])),
@@ -421,11 +418,21 @@ export class MachineService {
 
             // Setup Operation's output
             mraData.filter(item => item.ORDERNUMBER === operation.name).map(mraItem => {
-              operation.output.set(new Date(mraItem.SNAPSHOT_TIMESTAMP), {
-                yield: mraItem.QUANTITY_GOOD,
-                scrap: mraItem.QUANTITY_SCRAP,
-                performance: mraItem.PERFORMANCE,
-              });
+              const found = Array.from(operation.output.keys()).find(key =>
+                key.getTime() === new Date(mraItem.SNAPSHOT_TIMESTAMP).getTime());
+
+              if (found) {
+                const ot = operation.output.get(found);
+                ot.yield += mraItem.QUANTITY_GOOD;
+                ot.scrap += mraItem.QUANTITY_SCRAP;
+                ot.performance += mraItem.PERFORMANCE;
+              } else {
+                operation.output.set(new Date(mraItem.SNAPSHOT_TIMESTAMP), {
+                  yield: mraItem.QUANTITY_GOOD,
+                  scrap: mraItem.QUANTITY_SCRAP,
+                  performance: mraItem.PERFORMANCE,
+                });
+              }
             });
 
             machineRet.currentOperations.push(operation);
@@ -447,6 +454,8 @@ export class MachineService {
             machineRet.previousOperation = machinePreviousOP[0].OPERATIONNAME;
             machineRet.previousArticle = machinePreviousOP[0].ARTICLE;
           }
+
+          //#endregion
 
           //#region Setup Next Operations
           machineNextOP.forEach(rec => {
@@ -473,15 +482,20 @@ export class MachineService {
             machineRet.nextOperations.push(operation);
           });
 
+          machineRet.nextOperations.sort((a, b) => a.planStart > b.planStart ? 1 : -1);
+
           //#endregion
 
           //#region Setup Machine's output
           mraData.map(mraItem => {
-            if (machineRet.output.has(new Date(mraItem.SNAPSHOT_TIMESTAMP))) {
-              const ot = machineRet.output.get(mraItem.SNAPSHOT_TIMESTAMP);
+            const found = Array.from(machineRet.output.keys()).find(key =>
+              key.getTime() === new Date(mraItem.SNAPSHOT_TIMESTAMP).getTime());
+
+            if (found) {
+              const ot = machineRet.output.get(found);
               ot.yield += mraItem.QUANTITY_GOOD;
               ot.scrap += mraItem.QUANTITY_SCRAP;
-              ot.performance = toNumber((ot.performance + mraItem.PERFORMANCE) / 2, Machine.FRACTION_DIGIT);
+              ot.performance += mraItem.PERFORMANCE;
             } else {
               machineRet.output.set(new Date(mraItem.SNAPSHOT_TIMESTAMP), {
                 yield: mraItem.QUANTITY_GOOD,
@@ -637,6 +651,35 @@ export class MachineService {
           return machineRet;
         }),
         //#endregion
+        //#region Setup Opearation's Last LoggedOn
+        switchMap((machine) => {
+          if (machine.currentOperations.length === 0) return of([]);
+
+          const operationNames = [];
+          machine.currentOperations.map((op) => operationNames.push(`'` + op.name + `'`));
+
+          return this._fetchService.query(replaceAll(MachineService.machineCurrentOPLoggedOnDateSql
+            , [MachineService.operationsTBR]
+            , [operationNames.join(',')]));
+
+        }),
+        map((lastLoggedOn: any[]) => {
+          if (lastLoggedOn.length === 0) return machineRet;
+
+          machineRet.currentOperations.map((op) => {
+            // Setup Last Logged On
+            const allLoggedOn = lastLoggedOn
+              .filter(rec => rec.OPERATION === op.name)
+              .sort((a, b) => a.LOGGEDONDATE > b.LOGGEDONDATE ? 1 : -1);
+            if (allLoggedOn.length > 0) {
+              op.lastLoggedOn = new Date(allLoggedOn[0].LOGGEDONDATE);
+            }
+          });
+          machineRet.currentOperations.sort((a, b) => a.lastLoggedOn > b.lastLoggedOn ? 1 : -1);
+
+          return machineRet;
+        }),
+        //#endregion
         //#region Setup Opeartion's Current Shift Output
         switchMap((machine) => {
           if (machine.currentOperations.length === 0) return of([]);
@@ -673,11 +716,8 @@ export class MachineService {
           });
 
           return machineRet;
-        }))
-      //#endregion
-      .subscribe((machine) => {
-        this.machineSub$.next(machine);
-      });
+        }));
+    //#endregion
   }
 
   //#region Private methods

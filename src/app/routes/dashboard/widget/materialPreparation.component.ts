@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { STColumn, STColumnTag } from '@delon/abc';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
@@ -37,8 +37,13 @@ export class MaterialPreparationComponent implements OnInit {
     { title: 'Remain.', render: 'percentages', i18n: 'app.material.percentage' },
     { title: 'Status', index: 'loaded', i18n: 'app.material.status', type: 'tag', tag: MAT_TAG },
   ];
+  private _machine: Machine = new Machine();
 
-  machine: Machine;
+  @Input()
+  set machine(value: Machine) {
+    this._machine = value;
+    this.data = this.componentLoggedOnTable;
+  }
   data: any[];
 
   //#endregion
@@ -56,10 +61,6 @@ export class MaterialPreparationComponent implements OnInit {
   //#region Implemented interface
 
   ngOnInit() {
-    this.machineService.machine$.subscribe((machine) => {
-      this.machine = machine;
-      this.data = this.componentLoggedOnTable;
-    });
   }
 
   //#endregion
@@ -69,8 +70,8 @@ export class MaterialPreparationComponent implements OnInit {
   get componentLoggedOnTable(): any[] {
     const ret: any[] = [];
 
-    if (this.machine.currentOperation) {
-      const op = this.machine.currentOperation;
+    if (this._machine.currentOperation) {
+      const op = this._machine.currentOperation;
       op.componentStatus.forEach((comp, key) => {
         // 1: 'In Use',
         // 2: 'No Mat.',

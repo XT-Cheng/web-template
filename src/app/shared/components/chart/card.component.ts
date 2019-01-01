@@ -93,4 +93,7 @@ export class ChartCardComponent {
   }
   private _loading = false;
 
+  get totalVisible() {
+    return this.total !== '';
+  }
 }

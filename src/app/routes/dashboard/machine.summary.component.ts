@@ -7,6 +7,7 @@ import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { toNumber } from '@delon/util';
 import { Operation } from '@core/hydra/entity/operation';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'fw-machine-summary',
@@ -26,6 +27,7 @@ export class MachineSummaryComponent implements OnInit {
 
   machine: Machine = new Machine();
   machineName = '';
+  isLoading = true;
 
   //#endregion
 
@@ -46,10 +48,9 @@ export class MachineSummaryComponent implements OnInit {
     this.route.paramMap.subscribe(param => {
       this.machineName = param.get('machineName');
       // this.machineService.getMachineWithMock(this.machineName);
-      this.machineService.getMachine(this.machineName);
-    });
-    this.machineService.machine$.subscribe((machine) => {
-      this.machine = machine;
+      this.machineService.getMachine(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
+        this.machine = machine;
+      });
     });
   }
 
@@ -59,7 +60,7 @@ export class MachineSummaryComponent implements OnInit {
 
   //#region Average Yield / Scrap by Hour
 
-  get averageHourYield(): number {
+  get averageHourYield() {
     if (this.machine.output.size === 0) return 0;
 
     let totalYield = 0;
@@ -67,10 +68,10 @@ export class MachineSummaryComponent implements OnInit {
       totalYield += item.yield;
     });
 
-    return toNumber((totalYield / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT));
+    return (totalYield / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT);
   }
 
-  get averageHourScrap(): number {
+  get averageHourScrap() {
     if (this.machine.output.size === 0) return 0;
 
     let totalScrap = 0;
@@ -78,7 +79,7 @@ export class MachineSummaryComponent implements OnInit {
       totalScrap += item.scrap;
     });
 
-    return toNumber((totalScrap / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT));
+    return (totalScrap / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT);
   }
 
   //#endregion
@@ -124,7 +125,7 @@ export class MachineSummaryComponent implements OnInit {
     this.machine.output.forEach((value, key) => {
       performances.push({
         x: format(key, 'HH:mm'),
-        y: value.scrap
+        y: value.performance
       });
     });
 
@@ -135,12 +136,19 @@ export class MachineSummaryComponent implements OnInit {
 
   //#region Compare Scrap to last half hour
 
-  get absoluteScrapComparedToLastHalfHour(): number {
-    return Math.abs(this.scrapComparedToLastHalfHour);
+  get absoluteScrapComparedToLastHalfHour(): string {
+    if (this.scrapComparedToLastHalfHour === 0 ||
+      this.scrapComparedToLastHalfHour === Number.MAX_SAFE_INTEGER) return `-`;
+
+    if (this.scrapComparedToLastHalfHour === 0) return `-`;
+
+    return Math.abs(this.scrapComparedToLastHalfHour).toString();
   }
 
   get scrapComparedToLastHalfHour(): number {
     if (this.scrapTrend.length < 2) return 0;
+
+    if (this.scrapTrend[this.scrapTrend.length - 2].y === 0) return Number.MAX_SAFE_INTEGER;
 
     const perc = toNumber((this.scrapTrend[this.scrapTrend.length - 1].y
       / this.scrapTrend[this.scrapTrend.length - 2].y * 100).toFixed(Operation.FRACTION_DIGIT));
@@ -148,15 +156,29 @@ export class MachineSummaryComponent implements OnInit {
     return toNumber((perc - 100).toFixed(Operation.FRACTION_DIGIT));
   }
 
+  get scrapFlag() {
+    if (this.scrapComparedToLastHalfHour === 0 ||
+      this.scrapComparedToLastHalfHour === Number.MAX_SAFE_INTEGER) return '';
+
+    if (this.scrapComparedToLastHalfHour > 0) return 'up';
+
+    return 'down';
+  }
+
   //#endregion
 
   //#region Compare Performance to last half hour
-  get absolutePerformanceComparedToLastHalfHour(): number {
-    return Math.abs(this.performanceComparedToLastHalfHour);
+  get absolutePerformanceComparedToLastHalfHour(): string {
+    if (this.performanceComparedToLastHalfHour === 0
+      || this.performanceComparedToLastHalfHour === Number.MAX_SAFE_INTEGER) return `-`;
+
+    return Math.abs(this.performanceComparedToLastHalfHour).toString();
   }
 
   get performanceComparedToLastHalfHour(): number {
     if (this.performanceTrend.length < 2) return 0;
+
+    if (this.performanceTrend[this.performanceTrend.length - 2].y === 0) return Number.MAX_SAFE_INTEGER;
 
     const perc = toNumber((this.performanceTrend[this.performanceTrend.length - 1].y
       / this.performanceTrend[this.performanceTrend.length - 2].y * 100).toFixed(Operation.FRACTION_DIGIT));
@@ -164,6 +186,14 @@ export class MachineSummaryComponent implements OnInit {
     return toNumber((perc - 100).toFixed(Operation.FRACTION_DIGIT));
   }
 
+  get performanceFlag() {
+    if (this.performanceComparedToLastHalfHour === 0 ||
+      this.performanceComparedToLastHalfHour === Number.MAX_SAFE_INTEGER) return '';
+
+    if (this.performanceComparedToLastHalfHour > 0) return 'up';
+
+    return 'down';
+  }
 
   //#endregion
 
@@ -184,22 +214,6 @@ export class MachineSummaryComponent implements OnInit {
     if (!date) return ``;
 
     return format(date, 'MM-DD HH:MM');
-  }
-
-  get performanceFlag() {
-    if (this.performanceComparedToLastHalfHour === 0) return '';
-
-    if (this.performanceComparedToLastHalfHour > 0) return 'up';
-
-    return 'down';
-  }
-
-  get scrapFlag() {
-    if (this.scrapComparedToLastHalfHour === 0) return '';
-
-    if (this.scrapComparedToLastHalfHour > 0) return 'up';
-
-    return 'down';
   }
 
   getTrendFlag(actual, expected) {

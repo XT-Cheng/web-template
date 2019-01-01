@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { STColumn, STColumnTag } from '@delon/abc';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
@@ -34,7 +34,7 @@ export class CheckListOfShiftChangeComponent implements OnInit {
     {
       title: 'Finished At.', index: 'finishedAt', i18n: 'app.checklist.finishedAt', format: (value) => {
         if (value.finishedAt) {
-          return format(value.finishedAt, 'YYYY-MM-DD HH:M:ss');
+          return format(value.finishedAt, 'YYYY-MM-DD HH:mm:ss');
         }
         return ``;
       }
@@ -42,8 +42,13 @@ export class CheckListOfShiftChangeComponent implements OnInit {
     { title: 'Comment', index: 'comment', i18n: 'app.checklist.comment' },
     { title: 'Status', index: 'completed', i18n: 'app.checklist.completed', type: 'tag', tag: CHECK_TAG },
   ];
+  private _machine: Machine = new Machine();
 
-  machine: Machine;
+  @Input()
+  set machine(value: Machine) {
+    this._machine = value;
+    this.data = this.checkListResults;
+  }
   data: any[];
 
   //#endregion
@@ -61,10 +66,6 @@ export class CheckListOfShiftChangeComponent implements OnInit {
   //#region Implemented interface
 
   ngOnInit() {
-    this.machineService.machine$.subscribe((machine) => {
-      this.machine = machine;
-      this.data = this.checkListResults;
-    });
   }
 
   //#endregion
@@ -74,12 +75,12 @@ export class CheckListOfShiftChangeComponent implements OnInit {
   get checkListResults(): any[] {
     const ret: any[] = [];
 
-    const shiftChange = this.machine.checkLists.get(ProcessType.CHANGESHIFT);
+    const shiftChange = this._machine.checkLists.get(ProcessType.CHANGESHIFT);
 
     if (shiftChange) {
       shiftChange.items.forEach(item => {
-        if (this.machine.checkListResultsOfCurrentShift.get(item.sequence)) {
-          const result = this.machine.checkListResultsOfCurrentShift.get(item.sequence);
+        if (this._machine.checkListResultsOfCurrentShift.get(item.sequence)) {
+          const result = this._machine.checkListResultsOfCurrentShift.get(item.sequence);
           ret.push({
             sequence: result.sequence,
             shortText: item.shortText,
