@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { _HttpClient } from '@delon/theme';
+import { Component, OnInit, Inject, ViewChild } from '@angular/core';
+import { _HttpClient, ALAIN_I18N_TOKEN } from '@delon/theme';
 import { NzMessageService } from 'ng-zorro-antd';
 import { format } from 'date-fns';
 import { ActivatedRoute } from '@angular/router';
@@ -8,6 +8,9 @@ import { Machine } from '@core/hydra/entity/machine';
 import { toNumber } from '@delon/util';
 import { Operation } from '@core/hydra/entity/operation';
 import { finalize } from 'rxjs/operators';
+import { I18NService } from '@core/i18n/i18n.service';
+import { ReuseTabService } from '@shared/components/reuse-tab/reuse-tab.service';
+import { ChartGaugeComponent } from '@shared/components/chart/gauge.component';
 
 @Component({
   selector: 'fw-machine-summary',
@@ -24,6 +27,8 @@ export class MachineSummaryComponent implements OnInit {
   //#endregion
 
   //#region Fields
+  @ViewChild(ChartGaugeComponent)
+  oeeGauge: ChartGaugeComponent;
 
   machine: Machine = new Machine();
   machineName = '';
@@ -37,6 +42,8 @@ export class MachineSummaryComponent implements OnInit {
     public machineService: MachineService,
     public msg: NzMessageService,
     private route: ActivatedRoute,
+    private reuseTabService: ReuseTabService,
+    @Inject(ALAIN_I18N_TOKEN) private i18n: I18NService,
   ) {
   }
 
@@ -47,11 +54,17 @@ export class MachineSummaryComponent implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(param => {
       this.machineName = param.get('machineName');
+      this.reuseTabService.title = `${this.i18n.fanyi('app.route.line-summary')} - ${this.machineName}`;
+
       // this.machineService.getMachineWithMock(this.machineName);
       this.machineService.getMachine(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
         this.machine = machine;
       });
     });
+  }
+
+  _onReuseInit() {
+    this.oeeGauge.runInstall();
   }
 
   //#endregion

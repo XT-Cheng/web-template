@@ -84,7 +84,13 @@ export class ParetoComponent implements OnDestroy, OnChanges {
       this.autoHideXLabels = false;
     }
 
-    if (!this.data || (this.data && this.data.length < 1)) return;
+    if (!this.data) return;
+
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+
     this.node.nativeElement.innerHTML = '';
 
     let sumTotal = 0;

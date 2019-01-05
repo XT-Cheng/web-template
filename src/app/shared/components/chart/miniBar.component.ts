@@ -10,6 +10,8 @@ import {
   NgZone,
 } from '@angular/core';
 import { toNumber } from '@delon/util';
+import { Subscription, fromEvent } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 declare var G2: any;
 
@@ -20,6 +22,7 @@ declare var G2: any;
 })
 export class ChartMiniBarComponent implements OnDestroy, OnChanges {
   // #region fields
+  private resize$: Subscription = null;
 
   @Input()
   color = '#1890FF';
@@ -63,6 +66,11 @@ export class ChartMiniBarComponent implements OnDestroy, OnChanges {
 
   private install() {
     if (!this.data) return;
+
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
 
     this.node.nativeElement.innerHTML = '';
 
@@ -111,13 +119,28 @@ export class ChartMiniBarComponent implements OnDestroy, OnChanges {
   }
 
   ngOnChanges(): void {
-    this.zone.runOutsideAngular(() => setTimeout(() => this.install()));
+    this.installResizeEvent();
+    this.runInstall();
   }
 
   ngOnDestroy(): void {
+    if (this.resize$) this.resize$.unsubscribe();
+
     if (this.chart) {
       this.chart.destroy();
       this.chart = null;
     }
+  }
+
+  private runInstall() {
+    this.zone.runOutsideAngular(() => setTimeout(() => this.install()));
+  }
+
+  private installResizeEvent() {
+    if (this.resize$) return;
+
+    this.resize$ = fromEvent(window, 'resize')
+      .pipe(debounceTime(200))
+      .subscribe(() => this.runInstall());
   }
 }

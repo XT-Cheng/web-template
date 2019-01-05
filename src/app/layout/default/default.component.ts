@@ -9,6 +9,7 @@ import {
   ElementRef,
   Renderer2,
   Inject,
+  TemplateRef,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import {
@@ -44,6 +45,8 @@ import {
   GithubOutline,
   AppstoreOutline,
 } from '@ant-design/icons-angular/icons';
+import { ReuseTabComponent } from '@shared/components/reuse-tab/reuse-tab.component';
+import { CountDownComponent } from '@delon/abc';
 
 const ICONS = [
   MenuFoldOutline,
@@ -67,9 +70,6 @@ const ICONS = [
 
 // #endregion
 
-import { environment } from '@env/environment';
-import { SettingDrawerComponent } from './setting-drawer/setting-drawer.component';
-
 @Component({
   selector: 'layout-default',
   templateUrl: './default.component.html',
@@ -81,10 +81,22 @@ import { SettingDrawerComponent } from './setting-drawer/setting-drawer.componen
 export class LayoutDefaultComponent
   implements OnInit, AfterViewInit, OnDestroy {
   private notify$: Subscription;
+  private savedSlideMode: boolean;
   isFetching = false;
-  @ViewChild('settingHost', { read: ViewContainerRef })
-  settingHost: ViewContainerRef;
-
+  isSlideMode = false;
+  isFullScreenMode = false;
+  @ViewChild(ReuseTabComponent)
+  reuseTabComp: ReuseTabComponent;
+  @ViewChild('layoutHeader', { read: ElementRef })
+  headerElem: ElementRef;
+  @ViewChild('layoutSidebar', { read: ElementRef })
+  siderbarElem: ElementRef;
+  @ViewChild('section', { read: ElementRef })
+  sectionElem: ElementRef;
+  @ViewChild('reuseTab', { read: ElementRef })
+  reuseTabElem: ElementRef;
+  @ViewChild('routeOutlet', { read: ElementRef })
+  routeOutletElem: ElementRef;
   constructor(
     iconSrv: NzIconService,
     router: Router,
@@ -139,15 +151,6 @@ export class LayoutDefaultComponent
   }
 
   ngAfterViewInit(): void {
-    // Setting componet for only developer
-    // if (!environment.production) {
-    //   setTimeout(() => {
-    //     const settingFactory = this.resolver.resolveComponentFactory(
-    //       SettingDrawerComponent,
-    //     );
-    //     this.settingHost.createComponent(settingFactory);
-    //   }, 22);
-    // }
   }
 
   ngOnInit() {
@@ -157,5 +160,97 @@ export class LayoutDefaultComponent
 
   ngOnDestroy() {
     this.notify$.unsubscribe();
+  }
+
+  changeSlideMode() {
+    this.isSlideMode = !this.isSlideMode;
+    this.savedSlideMode = false;
+  }
+
+  changeFullScreenMode() {
+    this.isFullScreenMode = !this.isFullScreenMode;
+    this.adjustFullScreen();
+  }
+
+  onCountDownFinished() {
+    let toPos = this.reuseTabComp.pos + 1;
+    if (toPos === this.reuseTabComp.list.length) {
+      toPos = 0;
+    }
+    this.savedSlideMode = this.isSlideMode;
+    this.isSlideMode = false;
+    this.reuseTabComp.to(null, toPos);
+  }
+
+  tabChanged() {
+    if (this.savedSlideMode) {
+      this.isSlideMode = true;
+    }
+  }
+
+  adjustFullScreen() {
+    if (this.isFullScreenMode) {
+      this.renderer.setStyle(
+        this.headerElem.nativeElement,
+        'display',
+        'none'
+      );
+      this.renderer.setStyle(
+        this.siderbarElem.nativeElement,
+        'display',
+        'none'
+      );
+      this.renderer.setStyle(
+        this.sectionElem.nativeElement,
+        'margin-left',
+        '24px'
+      );
+      this.renderer.setStyle(
+        this.routeOutletElem.nativeElement,
+        'display',
+        'inline'
+      );
+      this.renderer.setStyle(
+        this.reuseTabElem.nativeElement,
+        'width',
+        '100%'
+      );
+      this.renderer.setStyle(
+        this.reuseTabElem.nativeElement,
+        'top',
+        '0px'
+      );
+    } else {
+      this.renderer.setStyle(
+        this.headerElem.nativeElement,
+        'display',
+        'flex'
+      );
+      this.renderer.setStyle(
+        this.siderbarElem.nativeElement,
+        'display',
+        'block'
+      );
+      this.renderer.setStyle(
+        this.sectionElem.nativeElement,
+        'margin-left',
+        '88px'
+      );
+      this.renderer.setStyle(
+        this.routeOutletElem.nativeElement,
+        'display',
+        'block'
+      );
+      this.renderer.setStyle(
+        this.reuseTabElem.nativeElement,
+        'width',
+        '95%'
+      );
+      this.renderer.setStyle(
+        this.reuseTabElem.nativeElement,
+        'top',
+        '40px'
+      );
+    }
   }
 }

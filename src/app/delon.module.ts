@@ -42,13 +42,14 @@ const MOCK_MODULES = [DelonMockModule.forRoot({ data: MOCKDATA })];
  *  ```
  */
 import { RouteReuseStrategy } from '@angular/router';
-import { ReuseTabService, ReuseTabStrategy } from '@delon/abc/reuse-tab';
+import { ReuseTabService } from '@shared/components/reuse-tab/reuse-tab.service';
+import { ReuseTabStrategy } from '@shared/components/reuse-tab/reuse-tab.strategy';
 const REUSETAB_PROVIDES = [
-  // {
-  //   provide: RouteReuseStrategy,
-  //   useClass: ReuseTabStrategy,
-  //   deps: [ReuseTabService],
-  // },
+  {
+    provide: RouteReuseStrategy,
+    useClass: ReuseTabStrategy,
+    deps: [ReuseTabService],
+  },
 ];
 // #endregion
 

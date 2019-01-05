@@ -22,6 +22,10 @@ import { ChartBarLineComponent } from './components/chart/barLine.component';
 import { ChartMiniAreaComponent } from './components/chart/miniArea.component';
 import { ChartMiniProgressComponent } from './components/chart/miniProgress.component';
 import { ChartMiniBarComponent } from './components/chart/miniBar.component';
+import { ReuseTabComponent } from './components/reuse-tab/reuse-tab.component';
+import { ReuseTabContextDirective } from './components/reuse-tab/reuse-tab-context.directive';
+import { ReuseTabContextComponent } from './components/reuse-tab/reuse-tab-context.component';
+import { ReuseTabContextMenuComponent } from './components/reuse-tab/reuse-tab-context-menu.component';
 const THIRDMODULES = [
   NgZorroAntdModule,
   CountdownModule
@@ -38,6 +42,13 @@ const CHART_COMPONENTS = [
   ChartMiniAreaComponent,
   ChartMiniProgressComponent,
   ChartMiniBarComponent
+];
+
+const REUSE_TAB = [
+  ReuseTabComponent,
+  ReuseTabContextComponent,
+  ReuseTabContextDirective,
+  ReuseTabContextMenuComponent
 ];
 
 const COMPONENTS = [];
@@ -61,7 +72,8 @@ const DIRECTIVES = [AutofocusDirective];
     // your components
     ...CHART_COMPONENTS,
     ...COMPONENTS,
-    ...DIRECTIVES
+    ...DIRECTIVES,
+    ...REUSE_TAB
   ],
   exports: [
     CommonModule,
@@ -78,6 +90,7 @@ const DIRECTIVES = [AutofocusDirective];
     ...THIRDMODULES,
     // your components
     ...CHART_COMPONENTS,
+    ...REUSE_TAB,
     ...COMPONENTS,
     ...DIRECTIVES
   ]

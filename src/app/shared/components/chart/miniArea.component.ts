@@ -88,6 +88,11 @@ export class ChartMiniAreaComponent implements OnDestroy, OnChanges {
   private install() {
     if (!this.data) return;
 
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+
     this.node.nativeElement.innerHTML = '';
 
     const chart = new G2.Chart({

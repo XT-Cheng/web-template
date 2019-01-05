@@ -10,6 +10,8 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { toNumber } from '@delon/util';
+import { Subscription, fromEvent } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 declare var G2: any;
 
@@ -48,7 +50,7 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
   // #endregion
 
   @ViewChild('container') private node: ElementRef;
-
+  private resize$: Subscription = null;
   private chart: any;
   private initFlag = false;
 
@@ -158,11 +160,16 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
     this.chart.changeData(data);
   }
 
-  private runInstall() {
+  public runInstall() {
     this.zone.runOutsideAngular(() => setTimeout(() => this.install()));
   }
 
   private install() {
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+
     this.node.nativeElement.innerHTML = '';
     const Shape = G2.Shape;
     // 自定义Shape 部分
@@ -248,16 +255,28 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
     this.draw();
   }
 
+  private installResizeEvent() {
+    if (this.resize$) return;
+
+    this.resize$ = fromEvent(window, 'resize')
+      .pipe(debounceTime(200))
+      .subscribe(() => this.runInstall());
+  }
+
   ngOnInit(): void {
     this.initFlag = true;
     this.runInstall();
   }
 
   ngOnChanges(): void {
+    this.installResizeEvent();
+    this.runInstall();
     if (this.initFlag) this.draw();
   }
 
   ngOnDestroy(): void {
+    if (this.resize$) this.resize$.unsubscribe();
+
     if (this.chart) this.chart.destroy();
   }
 }
