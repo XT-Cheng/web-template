@@ -168,5 +168,6 @@
   "app.report.batch.remainQty": "数量",
   "app.report.batch.material": "料号",
   "app.report.batch.SAPBatch": "SAP批号",
-  "app.report.batch.dateCode": "Date Code"
+  "app.report.batch.dateCode": "Date Code",
+  "app.report.batch.lastChanged": "最后更改于"
 }

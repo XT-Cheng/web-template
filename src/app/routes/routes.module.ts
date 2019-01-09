@@ -25,6 +25,8 @@ import { NextOperationsComponent } from './dashboard/widget/nextOperations.compo
 import { ImportBapiComponent } from './import/import.bapi.exec.component';
 import { CheckListOfShiftChangeComponent } from './dashboard/widget/checkListOfShiftChange.component';
 import { CheckListOfChangeOverComponent } from './dashboard/widget/checkListOfChangeOver.component';
+import { CreateBatchComponent } from './mobile/material/create-batch.component';
+import { WeUiModule } from 'ngx-weui';
 
 const BAPI = [
   BAPITestComponent
@@ -58,6 +60,8 @@ const COMPONENTS = [
   Exception403Component,
   Exception404Component,
   Exception500Component,
+  // Material
+  CreateBatchComponent
 ];
 const COMPONENTS_NOROUNT = [];
 
@@ -65,6 +69,7 @@ const COMPONENTS_NOROUNT = [];
   imports: [
     SharedModule,
     RouteRoutingModule,
+    WeUiModule,
     DelonChartModule
   ],
   declarations: [

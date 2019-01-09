@@ -4,6 +4,7 @@ import { BapiService } from '@core/hydra/service/bapi.service';
 import { finalize } from 'rxjs/operators';
 import { VBoardService } from '@core/hydra/service/vBoard.service';
 import { HttpClient } from '@angular/common/http';
+import { DialogTypeEnum } from '@core/hydra/bapi/constants';
 
 @Component({
   selector: 'app-bapi-test',
@@ -15,6 +16,7 @@ export class BAPITestComponent {
 
   public bapiTestForm: FormGroup;
   public isExecuting = false;
+  public bapiTypes = Object.keys(DialogTypeEnum);
 
   //#endregion
 

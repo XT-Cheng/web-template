@@ -1,0 +1,68 @@
+<form #f="ngForm">
+  <div class="weui-cells weui-cells_form">
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">Batch Nr</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" fwShareAutoFocus #batch (keydown.enter)='batchEntered($event)' fwShareKeyHandler
+          required [fwShareKeyHandler]='{nextInputId: "materialBuffer",inputing: inputing, req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
+          name="batch" id='batch' [(ngModel)]='inputData.barCode' placeholder="Pls input Batch Nr" weui-required>
+      </div>
+    </div>
+    <label for="weuiAgree" class="weui-agree">
+      <span class="weui-agree__text">
+        <!-- {{batchInfo.display()}} -->
+      </span>
+    </label>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">Storage Loc</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" #materialBuffer fwShareKeyHandler required [fwShareKeyHandler]='{nextInputId: "numberOfSplits",inputing: inputing, req: request(requestMaterialBufferData, requestMaterialBufferDataSuccess, requestMaterialBufferDataFailed)}'
+          (keydown.enter)='materialBufferEntered($event)' name="materialBuffer" id="materialBuffer" [(ngModel)]='inputData.materialBuffer'
+          placeholder="Pls input Storage Loc." weui-required>
+      </div>
+    </div>
+    <label for="weuiAgree" class="weui-agree">
+      <span class="weui-agree__text">
+        <!-- {{bufferInfo.display()}} -->
+      </span>
+    </label>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">Nr. of Splits</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" weui-input='number' fwShareMin [fwShareMin]="1" #numberOfSplits (keydown.enter)='numberOfSplitsEntered($event)'
+          fwShareKeyHandler [fwShareKeyHandler]='{nextInputId: "operator",inputing: inputing, req: request(requestNumberOfSplitsData, requestNumberOfSplitsDataSuccess, requestNumberOfSplitsDataFailed)}'
+          name="numberOfSplits" id="numberOfSplits" [(ngModel)]='inputData.numberOfSplits' placeholder="Pls input Nr. of Splits"
+          weui-required required>
+      </div>
+    </div>
+    <label for="weuiAgree" class="weui-agree">
+      <span class="weui-agree__text">
+        {{getSplitInfo()}}
+      </span>
+    </label>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">Operator</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" type='password' #operator fwShareKeyHandler required [fwShareKeyHandler]='{inputing: inputing, req: request(requestOperatorData, requestOperatorDataSuccess, requestOperatorDataFailed)}'
+          (keydown.enter)='operatorEntered($event)' name="operator" id="operator" [(ngModel)]='inputData.badge'
+          placeholder="Pls input Operator" weui-required>
+      </div>
+    </div>
+    <label for="weuiAgree" class="weui-agree">
+      <span class="weui-agree__text">
+        {{operatorInfo.display()}}
+      </span>
+    </label>
+    <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(createBatch, createBatchSuccess, createBatchFailed)'>Create</button>
+    <button class='reset' weui-button weui-mini="mini" [weui-type]="'warn'" (click)='resetForm()'>Reset</button>
+  </div>
+</form>
+<weui-mask #mask [backdrop]="false"></weui-mask>

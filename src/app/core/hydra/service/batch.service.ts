@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { FetchService } from './fetch.service';
 import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { Batch, Buffer } from '@core/hydra/entity/batch';
+import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
 import { format } from 'date-fns';
 
 @Injectable()
@@ -37,7 +37,7 @@ export class BatchService {
   //#endregion
   //#region Private members
 
-  private buffers: Buffer[];
+  private buffers: MaterialBuffer[];
 
   //#endregion
 
@@ -60,7 +60,7 @@ export class BatchService {
     );
   }
 
-  getBatches(materialName: string = '', buffer: Buffer = null, lastChanged: Date = null): Observable<Batch[]> {
+  getBatches(materialName: string = '', buffer: MaterialBuffer = null, lastChanged: Date = null): Observable<MaterialBatch[]> {
     let sql = BatchService.batchSql;
     if (materialName) {
       sql = sql.replace(BatchService.materialNameTBR, `AND BATCH.ARTIKEL = '${materialName}'`);
@@ -86,10 +86,10 @@ export class BatchService {
 
     return this._fetchService.query(sql).pipe(
       map((batches) => {
-        const ret: Batch[] = [];
+        const ret: MaterialBatch[] = [];
 
         batches.forEach(batch => {
-          const data = Object.assign(new Batch(), {
+          const data = Object.assign(new MaterialBatch(), {
             name: batch.BATCHNAME,
             bufferName: batch.BUFFERNAME,
             lastChanged: new Date(batch.LASTCHANGED),
@@ -108,14 +108,14 @@ export class BatchService {
       }));
   }
 
-  getMaterialBuffers(): Observable<Buffer[]> {
+  getMaterialBuffers(): Observable<MaterialBuffer[]> {
     if (this.buffers) return of(this.buffers);
 
     return this._fetchService.query(BatchService.batchBufferSql).pipe(
       map((records) => {
         this.buffers = [];
         records.forEach(rec => {
-          const data = Object.assign(new Buffer(), {
+          const data = Object.assign(new MaterialBuffer(), {
             name: rec.BUFFER_NAME,
             description: rec.BUFFER_DESC,
             bufferLevel: rec.BUFFER_LEVEL,
@@ -140,7 +140,7 @@ export class BatchService {
 
   //#region Private methods
 
-  private findLeadBuffer(buffers: Buffer[], buffer: Buffer, source: Buffer) {
+  private findLeadBuffer(buffers: MaterialBuffer[], buffer: MaterialBuffer, source: MaterialBuffer) {
     const found = buffers.find(target => {
       return target.name === buffer.parentBuffer;
     });
@@ -153,7 +153,7 @@ export class BatchService {
     return buffer;
   }
 
-  private getLowerLevelBuffers(buffer: Buffer): string[] {
+  private getLowerLevelBuffers(buffer: MaterialBuffer): string[] {
     const bufferNames: string[] = [];
     this.buffers.map(b => {
       if (b.parentBuffers.some(name => name === buffer.name)) {

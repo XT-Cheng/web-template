@@ -1,4 +1,5 @@
 import { Menu } from '@delon/theme';
+import { MockRequest } from '@delon/mock';
 
 const menuInfo: Menu[] = [{
   text: '主导航',
@@ -109,6 +110,10 @@ const menuInfo: Menu[] = [{
   }]
 }];
 
+function getMenuInfo(params: any) {
+  return menuInfo;
+}
+
 export const MENUINFO = {
-  '/menuInfo': menuInfo
+  '/menuInfo': (req: MockRequest) => getMenuInfo(req.queryString) // menuInfo
 };

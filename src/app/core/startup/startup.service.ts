@@ -10,6 +10,7 @@ import { catchError } from 'rxjs/operators';
 import { ICONS } from '../../../style-icons';
 import { ICONS_AUTO } from '../../../style-icons-auto';
 import { I18NService } from '../i18n/i18n.service';
+import { isMobile } from '@core/utils/helpers';
 
 /**
  * 用于应用启动时
@@ -31,9 +32,9 @@ export class StartupService {
 
   private viaHttp(resolve: any) {
     zip(
-      this.httpClient.get(`/assets/i18n/${this.i18n.defaultLang}.json`),
-      this.httpClient.get('/appInfo'),
-      this.httpClient.get('/menuInfo'),
+      this.httpClient.get(`./assets/i18n/${this.i18n.defaultLang}.json`),
+      this.httpClient.get(`/appInfo`),
+      this.httpClient.get(`/menuInfo?isMobile=${isMobile()}`),
       this.httpClient.get(`/userAccess/${this.settingService.user.id}`)
     ).pipe(
       // 接收其他拦截器后产生的异常消息
@@ -65,6 +66,7 @@ export class StartupService {
     // only works with promises
     // https://github.com/angular/angular/issues/15088
     return new Promise((resolve) => {
+      G2.track(false);
       this.viaHttp(resolve);
     });
   }

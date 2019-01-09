@@ -2,13 +2,13 @@
 <layout-header #layoutHeader class="alain-default__header"></layout-header>
 <layout-sidebar #layoutSidebar class="alain-default__aside"></layout-sidebar>
 <section #section class="alain-default__content">
-  <fw-reuse-tab #reuseTab (change)='tabChanged()' [nzExtraContent]='extraTemplate' style="width: 95%;"></fw-reuse-tab>
+  <fw-reuse-tab *ngIf='!isMobile()' #reuseTab (change)='tabChanged()' [nzExtraContent]='extraTemplate' style="width: 95%;"></fw-reuse-tab>
   <router-outlet #routeOutlet></router-outlet>
 </section>
 <ng-template #extraTemplate>
   <countdown *ngIf='isSlideMode' (finished)="onCountDownFinished()" [config]="{leftTime: 3}">$!m!:$!s!</countdown>
 </ng-template>
-<quick-menu nz-menu>
+<quick-menu *ngIf='!isMobile()' nz-menu>
   <div style='height: 48px; margin-top: 0px; margin-bottom: 0px;' nz-menu-item>
     <label nz-checkbox style='line-height: 50px;' (click)='changeSlideMode()'>Slide
       Mode</label>

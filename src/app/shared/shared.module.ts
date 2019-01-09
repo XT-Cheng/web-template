@@ -26,6 +26,8 @@ import { ReuseTabComponent } from './components/reuse-tab/reuse-tab.component';
 import { ReuseTabContextDirective } from './components/reuse-tab/reuse-tab-context.directive';
 import { ReuseTabContextComponent } from './components/reuse-tab/reuse-tab-context.component';
 import { ReuseTabContextMenuComponent } from './components/reuse-tab/reuse-tab-context-menu.component';
+import { KeyHandlerDirective } from './directives/keyhandler.directive';
+import { MinDirective } from './directives/min.directive';
 const THIRDMODULES = [
   NgZorroAntdModule,
   CountdownModule
@@ -52,7 +54,7 @@ const REUSE_TAB = [
 ];
 
 const COMPONENTS = [];
-const DIRECTIVES = [AutofocusDirective];
+const DIRECTIVES = [AutofocusDirective, KeyHandlerDirective, MinDirective];
 // #endregion
 
 @NgModule({

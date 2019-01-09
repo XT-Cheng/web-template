@@ -4,7 +4,9 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="type">Type</nz-form-label>
         <nz-form-control>
-          <input fwAutoFocus nz-input formControlName="type" name="type" id="type" placeholder="BAPI Type">
+          <nz-select formControlName="type" nzAllowClear nzShowSearch nzPlaceHolder="Choose">
+            <nz-option *ngFor="let option of bapiTypes" [nzValue]="option" [nzLabel]="option"></nz-option>
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>

@@ -5,6 +5,7 @@ import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { I18NService } from '@core/i18n/i18n.service';
+import { WeUiModule } from 'ngx-weui';
 import { DefaultInterceptor } from '@core/net/default.interceptor';
 import { StartupService } from '@core/startup/startup.service';
 import { ALAIN_I18N_TOKEN, DELON_LOCALE, zh_CN as delonLang } from '@delon/theme';
@@ -103,6 +104,7 @@ const APPINIT_PROVIDES = [
     SharedModule,
     LayoutModule,
     RoutesModule,
+    WeUiModule.forRoot(),
     ...I18NSERVICE_MODULES,
     ...FORM_MODULES,
     ...GLOBAL_THIRD_MDOULES

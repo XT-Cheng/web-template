@@ -193,3 +193,16 @@ function escapeRegExp(str) {
 }
 
 //#endregion
+
+//#region Mobile check
+
+export function isMobile() {
+  const ua = navigator.userAgent;
+
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(ua))
+    return true;
+
+  return false;
+}
+
+//#endregion

@@ -1,13 +1,10 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { _HttpClient, ALAIN_I18N_TOKEN } from '@delon/theme';
+import { Component, OnInit } from '@angular/core';
 import { NzMessageService, toNumber } from 'ng-zorro-antd';
-import { I18NService } from '@core/i18n/i18n.service';
 import { BatchService } from '@core/hydra/service/batch.service';
-import { finalize, debounceTime, switchMap, filter } from 'rxjs/operators';
-import { forkJoin, interval, BehaviorSubject } from 'rxjs';
 import { STColumn } from '@delon/abc';
-import { Batch, Buffer } from '@core/hydra/entity/Batch';
-import { FormGroup, FormBuilder, FormControl, AbstractControl } from '@angular/forms';
+import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/Batch';
+import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
+import { format } from 'date-fns';
 
 @Component({
   selector: 'app-batch-general',
@@ -18,7 +15,7 @@ export class BatchGeneralComponent implements OnInit {
 
   //#region Private fields
 
-  private originalData: Batch[] = [];
+  private originalData: MaterialBatch[] = [];
   private currentBufferName = '';
 
   private _isChartActive = false;
@@ -36,7 +33,10 @@ export class BatchGeneralComponent implements OnInit {
       title: 'Qty',
       index: 'quantity',
       type: 'number',
-      sorter: (a: any, b: any) => a.callNo - b.callNo,
+      className: 'text-left',
+      sort: {
+        compare: (a, b) => a.quantity - b.quantity,
+      },
       i18n: 'app.report.batch.remainQty'
     },
     {
@@ -54,16 +54,30 @@ export class BatchGeneralComponent implements OnInit {
       index: 'dateCode',
       i18n: 'app.report.batch.dateCode'
     },
+    {
+      title: 'Last Changed',
+      index: 'lastChanged',
+      i18n: 'app.report.batch.lastChanged',
+      format: (value) => {
+        if (value.lastChanged) {
+          return format(value.lastChanged, 'YYYY-MM-DD HH:mm:ss');
+        }
+        return ``;
+      },
+      sort: {
+        compare: (a, b) => a.lastChanged - b.lastChanged,
+      },
+    },
   ];
 
-  tableData: Batch[] = [];
+  tableData: MaterialBatch[] = [];
   chartDataView: any = new DataSet().createView();
   currentBufferDescription = '';
   currentMaterial = '';
   level = 0;
 
   matList = [];
-  buffers: Buffer[] = [];
+  buffers: MaterialBuffer[] = [];
 
   loading = false;
 
@@ -72,8 +86,7 @@ export class BatchGeneralComponent implements OnInit {
   //#region Constructor
 
   constructor(public msg: NzMessageService, private fb: FormBuilder,
-    private batchService: BatchService,
-    @Inject(ALAIN_I18N_TOKEN) private i18n: I18NService) { }
+    private batchService: BatchService) { }
 
   //#endregion
 
@@ -90,21 +103,8 @@ export class BatchGeneralComponent implements OnInit {
     return this._isTableActive;
   }
 
-  //#endregion
 
-  //#region Private properties
 
-  private get material(): AbstractControl {
-    return this.searchForm.get(`material`);
-  }
-
-  private get buffer(): AbstractControl {
-    return this.searchForm.get(`buffer`);
-  }
-
-  private get lastChanged(): AbstractControl {
-    return this.searchForm.get(`lastChanged`);
-  }
 
   //#endregion
 
@@ -167,7 +167,7 @@ export class BatchGeneralComponent implements OnInit {
   }
 
   barClicked(item) {
-    let directChildren: Buffer[];
+    let directChildren: MaterialBuffer[];
 
     if (this.level === 0) {
       this.currentMaterial = item.x;
@@ -204,7 +204,7 @@ export class BatchGeneralComponent implements OnInit {
   }
 
   private generateTableData(material: string, bufferName: string) {
-    let intervalData: Batch[] = this.originalData;
+    let intervalData: MaterialBatch[] = this.originalData;
 
     if (material) {
       intervalData = this.originalData.filter((value) => {
@@ -259,7 +259,7 @@ export class BatchGeneralComponent implements OnInit {
 
       if (directChildren.length === 0) return;
 
-      let toAddBuffer: Buffer;
+      let toAddBuffer: MaterialBuffer;
       this.tableData.forEach(batch => {
         // 1. Find Batch Buffer's Parents
         const buffer = this.buffers.find(b => b.name === batch.bufferName);

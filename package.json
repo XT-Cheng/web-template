@@ -50,6 +50,7 @@
     "lint-staged": "^7.1.2",
     "ng-alain": "^2.0.0-rc.1",
     "ng-zorro-antd": "^1.7.1",
+    "ngx-weui": "^7.0.0-rc.1",
     "prettier": "^1.12.1",
     "prettier-stylelint": "^0.4.2",
     "qrious": "^4.0.2",

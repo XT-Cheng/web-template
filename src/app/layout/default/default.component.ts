@@ -10,6 +10,7 @@ import {
   Renderer2,
   Inject,
   TemplateRef,
+  APP_INITIALIZER,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import {
@@ -47,6 +48,8 @@ import {
 } from '@ant-design/icons-angular/icons';
 import { ReuseTabComponent } from '@shared/components/reuse-tab/reuse-tab.component';
 import { CountDownComponent } from '@delon/abc';
+import { StartupService } from '@core/startup/startup.service';
+import { isMobile } from '@core/utils/helpers';
 
 const ICONS = [
   MenuFoldOutline,
@@ -107,6 +110,7 @@ export class LayoutDefaultComponent
     public settings: SettingsService,
     private el: ElementRef,
     private renderer: Renderer2,
+    @Inject(APP_INITIALIZER) startUp: StartupService,
     @Inject(DOCUMENT) private doc: any,
   ) {
     iconSrv.addIcon(...ICONS);
@@ -186,6 +190,10 @@ export class LayoutDefaultComponent
     if (this.savedSlideMode) {
       this.isSlideMode = true;
     }
+  }
+
+  isMobile() {
+    return isMobile();
   }
 
   adjustFullScreen() {
