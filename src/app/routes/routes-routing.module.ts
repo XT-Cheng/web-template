@@ -21,6 +21,7 @@ import { MachineSummaryComponent } from './dashboard/machine.summary.component';
 import { BatchGeneralComponent } from './report/batch/batch.general.component';
 import { ImportBapiComponent } from './import/import.bapi.exec.component';
 import { CreateBatchComponent } from './mobile/material/create-batch.component';
+import { CreateBatchNewComponent } from './mobile/material/create-batch.new.component';
 
 const routes: Routes = [
   {
@@ -34,6 +35,7 @@ const routes: Routes = [
       { path: 'import/bapi', component: ImportBapiComponent, data: { title: 'BAPI 批量执行' } },
       { path: 'reports/batchSummary', component: BatchGeneralComponent, data: { title: '物料批次概览' } },
       { path: 'material/create', component: CreateBatchComponent },
+      { path: 'material/createnew', component: CreateBatchNewComponent },
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }
     ]

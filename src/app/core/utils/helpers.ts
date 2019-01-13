@@ -1,3 +1,6 @@
+export const dateFormatOracle = 'YYYY-MM-DD HH24:MI:ss';
+export const dateFormat = 'YYYY-MM-DD HH:mm:ss';
+
 //#region Decode related
 export function urlBase64Decode(str: string): string {
   let output = str.replace(/-/g, '+').replace(/_/g, '/');

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { FetchService } from './fetch.service';
 import { map } from 'rxjs/operators';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
 import { format } from 'date-fns';
+import { dateFormat, dateFormatOracle } from '@core/utils/helpers';
 
 @Injectable()
 export class BatchService {
@@ -11,9 +12,7 @@ export class BatchService {
   static materialNameTBR = '$materialName';
   static lastChangedTBR = '$lastChanged';
   static buffersTBR = '$buffers';
-
-  static dateFormatOracle = 'YYYY-MM-DD HH24:MI:ss';
-  static dateFormat = 'YYYY-MM-DD HH:mm:ss';
+  static batchNameTBR = '$batchName';
 
   //#region SQL
   static allMaterialNameSql =
@@ -29,6 +28,15 @@ export class BatchService {
     ` ${BatchService.materialNameTBR} ` +
     ` ${BatchService.lastChangedTBR} ` +
     ` ${BatchService.buffersTBR}`;
+
+  static batchByNameSql =
+    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, ` +
+    ` (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED, ` +
+    ` BATCH.MAT_PUF AS BUFFERNAME, ` +
+    ` BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH, ` +
+    ` LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER ` +
+    ` WHERE BATCH.STATUS IN ('F','L') AND BATCH.RESTMENGE > 0 AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916' ` +
+    ` AND BATCH.LOSNR = '${BatchService.batchNameTBR}' `;
 
   static batchBufferSql =
     `SELECT MAT_PUF AS BUFFER_NAME, BEZ AS BUFFER_DESC, HIERARCHIE_ID AS BUFFER_LEVEL, H_MAT_PUF AS PARENT_BUFFER ` +
@@ -60,7 +68,8 @@ export class BatchService {
     );
   }
 
-  getBatches(materialName: string = '', buffer: MaterialBuffer = null, lastChanged: Date = null): Observable<MaterialBatch[]> {
+  getBatches(materialName: string = '', buffer: MaterialBuffer = null, lastChanged: Date = null)
+    : Observable<MaterialBatch[]> {
     let sql = BatchService.batchSql;
     if (materialName) {
       sql = sql.replace(BatchService.materialNameTBR, `AND BATCH.ARTIKEL = '${materialName}'`);
@@ -79,7 +88,7 @@ export class BatchService {
     if (lastChanged) {
       sql = sql.replace(BatchService.lastChangedTBR,
         `AND (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) < ` +
-        ` TO_DATE('${format(lastChanged, BatchService.dateFormat)}', '${BatchService.dateFormatOracle}') `);
+        ` TO_DATE('${format(lastChanged, dateFormat)}', '${dateFormatOracle}') `);
     } else {
       sql = sql.replace(BatchService.lastChangedTBR, ``);
     }
@@ -133,6 +142,59 @@ export class BatchService {
         });
 
         return this.buffers;
+      })
+    );
+  }
+
+  getBatchInfoFrom2DBarCode(barCodeOf2D: string): Observable<MaterialBatch> {
+    // Sample: 1573290-1$Z181006J21$25$10$18407$3SH53Y22001293
+    //         Material$Batch$Qty$Reel$DateCode$3S
+    const batchInfo: MaterialBatch = new MaterialBatch();
+
+    const ret = barCodeOf2D.split('$');
+
+    if (ret.length !== 6) {
+      return throwError('Batch Label format in-correct');
+    }
+
+    batchInfo.name = ret[5];
+    batchInfo.barCode = barCodeOf2D;
+    batchInfo.material = ret[0];
+    batchInfo.dateCode = ret[4];
+    batchInfo.SAPBatch = ret[1];
+    batchInfo.quantity = batchInfo.startQty = parseInt(ret[2], 10);
+    return of(batchInfo);
+  }
+
+  getBatchInformation(batchName: string): Observable<MaterialBatch> {
+    let sql = BatchService.batchByNameSql;
+    sql = sql.replace(BatchService.batchNameTBR, batchName);
+
+    return this._fetchService.query(sql).pipe(
+      map((batches) => {
+        let ret: MaterialBatch = null;
+        batches.forEach(batch => {
+          ret = new MaterialBatch();
+          ret.name = batch.BATCHNAME;
+          ret.bufferName = batch.BUFFERNAME;
+          ret.lastChanged = new Date(batch.LASTCHANGED);
+          ret.bufferDescription = batch.DESCRIPTION;
+          ret.parentBuffer = batch.PARENT_BUFFERNAME;
+          ret.quantity = batch.QUANTITY;
+          ret.material = batch.MATERIAL;
+          ret.SAPBatch = batch.SAPBATCH;
+          ret.dateCode = batch.DATECODE;
+        });
+
+        return ret;
+      }));
+  }
+
+  getMaterialBuffer(bufferName: string): Observable<MaterialBuffer> {
+    return this.getMaterialBuffers().pipe(
+      map(buffers => {
+        const ret = buffers.find(b => b.name === bufferName);
+        return ret ? ret : null;
       })
     );
   }

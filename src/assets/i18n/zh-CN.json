@@ -169,5 +169,15 @@
   "app.report.batch.material": "料号",
   "app.report.batch.SAPBatch": "SAP批号",
   "app.report.batch.dateCode": "Date Code",
-  "app.report.batch.lastChanged": "最后更改于"
+  "app.report.batch.lastChanged": "最后更改于",
+  "app.mobile.material.create": "物料批次创建",
+  "app.mobile.material.create.batch": "批号",
+  "app.mobile.material.create.batch.placeholder": "请输入批号",
+  "app.mobile.material.create.buffer": "库存位置",
+  "app.mobile.material.create.buffer.placeholder": "请输入库存位置",
+  "app.mobile.material.create.numberOfSplits": "拆分个数",
+  "app.mobile.material.create.numberOfSplits.placeholder": "请输入拆分个数",
+  "app.mobile.material.create.badge": "工牌",
+  "app.mobile.material.create.badge.placeholder": "工牌",
+  "app.mobile.material.create.action": "创建"
 }

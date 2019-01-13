@@ -5,7 +5,7 @@ import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { I18NService } from '@core/i18n/i18n.service';
-import { WeUiModule } from 'ngx-weui';
+import { WeUiModule, ToastConfig } from 'ngx-weui';
 import { DefaultInterceptor } from '@core/net/default.interceptor';
 import { StartupService } from '@core/startup/startup.service';
 import { ALAIN_I18N_TOKEN, DELON_LOCALE, zh_CN as delonLang } from '@delon/theme';
@@ -76,6 +76,18 @@ const GLOBAL_THIRD_MDOULES = [
 ];
 // #endregion
 
+export function toastConfig() {
+  return Object.assign(new ToastConfig(),
+    {
+      success: {
+        text: 'Successed', icon: 'weui-icon-success-no-circle', time: 0
+      },
+      loading: {
+        text: 'Loading…', icon: 'weui-loading', time: 0
+      }
+    });
+}
+
 // #region Startup Service
 export function StartupServiceFactory(startupService: StartupService): Function {
   return () => startupService.load();
@@ -113,7 +125,8 @@ const APPINIT_PROVIDES = [
     ...LANG_PROVIDES,
     ...INTERCEPTOR_PROVIDES,
     ...I18NSERVICE_PROVIDES,
-    ...APPINIT_PROVIDES
+    ...APPINIT_PROVIDES,
+    { provide: ToastConfig, useFactory: toastConfig }
   ],
   bootstrap: [AppComponent]
 })

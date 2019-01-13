@@ -9,7 +9,7 @@ import { Operation } from '../entity/operation';
 import { toNumber } from '@delon/util';
 import { CheckList, CheckListItem, ProcessType, CheckListResult } from '../entity/checkList';
 import { format } from 'date-fns';
-import { replaceAll } from '@core/utils/helpers';
+import { replaceAll, dateFormatOracle, dateFormat } from '@core/utils/helpers';
 
 @Injectable()
 export class MachineService {
@@ -21,9 +21,6 @@ export class MachineService {
   static shiftStartTBR = '$shiftStart';
   static shiftNbrTBR = '$shiftNbr';
   static operationsTBR = '$operations';
-
-  static dateFormatOracle = 'YYYY-MM-DD HH24:MI:ss';
-  static dateFormat = 'YYYY-MM-DD HH:mm:ss';
 
   //#region SQLs
   static machineAlarmSql =
@@ -138,7 +135,7 @@ export class MachineService {
     `ON AGT1.GRUNDTEXT_NR = AP.AUS_GRUND ` +
     `WHERE (AP.GUT_PRI   <> 0 ` +
     `OR AP.AUS_PRI       <> 0 ) ` +
-    `AND MST.DATUM = TO_DATE('${MachineService.shiftDateTBR}', '${MachineService.dateFormatOracle}') ` +
+    `AND MST.DATUM = TO_DATE('${MachineService.shiftDateTBR}', '${dateFormatOracle}') ` +
     `AND MST.SCHICHTNR = '${MachineService.shiftNbrTBR}' ` +
     `AND MST.MASCH_NR = '${MachineService.machineNameTBR}'  ` +
     `AND AP.AUFTRAG_NR IN (${MachineService.operationsTBR}) ` +
@@ -186,7 +183,7 @@ export class MachineService {
     `THEN HBZ.WERT ` +
     `ELSE 0 ` +
     `END) <> 0 ` +
-    `AND MST.DATUM = TO_DATE('${MachineService.shiftDateTBR}', '${MachineService.dateFormatOracle}') ` +
+    `AND MST.DATUM = TO_DATE('${MachineService.shiftDateTBR}', '${dateFormatOracle}') ` +
     `AND MST.SCHICHTNR = '${MachineService.shiftNbrTBR}' ` +
     `AND MST.MASCH_NR = '${MachineService.machineNameTBR}'  ` +
     `AND HBZ.SUBKEY2 IN (${MachineService.operationsTBR}) ` +
@@ -257,7 +254,7 @@ export class MachineService {
     `FROM U_TE_PMDM_CHECKLIST_RESULTS, PERSONALSTAMM WHERE MACHINE_NUMBER = '${MachineService.machineNameTBR}' ` +
     `AND PMDM_HEADER_ID =  '${MachineService.headerIdTBR}' ` +
     `AND STEP_END_TIMESTAMP IS NOT NULL ` +
-    `AND STEP_END_TIMESTAMP > TO_DATE('${MachineService.shiftStartTBR}', '${MachineService.dateFormatOracle}') ` +
+    `AND STEP_END_TIMESTAMP > TO_DATE('${MachineService.shiftStartTBR}', '${dateFormatOracle}') ` +
     `AND PERSONALSTAMM.PERSONALNUMMER(+) = U_TE_PMDM_CHECKLIST_RESULTS.STEP_END_USER ` +
     `ORDER BY STEP_END_TIMESTAMP DESC, CHECKLIST_SEQUENCE`;
 
@@ -584,11 +581,11 @@ export class MachineService {
         //#region Fetch Shift Change Check List Results
         switchMap((machine) => {
           const checkList = machine.checkLists.get(ProcessType.CHANGESHIFT);
-          const ds = format(machine.currentShiftStart, MachineService.dateFormat);
+          const ds = format(machine.currentShiftStart, dateFormat);
           if (!checkList) return of([]);
           return this._fetchService.query(replaceAll(MachineService.machineCheckListDoneOfCurrentShift
             , [MachineService.machineNameTBR, MachineService.headerIdTBR, MachineService.shiftStartTBR]
-            , [machine.machineName, checkList.headerId.toString(), format(machine.currentShiftStart, MachineService.dateFormat)]));
+            , [machine.machineName, checkList.headerId.toString(), format(machine.currentShiftStart, dateFormat)]));
         }),
         map((checkListResults: any[]) => {
           checkListResults.map(rec => {
@@ -689,7 +686,7 @@ export class MachineService {
 
           return this._fetchService.query(replaceAll(MachineService.operationShiftOutputSql
             , [MachineService.machineNameTBR, MachineService.shiftDateTBR, MachineService.shiftNbrTBR, MachineService.operationsTBR]
-            , [machine.machineName, format(machine.currentShiftDate, MachineService.dateFormat), machine.currentShift.toString()
+            , [machine.machineName, format(machine.currentShiftDate, dateFormat), machine.currentShift.toString()
               , operationNames.join(',')]));
         }),
         map((opShiftOutput: any[]) => {

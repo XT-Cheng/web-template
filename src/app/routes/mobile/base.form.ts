@@ -4,7 +4,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { IBapiResult } from '@core/hydra/bapi/constants';
-import { TitleService } from '@delon/theme';
+import { TitleService, SettingsService } from '@delon/theme';
 import { NzMessageService, NzSpinComponent } from 'ng-zorro-antd';
 import { MaskComponent, ToastService } from 'ngx-weui';
 
@@ -19,13 +19,20 @@ interface ITranSuccess {
 }
 
 export abstract class BaseForm {
-  //#region Abstract property
-
-  protected errors: ITranError[] = [];
-  protected success: ITranSuccess[] = [];
-  protected executionContext: any;
 
   //#endregion
+
+  //#region Constructor
+
+  constructor(private _settingService: SettingsService, protected _toastService: ToastService,
+    private _routeService: Router, private _messageService: NzMessageService,
+    protected _titleService: TitleService, protected _resetFormAfterSuccessExecution = true) {
+    this._routeService.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this._titleService.setTitle(this.title);
+      });
+  }
 
   //#region Abstract property
 
@@ -42,23 +49,13 @@ export abstract class BaseForm {
   //#endregion
 
   //#region Protected member
-
+  protected modelData: any;
+  protected errors: ITranError[] = [];
+  protected success: ITranSuccess[] = [];
+  protected executionContext: any;
   protected isInputing = false;
   protected Inputing = () => {
     this.isInputing = true;
-  }
-
-  //#endregion
-
-  //#region Constructor
-
-  constructor(protected _toastService: ToastService, private _routeService: Router, private _message: NzMessageService,
-    protected _titleService: TitleService, protected _resetFormAfterSuccessExecution = true) {
-    this._routeService.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => {
-        this._titleService.setTitle(this.title);
-      });
   }
 
   //#endregion
@@ -71,6 +68,13 @@ export abstract class BaseForm {
   //#endregion
 
   //#region Protected methods
+  protected get storedModel(): any {
+    return this._settingService.app[this.title];
+  }
+  //#endregion
+
+  //#region Protected methods
+
   protected stopEvent(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -78,6 +82,7 @@ export abstract class BaseForm {
   }
 
   protected start() {
+    this.form.form.disable();
     this.isInputing = true;
     this.mask.show();
     this._toastService.loading();
@@ -85,11 +90,17 @@ export abstract class BaseForm {
 
   protected end(err: any = null) {
     if (err) {
-      this._message.error(err);
+      this._messageService.error(err);
     }
+
+    this._settingService.setApp(Object.assign(this._settingService.app, {
+      [this.title]: this.modelData
+    }));
+
     this.isInputing = false;
     setTimeout(_ => this.mask.hide());
     this._toastService.hide();
+    this.form.form.enable();
   }
 
   protected request(handler: () => Observable<any>, success: (ret: any) => void, failed: (err: any) => void) {
@@ -97,12 +108,12 @@ export abstract class BaseForm {
       this.start();
 
       handler().subscribe((ret) => {
-        success(ret);
         this.end();
+        success(ret);
       },
         (err) => {
-          failed(err);
           this.end(err);
+          failed(err);
         });
     };
   }
@@ -153,6 +164,10 @@ export abstract class BaseForm {
         message: success
       });
     }
+
+    this._settingService.setApp(Object.assign(this._settingService.app, {
+      [this.title]: this.modelData
+    }));
   }
 
   private genErrors(err) {

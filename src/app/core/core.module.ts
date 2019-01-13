@@ -8,6 +8,7 @@ import { BapiService } from './hydra/service/bapi.service';
 import { VBoardService } from './hydra/service/vBoard.service';
 import { BatchService } from './hydra/service/batch.service';
 import { MachineService } from './hydra/service/machine.service';
+import { OperatorService } from './hydra/service/operator.service';
 
 @NgModule({
   providers: [
@@ -17,6 +18,7 @@ import { MachineService } from './hydra/service/machine.service';
     BapiService,
     MachineService,
     BatchService,
+    OperatorService,
     VBoardService
   ]
 })

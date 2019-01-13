@@ -48,7 +48,7 @@ export class StartupService {
       this.translate.setDefaultLang(this.i18n.defaultLang);
 
       // 应用信息：包括站点名、描述、年份
-      this.settingService.setApp(appData);
+      this.settingService.setApp(Object.assign(this.settingService.app, appData));
       // ACL：设置权限
       this.aclService.setRole(userAccessData);
       // 初始化菜单

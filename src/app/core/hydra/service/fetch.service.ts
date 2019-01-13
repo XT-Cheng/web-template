@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
-import { of } from 'rxjs';
 
 @Injectable()
 export class FetchService {
@@ -27,23 +26,5 @@ export class FetchService {
     );
   }
 
-  //#endregion
-
-  //#region Batch related fetch
-  getBatchInfoFrom2DBarCode(barCode: string) {
-    return of(null);
-  }
-
-  getBatchInformation(barCode: string) {
-    return of(null);
-  }
-
-  getMaterialBuffer(barCode: string) {
-    return of(null);
-  }
-
-  getOperatorByBadge(barCode: string) {
-    return of(null);
-  }
   //#endregion
 }

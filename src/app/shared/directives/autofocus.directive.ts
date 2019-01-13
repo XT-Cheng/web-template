@@ -1,7 +1,7 @@
 import { AfterViewInit, Directive, ElementRef, Input } from '@angular/core';
 
 @Directive({
-  selector: '[fwAutoFocus]'
+  selector: '[fwShareAutoFocus]'
 })
 export class AutofocusDirective implements AfterViewInit {
   private _autofocus;

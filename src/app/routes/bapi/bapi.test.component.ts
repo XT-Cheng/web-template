@@ -51,32 +51,6 @@ export class BAPITestComponent {
     }, (err) => {
       this.bapiTestForm.controls[`result`].setValue(err);
     });
-    // this._bapiService.createMPLBuffer(`import-test8`, `import-test`, `F`, '0916', 'Comp', '', '', 0).pipe(finalize(() => {
-    //   this.isExecuting = false;
-    // })).subscribe((res) => {
-    //   this.bapiTestForm.controls[`result`].setValue(res.content);
-    // }, (err) => {
-    //   this.bapiTestForm.controls[`result`].setValue(err);
-    // });
-    // this._bapiService.deleteMPLBuffer(`import-test`).pipe(finalize(() => {
-    //   this.isExecuting = false;
-    // })).subscribe((res) => {
-    //   this.bapiTestForm.controls[`result`].setValue(res.content);
-    // }, (err) => {
-    //   this.bapiTestForm.controls[`result`].setValue(err);
-    // });
-    // this._machineRptService.getMachine(`KM000001`).pipe(
-    //   finalize(() => this.isExecuting = false)
-    // ).subscribe((machine) => {
-    //   console.log(machine);
-    // }, () => {
-    //   this.isExecuting = false;
-    // });
-    // this._vBoardService.GetCurrentShiftMachineOEEData(`KM000001`).pipe(
-    //   finalize(() => this.isExecuting = false)
-    // ).subscribe((res) => {
-    //   console.log(res);
-    // });
   }
 
   resetForm(e: MouseEvent): void {
