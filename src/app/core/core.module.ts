@@ -9,6 +9,8 @@ import { VBoardService } from './hydra/service/vBoard.service';
 import { BatchService } from './hydra/service/batch.service';
 import { MachineService } from './hydra/service/machine.service';
 import { OperatorService } from './hydra/service/operator.service';
+import { WebAPIService } from './hydra/service/webapi.service';
+import { PrintService } from './hydra/service/print.service';
 
 @NgModule({
   providers: [
@@ -19,7 +21,9 @@ import { OperatorService } from './hydra/service/operator.service';
     MachineService,
     BatchService,
     OperatorService,
-    VBoardService
+    VBoardService,
+    WebAPIService,
+    PrintService,
   ]
 })
 export class CoreModule {

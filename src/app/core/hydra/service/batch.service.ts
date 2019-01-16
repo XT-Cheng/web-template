@@ -4,7 +4,8 @@ import { map } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
 import { format } from 'date-fns';
-import { dateFormat, dateFormatOracle } from '@core/utils/helpers';
+import { dateFormat, dateFormatOracle, replaceAll } from '@core/utils/helpers';
+import { BUFFER_SAP } from 'app/routes/mobile/material/constants';
 
 @Injectable()
 export class BatchService {
@@ -18,29 +19,49 @@ export class BatchService {
   static allMaterialNameSql =
     `SELECT DISTINCT(ARTIKEL) AS ARTIKEL FROM LOS_BESTAND WHERE ARTIKEL LIKE '${BatchService.materialNameTBR}%' `;
 
+  static batchNameExistanceIgnoreSAP =
+    `SELECT LOSNR FROM LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' AND MAT_PUF <> '${BUFFER_SAP}' ` +
+    ` UNION SELECT LOSNR FROM A_LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' `;
+
+  static batchNameExistance =
+    `SELECT LOSNR FROM LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' AND MAT_PUF <> '${BUFFER_SAP}' ` +
+    ` UNION SELECT LOSNR FROM A_LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' `;
+
   static batchSql =
-    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, ` +
+    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS, ` +
     ` (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED, ` +
     ` BATCH.MAT_PUF AS BUFFERNAME, ` +
     ` BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH, ` +
     ` LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER ` +
-    ` WHERE BATCH.STATUS IN ('F','L') AND BATCH.RESTMENGE > 0 AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916' ` +
+    ` WHERE BATCH.STATUS IN ('F','L') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916' ` +
+    ` AND BUFFER.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFER.KFG_KZ01,1,1) = 'N' ` +
     ` ${BatchService.materialNameTBR} ` +
     ` ${BatchService.lastChangedTBR} ` +
     ` ${BatchService.buffersTBR}`;
 
+  static batchInSAPSql =
+    `SELECT BATCH.LOSNR AS BATCHNAME FROM LOS_BESTAND BATCH` +
+    ` WHERE BATCH.MAT_PUF = '${BUFFER_SAP}' AND BATCH.LOSNR = '${BatchService.batchNameTBR}' `;
+
   static batchByNameSql =
-    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, ` +
+    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,` +
     ` (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED, ` +
     ` BATCH.MAT_PUF AS BUFFERNAME, ` +
     ` BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH, ` +
     ` LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER ` +
-    ` WHERE BATCH.STATUS IN ('F','L') AND BATCH.RESTMENGE > 0 AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916' ` +
-    ` AND BATCH.LOSNR = '${BatchService.batchNameTBR}' `;
+    ` WHERE BATCH.STATUS IN ('F','L') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916' ` +
+    ` AND BUFFER.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFER.KFG_KZ01,1,1) = 'N' AND BATCH.LOSNR = '${BatchService.batchNameTBR}' `;
+
+  static unitByMaterialSql =
+    `SELECT BASE_UOM FROM U_TE_MMLP_PRODUCT_MASTER WHERE PART_NUMBER = '${BatchService.materialNameTBR}'`;
+
+  static matTypeByMaterialSql =
+    `SELECT HYDRA_MAT_TYPE FROM U_TE_MMLP_PRODUCT_MASTER MAT_MASTER, U_TE_SAP_HYDRA_MAT_TYPE_REF TYPE_REF ` +
+    ` WHERE MAT_MASTER.PART_NUMBER = '${BatchService.materialNameTBR}' AND TYPE_REF.SAP_MRP_GROUP = MAT_MASTER.MRP_GROUP`;
 
   static batchBufferSql =
     `SELECT MAT_PUF AS BUFFER_NAME, BEZ AS BUFFER_DESC, HIERARCHIE_ID AS BUFFER_LEVEL, H_MAT_PUF AS PARENT_BUFFER ` +
-    `FROM MAT_PUFFER WHERE WERK = '0916'`;
+    `FROM MAT_PUFFER WHERE WERK = '0916' AND PUFFER_TYP IN ('F','H') AND SUBSTR(KFG_KZ01,1,1) = 'N'`;
 
   //#endregion
   //#region Private members
@@ -107,7 +128,10 @@ export class BatchService {
             quantity: batch.QUANTITY,
             material: batch.MATERIAL,
             SAPBatch: batch.SAPBATCH,
+            status: batch.STATUS,
             dateCode: batch.DATECODE,
+            materialType: batch.MATTYPE,
+            unit: batch.UNIT
           });
 
           ret.push(data);
@@ -166,6 +190,29 @@ export class BatchService {
     return of(batchInfo);
   }
 
+  isBatchNameExist(batchName: string, ignoreRecycleBin: boolean = true): Observable<boolean> {
+    let sql = ignoreRecycleBin ? BatchService.batchNameExistanceIgnoreSAP : BatchService.batchNameExistance;
+    sql = replaceAll(sql, [BatchService.batchNameTBR], [batchName]);
+
+    return this._fetchService.query(sql).pipe(
+      map((batches) => {
+        return batches.length > 0 ? true : false;
+      })
+    );
+  }
+
+  isBatchInSAP(batchName: string): Observable<boolean> {
+    let sql = BatchService.batchInSAPSql;
+    sql = replaceAll(sql, [BatchService.batchNameTBR], [batchName]);
+
+    return this._fetchService.query(sql).pipe(
+      map((batches) => {
+        return batches.length > 0 ? true : false;
+      })
+    );
+  }
+
+
   getBatchInformation(batchName: string): Observable<MaterialBatch> {
     let sql = BatchService.batchByNameSql;
     sql = sql.replace(BatchService.batchNameTBR, batchName);
@@ -182,8 +229,11 @@ export class BatchService {
           ret.parentBuffer = batch.PARENT_BUFFERNAME;
           ret.quantity = batch.QUANTITY;
           ret.material = batch.MATERIAL;
+          ret.status = batch.STATUS;
           ret.SAPBatch = batch.SAPBATCH;
           ret.dateCode = batch.DATECODE;
+          ret.materialType = batch.MATTYPE;
+          ret.unit = batch.UNIT;
         });
 
         return ret;
@@ -198,6 +248,33 @@ export class BatchService {
       })
     );
   }
+
+  getMaterialUnit(materialName: string): Observable<string> {
+    let sql = BatchService.unitByMaterialSql;
+    sql = sql.replace(BatchService.materialNameTBR, materialName);
+
+    return this._fetchService.query(sql).pipe(
+      map((ret) => {
+        if (ret.length > 0) {
+          return ret[0].BASE_UOM ? ret[0].BASE_UOM : ``;
+        }
+        return ``;
+      }));
+  }
+
+  getMaterialType(materialName: string): Observable<string> {
+    let sql = BatchService.matTypeByMaterialSql;
+    sql = sql.replace(BatchService.materialNameTBR, materialName);
+
+    return this._fetchService.query(sql).pipe(
+      map((ret) => {
+        if (ret.length > 0) {
+          return ret[0].HYDRA_MAT_TYPE ? ret[0].HYDRA_MAT_TYPE : ``;
+        }
+        return ``;
+      }));
+  }
+
   //#endregion
 
   //#region Private methods

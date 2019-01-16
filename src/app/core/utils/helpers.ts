@@ -69,7 +69,7 @@ export function getDeepFromObject(object = {}, name: string, defaultValue?: any)
   return typeof level === 'undefined' ? defaultValue : level;
 }
 
-const deepExtend = function (...objects: any[]): any {
+export const deepExtend = function (...objects: any[]): any {
   if (arguments.length < 1 || typeof arguments[0] !== 'object') {
     return false;
   }
@@ -180,7 +180,23 @@ function cloneSpecificValue(val: any): any {
 //#endregion
 
 //#region String related
+export function leftPad(str: any, len: number, ch: any = '0') {
+  str = String(str);
 
+  let i = -1;
+
+  if (!ch && ch !== 0) {
+    ch = ' ';
+  }
+
+  len = len - str.length;
+
+  while (++i < len) {
+    str = ch + str;
+  }
+
+  return str;
+}
 export function replaceAll(str: string, finds: string[], replaces: string[]) {
   let final = str;
 
@@ -206,6 +222,17 @@ export function isMobile() {
     return true;
 
   return false;
+}
+
+//#endregion
+
+//#region Action Result Interface
+export interface IActionResult {
+  isSuccess: boolean;
+  error?: string;
+  description?: string;
+  content?: string;
+  context?: any;
 }
 
 //#endregion

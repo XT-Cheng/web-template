@@ -4,7 +4,7 @@ export enum DialogTypeEnum {
   CREATE_BATCH = 'C_GEN',
   MOVE_BATCH = 'C_UMB',
   SPLIT_BATCH = 'CNR.SPLITCREATE',
-  GOODS_MOVMENT = 'C_MBEW',
+  GOODS_MOVEMENT = 'C_MBEW',
   UPDATE_BATCH = 'CNR.UPDATE',
   SCRAP_BATCH = '',
   BONUS_BATCH = '',
@@ -35,6 +35,9 @@ export enum DialogTypeEnum {
   MPL_CREATE_BUFFER = 'MATPUF.INSERT',
   MPL_DELETE_BUFFER = 'MATPUF.DELETE',
 
+  MPL_ASSIGN_MAT_MATTYPE = 'MATMATTYP.INSERT',
+  MPL_MODIFY_MAT_MATTYPE = 'MATMATTYP.MODIFY',
+
   //#endregion
 
   //#region HR Master
@@ -46,10 +49,3 @@ export enum DialogTypeEnum {
 }
 
 export const DIALOG_USER = 2500;
-
-export interface IBapiResult {
-  isSuccess: boolean;
-  error: string;
-  description: string;
-  content: string;
-}

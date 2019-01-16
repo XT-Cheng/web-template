@@ -1,35 +1,40 @@
 import { BaseForm } from '../base.form';
-import { Component, ViewChild, ElementRef, Inject } from '@angular/core';
-import { ToastService } from 'ngx-weui';
+import { Component, Inject } from '@angular/core';
+import { ToastService, ToptipsService } from 'ngx-weui';
 import { Router } from '@angular/router';
-import { NzMessageService } from 'ng-zorro-antd';
+import { toNumber } from 'ng-zorro-antd';
 import { TitleService, SettingsService, ALAIN_I18N_TOKEN } from '@delon/theme';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { OperatorService } from '@core/hydra/service/operator.service';
 import { BapiService } from '@core/hydra/service/bapi.service';
-import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
-import { BaseNewForm } from '../base.form.new';
-import { of, throwError } from 'rxjs';
-import { switchMap, catchError, map, tap } from 'rxjs/operators';
+import { FormBuilder, Validators } from '@angular/forms';
+import { of, throwError, Observable, forkJoin } from 'rxjs';
+import { switchMap, tap, map } from 'rxjs/operators';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { DOCUMENT } from '@angular/common';
 import { I18NService } from '@core/i18n/i18n.service';
+import { deepExtend, IActionResult } from '@core/utils/helpers';
+import { PrintService } from '@core/hydra/service/print.service';
+import { requestBatchData, requestMaterialBufferData, requestBadgeData } from './request.common';
 
 @Component({
-  selector: 'fw-batch-create-new',
-  templateUrl: 'create-batch.new.component.html',
-  styleUrls: ['./create-batch.new.component.scss']
+  selector: 'fw-batch-split',
+  templateUrl: 'split-batch.component.html',
+  styleUrls: ['./split-batch.component.scss']
 })
-export class CreateBatchNewComponent extends BaseNewForm {
+export class SplitBatchComponent extends BaseForm {
   //#region View Children
 
   //#endregion
 
   //#region Protected member
-  protected key = `app.mobile.material.create`;
+  protected key = `app.mobile.material.split`;
   //#endregion
 
   //#region Public member
+
+  requestBatchData = requestBatchData(this.form, this._batchService);
+  requestBadgeData = requestBadgeData(this.form, this._operatorService);
 
   //#endregion
 
@@ -39,27 +44,27 @@ export class CreateBatchNewComponent extends BaseNewForm {
     fb: FormBuilder,
     _toastService: ToastService,
     _routeService: Router,
-    _message: NzMessageService,
+    _tipService: ToptipsService,
     _titleService: TitleService,
     _settingService: SettingsService,
     private _batchService: BatchService,
     private _operatorService: OperatorService,
     private _bapiService: BapiService,
+    private _printService: PrintService,
     @Inject(DOCUMENT) private _document: Document,
-    @Inject(ALAIN_I18N_TOKEN) private i18n: I18NService,
+    @Inject(ALAIN_I18N_TOKEN) _i18n: I18NService,
   ) {
-    super(fb, _settingService, _toastService, _routeService, _message, _titleService);
+    super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n);
     this.addControls({
       barCode: [null, [Validators.required]],
       batch: [null, [Validators.required]],
-      materialBuffer: [null, [Validators.required]],
       numberOfSplits: [1, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)]],
       badge: [null, [Validators.required]],
       batchData: [null]
     });
 
     this.form.setValue(Object.assign(this.form.value, {
-      badge: this.storedData ? this.storedData.badge : ``
+      badge: this.storedData ? this.storedData.badge : ``,
     }));
   }
 
@@ -76,52 +81,13 @@ export class CreateBatchNewComponent extends BaseNewForm {
     this.form.controls.batch.setValue(barCodeInfor.name);
     this.form.controls.barCode.setValue(barCodeInfor.barCode);
     this.form.controls.batchData.setValue(barCodeInfor);
+
+    if (this.storedData && this.storedData.materialSplits && this.storedData.materialSplits[barCodeInfor.material]) {
+      this.form.controls.numberOfSplits.setValue(this.storedData.materialSplits[barCodeInfor.material]);
+    }
   }
 
   requestBatchDataFailed = () => {
-  }
-
-  requestBatchData = () => {
-    if (!this.form.value.batch) {
-      return of(null);
-    }
-
-    let barCodeInfor;
-
-    return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch).pipe(
-      switchMap((barCodeData: MaterialBatch) => {
-        barCodeInfor = barCodeData;
-        return this._batchService.getBatchInformation(barCodeData.name);
-      }),
-      switchMap((batchData: MaterialBatch) => {
-        if (batchData) {
-          return throwError(`Batch ${batchData.name} exist！`);
-        }
-        return of(barCodeInfor);
-      }
-      ));
-  }
-  //#endregion
-
-  //#region Buffer Reqeust
-  requestMaterialBufferDataSuccess = () => {
-  }
-
-  requestMaterialBufferDataFailed = () => {
-  }
-
-  requestMaterialBufferData = () => {
-    if (!this.form.value.materialBuffer) {
-      return of(null);
-    }
-
-    return this._batchService.getMaterialBuffer(this.form.value.materialBuffer).pipe(
-      tap(buffer => {
-        if (!buffer) {
-          throw Error(`${this.form.value.materialBuffer} not exist!`);
-        }
-      })
-    );
   }
 
   //#endregion
@@ -129,6 +95,11 @@ export class CreateBatchNewComponent extends BaseNewForm {
   //#region Number of Splits Reqeust
   requestNumberOfSplitsDataSuccess = () => {
     this.descriptions.set(`numberOfSplits`, this.getSplitInfo());
+    this.storedData = deepExtend(this.storedData, {
+      materialSplits: {
+        [this.form.controls.batchData.value.material]: this.form.value.numberOfSplits
+      }
+    });
   }
 
   requestNumberOfSplitsDataFailed = () => {
@@ -159,18 +130,6 @@ export class CreateBatchNewComponent extends BaseNewForm {
   requestBadgeDataFailed = () => {
   }
 
-  requestBadgeData = () => {
-    if (!this.form.value.badge) {
-      return of(null);
-    }
-
-    return this._operatorService.getOperatorByBadge(this.form.value.badge).pipe(
-      tap(operator => {
-        if (!operator) {
-          throw Error(`${this.form.value.badge} not exist!`);
-        }
-      }));
-  }
   //#endregion
 
   //#endregion
@@ -184,6 +143,37 @@ export class CreateBatchNewComponent extends BaseNewForm {
   //#endregion
 
   //#region Exeuction
+  splitBatchSuccess = (ret: IActionResult) => {
+    this.showSuccess(ret.description);
+  }
+
+  splitBatchFailed = () => {
+  }
+
+  splitBatch = () => {
+    // Split Batch
+    const children = toNumber(this.form.value.numberOfSplits, 1);
+    return this._bapiService.splitBatch(this.form.value.batchData, toNumber(children, 0),
+      this.form.value.batchData.quantity / children, this.form.value.badge).pipe(
+        switchMap(ret => {
+          const print$: Observable<IActionResult>[] = [];
+          ret.context.forEach((childBatch) => {
+            print$.push(this._printService.printMaterialBatchLabel(childBatch, `Machine`, 9999));
+          });
+          return forkJoin(print$).pipe(
+            map((_) => {
+              return {
+                isSuccess: true,
+                error: ``,
+                content: ``,
+                description: `Batch ${this.form.value.batchData.name} Split to ${ret.context.join(`,`)} And Label Printed!`,
+                context: ret.context
+              };
+            })
+          );
+        })
+      );
+  }
 
   //#endregion
 
@@ -196,10 +186,9 @@ export class CreateBatchNewComponent extends BaseNewForm {
 
   protected afterReset() {
     this._document.getElementById(`batch`).focus();
-  }
 
-  protected get title(): string {
-    return this.i18n.fanyi(this.key);
+    this.form.controls.badge.setValue(this.storedData.badge);
+    this.form.controls.numberOfSplits.setValue(1);
   }
 
   //#endregion

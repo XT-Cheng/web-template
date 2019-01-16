@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { DialogTypeEnum, IBapiResult } from '@core/hydra/bapi/constants';
+import { DialogTypeEnum } from '@core/hydra/bapi/constants';
 import { TestBapi } from '../bapi/test.bapi';
 import { CreateBufferBapi } from '../bapi/mpl/master/create.buffer';
 import { DeleteBufferBapi } from '../bapi/mpl/master/delete.buffer';
@@ -8,12 +8,17 @@ import { CreatePersonBapi } from '../bapi/mpl/master/create.person';
 import { DeletePersonBapi } from '../bapi/mpl/master/delete.person';
 import { CreateBatch } from '../bapi/mpl/create.batch';
 import { MaterialBatch } from '../entity/batch';
-import { switchMap, map } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { switchMap, map, zip } from 'rxjs/operators';
+import { of, forkJoin, Observable } from 'rxjs';
 import { UpdateBatch } from '../bapi/mpl/update.batch';
-import { GenerateBatchName } from '../bapi/mpl/generate.batchName';
 import { CopyBatch } from '../bapi/mpl/copy.batch';
 import { GenerateBatchConnection } from '../bapi/mpl/generate.batchConnection';
+import { WebAPIService } from './webapi.service';
+import { BatchService } from './batch.service';
+import { PrintService } from './print.service';
+import { IActionResult } from '@core/utils/helpers';
+import { MoveBatch } from '../bapi/mpl/move.batch';
+import { GoodsMovementBatch } from '../bapi/mpl/goodsMovement.batch';
 
 @Injectable()
 export class BapiService {
@@ -23,7 +28,8 @@ export class BapiService {
 
   //#region Constructor
 
-  constructor(protected _http: HttpClient) {
+  constructor(protected _http: HttpClient, private _webAPIService: WebAPIService,
+    private _batchService: BatchService, private _printService: PrintService) {
   }
 
   //#endregion
@@ -69,40 +75,83 @@ export class BapiService {
   //#endregion
 
   //#region Batch related
-  createBatch(batchName: string, materialNumber: string, batchQty: number,
-    materialBuffer: string, badge: string, batch: string = '', dateCode: string = '') {
-    return new CreateBatch(batchName, materialNumber, batchQty, materialBuffer, badge, batch, dateCode)
-      .execute(this._http);
+  changeBatchQuantity(batchInfo: MaterialBatch, newQuantity: number, badge: string): Observable<IActionResult> {
+    return new GoodsMovementBatch(batchInfo.name, batchInfo.startQty, newQuantity,
+      batchInfo.materialType, batchInfo.status, badge).execute(this._http).pipe(
+        map((ret: IActionResult) => {
+          return Object.assign(ret, {
+            description: `Batch ${batchInfo.name} Quantity Changed!`
+          });
+        })
+      );
   }
 
-  splitBatch(batchInfo: MaterialBatch, numberOfChildren: number, childQty: number, badge: string) {
+  moveBatch(batchInfo: MaterialBatch, destination: string, badge: string): Observable<IActionResult> {
+    return new MoveBatch(batchInfo.name, batchInfo.materialType, destination, badge).execute(this._http).pipe(
+      map((ret: IActionResult) => {
+        return Object.assign(ret, {
+          description: `Batch ${batchInfo.name} Moved to ${destination}!`
+        });
+      })
+    );
+  }
+
+  createBatch(batchName: string, materialNumber: string, matType: string, unit: string, batchQty: number,
+    materialBuffer: string, badge: string, batch: string = '', dateCode: string = ''): Observable<IActionResult> {
+    return new CreateBatch(batchName, materialNumber, matType, unit, batchQty, materialBuffer, badge, batch, dateCode)
+      .execute(this._http).pipe(
+        map((ret: IActionResult) => {
+          return Object.assign(ret, {
+            description: `Batch ${batchName} Created!`
+          });
+        })
+      );
+  }
+
+  splitBatch(batchInfo: MaterialBatch, numberOfChildren: number, childQty: number, badge: string): Observable<IActionResult> {
     return Array.from(Array(numberOfChildren + 1)).reduce((next$, currentValue, currentIndex) => {
       if (currentIndex === numberOfChildren) {
         return next$.pipe(
-          switchMap(() => {
-            return new UpdateBatch(batchInfo.name, badge, batchInfo.quantity).execute(this._http);
+          switchMap((childrenBatchNames: [string]) => {
+            return new GoodsMovementBatch(batchInfo.name, batchInfo.startQty,
+              batchInfo.quantity, batchInfo.materialType, batchInfo.status, badge)
+              .execute(this._http).pipe(
+                map(_ => {
+                  return {
+                    isSuccess: true,
+                    error: ``,
+                    content: ``,
+                    description: `Batch ${batchInfo.name} Split to ${childrenBatchNames.join(`,`)}!`,
+                    context: childrenBatchNames
+                  };
+                }
+                ));
           }));
       } else {
         return next$.pipe(
-          switchMap(_ => {
-            return new GenerateBatchName('W').execute(this._http);
+          switchMap((childrenBatchNames: [string]) => {
+            return this._webAPIService.getNextLicenseTag().pipe(
+              map((newBatchName) => {
+                childrenBatchNames.push(newBatchName);
+                return childrenBatchNames;
+              }));
           }),
-          switchMap((res: IBapiResult) => {
-            const array: Array<string> = res.content.split('|');
-            const newBatchName = array.find((item: string) => item.search(`NR=`) > -1)
-              .replace('NR=', '').trimRight();
-            return new CopyBatch(batchInfo.name, newBatchName, childQty, badge).execute(this._http).pipe(
-              map(_ => newBatchName)
-            );
+          switchMap((childrenBatchNames: [string]) => {
+            return new CopyBatch(batchInfo.name, childrenBatchNames[childrenBatchNames.length - 1],
+              childQty, badge).execute(this._http).pipe(
+                map(_ => childrenBatchNames)
+              );
           }),
-          switchMap((newBatchName: string) => {
+          switchMap((childrenBatchNames: [string]) => {
             batchInfo.quantity -= childQty;
-            return new GenerateBatchConnection(batchInfo.name, newBatchName,
+            return new GenerateBatchConnection(batchInfo.name, childrenBatchNames[childrenBatchNames.length - 1],
               batchInfo.material, batchInfo.material,
-              batchInfo.materialType, batchInfo.materialType).execute(this._http);
+              batchInfo.materialType, batchInfo.materialType).execute(this._http).pipe(
+                map(_ => childrenBatchNames)
+              );
           }));
       }
-    }, of('start'));
+    }, of([]));
   }
   //#endregion
 }

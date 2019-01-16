@@ -27,7 +27,11 @@ import { CheckListOfShiftChangeComponent } from './dashboard/widget/checkListOfS
 import { CheckListOfChangeOverComponent } from './dashboard/widget/checkListOfChangeOver.component';
 import { CreateBatchComponent } from './mobile/material/create-batch.component';
 import { WeUiModule } from 'ngx-weui';
-import { CreateBatchNewComponent } from './mobile/material/create-batch.new.component';
+import { MoveBatchComponent } from './mobile/material/move-batch.component';
+import { SplitBatchComponent } from './mobile/material/split-batch.component';
+import { MoveBatchTo914Component } from './mobile/material/move-batch-914.component';
+import { MoveBatchToSAPComponent } from './mobile/material/move-batch-sap.component';
+import { AdjustBatchQuantityComponent } from './mobile/material/adjust-batch-quantity.component';
 
 const BAPI = [
   BAPITestComponent
@@ -63,7 +67,11 @@ const COMPONENTS = [
   Exception500Component,
   // Material
   CreateBatchComponent,
-  CreateBatchNewComponent
+  MoveBatchComponent,
+  SplitBatchComponent,
+  MoveBatchTo914Component,
+  MoveBatchToSAPComponent,
+  AdjustBatchQuantityComponent,
 ];
 const COMPONENTS_NOROUNT = [];
 

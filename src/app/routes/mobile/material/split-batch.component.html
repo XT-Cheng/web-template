@@ -1,0 +1,50 @@
+<form [formGroup]="form">
+  <div class="weui-cells">
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.material.split.batch' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='batch' formControlName="batch" fwShareAutoFocus [fwShareKeyHandler]='{controlName: "batch", inputing: Inputing, nextInputId: "numberOfSplits", req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
+          [placeholder]="'app.mobile.material.split.batch.placeholder' | translate">
+      </div>
+    </div>
+    <label for="weuiAgree" class="weui-agree">
+      <span class="weui-agree__text">
+        {{getDescription('batch')}}
+      </span>
+    </label>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.material.split.numberOfSplits' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='numberOfSplits' formControlName="numberOfSplits" [fwShareKeyHandler]='{controlName: "numberOfSplits", inputing: Inputing, nextInputId: "badge", req: request(requestNumberOfSplitsData, requestNumberOfSplitsDataSuccess, requestNumberOfSplitsDataFailed)}'
+          [placeholder]="'app.mobile.material.split.numberOfSplits.placeholder' | translate">
+      </div>
+    </div>
+    <label for="weuiAgree" class="weui-agree">
+      <span class="weui-agree__text">
+        {{getDescription('numberOfSplits')}}
+      </span>
+    </label>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.material.split.badge' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id="badge" type='password' formControlName="badge" [fwShareKeyHandler]='{controlName: "badge", inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
+          [placeholder]="'app.mobile.material.split.badge.placeholder' | translate" weui-required>
+      </div>
+    </div>
+    <label for="weuiAgree" class="weui-agree">
+      <span class="weui-agree__text">
+        {{getDescription('badge')}}
+      </span>
+    </label>
+    <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(splitBatch, splitBatchSuccess, splitBatchFailed)'>{{'app.mobile.material.split.action'
+      | translate}}</button>
+    <button class='reset' weui-button weui-mini="mini" [weui-type]="'warn'" (click)="resetForm()">Reset</button>
+  </div>
+</form>
+<weui-mask #mask [backdrop]="false"></weui-mask>

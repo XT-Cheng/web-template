@@ -1,28 +1,21 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
-import { switchMap, catchError, map } from 'rxjs/operators';
-import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
 import { BaseForm } from '../base.form';
-import { NzMessageService } from 'ng-zorro-antd';
-import { TitleService, SettingsService } from '@delon/theme';
-import { BapiService } from '@core/hydra/service/bapi.service';
-import { FetchService } from '@core/hydra/service/fetch.service';
-import { MaterialBuffer, MaterialBatch } from '@core/hydra/entity/batch';
-import { Operator } from '@core/hydra/entity/operator';
-import { ToastService } from 'ngx-weui';
+import { Component, Inject } from '@angular/core';
+import { ToastService, ToptipsService } from 'ngx-weui';
+import { Router } from '@angular/router';
+import { toNumber } from 'ng-zorro-antd';
+import { TitleService, SettingsService, ALAIN_I18N_TOKEN } from '@delon/theme';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { OperatorService } from '@core/hydra/service/operator.service';
-
-class ModelData {
-  barCode = '';
-  badge = '';
-  batchName = '';
-  materialBuffer = '';
-  material = '';
-  qty = 0;
-  numberOfSplits = '1';
-  splittedQty = '';
-}
+import { BapiService } from '@core/hydra/service/bapi.service';
+import { FormBuilder, Validators } from '@angular/forms';
+import { of, throwError, Observable, forkJoin } from 'rxjs';
+import { switchMap, tap, map } from 'rxjs/operators';
+import { MaterialBatch } from '@core/hydra/entity/batch';
+import { DOCUMENT } from '@angular/common';
+import { I18NService } from '@core/i18n/i18n.service';
+import { deepExtend, IActionResult } from '@core/utils/helpers';
+import { PrintService } from '@core/hydra/service/print.service';
+import { requestBadgeData } from './request.common';
 
 @Component({
   selector: 'fw-batch-create',
@@ -32,131 +25,162 @@ class ModelData {
 export class CreateBatchComponent extends BaseForm {
   //#region View Children
 
-  @ViewChild('batch') batchElem: ElementRef;
-  @ViewChild('materialBuffer') materialBufferElem: ElementRef;
-  @ViewChild('numberOfSplits') numberOfSplitsElem: ElementRef;
-  @ViewChild('operator') operatorElem: ElementRef;
-
   //#endregion
 
   //#region Protected member
+  protected key = `app.mobile.material.create`;
+  //#endregion
 
-  protected bufferInfo: MaterialBuffer = new MaterialBuffer();
-  protected batchInfo: MaterialBatch = new MaterialBatch();
-  protected operatorInfo: Operator = new Operator();
+  //#region Public member
 
-  protected title = `Batch Create`;
+  requestBadgeData = requestBadgeData(this.form, this._operatorService);
 
   //#endregion
 
   //#region Constructor
 
   constructor(
+    fb: FormBuilder,
     _toastService: ToastService,
     _routeService: Router,
-    _message: NzMessageService,
+    _tipService: ToptipsService,
     _titleService: TitleService,
     _settingService: SettingsService,
     private _batchService: BatchService,
     private _operatorService: OperatorService,
     private _bapiService: BapiService,
+    private _printService: PrintService,
+    @Inject(DOCUMENT) private _document: Document,
+    @Inject(ALAIN_I18N_TOKEN) _i18n: I18NService,
   ) {
-    super(_settingService, _toastService, _routeService, _message, _titleService);
-
-    this.modelData = Object.assign(new ModelData(), {
-      badge: this.storedModel.badge
+    super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n);
+    this.addControls({
+      barCode: [null, [Validators.required]],
+      batch: [null, [Validators.required]],
+      materialBuffer: [null, [Validators.required]],
+      numberOfSplits: [1, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)]],
+      badge: [null, [Validators.required]],
+      batchData: [null],
+      isReturnedFromSAP: [null]
     });
+
+    this.form.setValue(Object.assign(this.form.value, {
+      badge: this.storedData ? this.storedData.badge : ``,
+    }));
   }
+
+  //#endregion
+
+  //#region Public methods
 
   //#endregion
 
   //#region Data Request
 
   //#region Batch Reqeust
+  requestBatchDataSuccess = (barCodeInfor) => {
+    this.form.controls.batch.setValue(barCodeInfor.name);
+    this.form.controls.barCode.setValue(barCodeInfor.barCode);
+    this.form.controls.batchData.setValue(barCodeInfor);
 
-  requestBatchDataSuccess = (_) => {
-    this.modelData.barCode = this.modelData.batchName = this.batchInfo.name;
-    this.materialBufferElem.nativeElement.focus();
+    if (this.storedData && this.storedData.materialSplits && this.storedData.materialSplits[barCodeInfor.material]) {
+      this.form.controls.numberOfSplits.setValue(this.storedData.materialSplits[barCodeInfor.material]);
+    }
   }
 
   requestBatchDataFailed = () => {
-    this.batchElem.nativeElement.select();
-    this.resetForm();
   }
 
   requestBatchData = () => {
-    if (!this.modelData.barCode) {
+    if (!this.form.value.batch) {
       return of(null);
     }
 
-    if (this.modelData.barCode === this.batchInfo.barCode || this.modelData.barCode === this.batchInfo.name) {
-      return of(null);
-    }
+    let barCodeInfor: MaterialBatch;
 
-    return this._batchService.getBatchInfoFrom2DBarCode(this.modelData.barCode).pipe(
-      switchMap((batchInfo: MaterialBatch) => {
-        this.batchInfo = batchInfo;
-        return this._batchService.getBatchInformation(batchInfo.name);
+    return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch).pipe(
+      switchMap((barCodeData: MaterialBatch) => {
+        barCodeInfor = barCodeData;
+        return this._batchService.isBatchNameExist(barCodeData.name);
       }),
-      switchMap((batchInfo: MaterialBatch) => {
-        if (!!batchInfo) {
-          return throwError(`Batch ${this.batchInfo.name} exist！`);
+      switchMap((exist: boolean) => {
+        if (exist) {
+          return throwError(`Batch ${barCodeInfor.name} exist！`);
         }
-        return of(null);
-      }
-      ),
-      catchError(err => {
-        if (typeof (err) === `string` && err.includes('not exist')) {
-          return of(null);
+        return forkJoin(this._batchService.getMaterialType(barCodeInfor.material),
+          this._batchService.getMaterialUnit(barCodeInfor.material), this._batchService.isBatchInSAP(barCodeInfor.name));
+      }),
+      switchMap((array: Array<any>) => {
+        let [
+          matType,
+          unit,
+          // tslint:disable-next-line:prefer-const
+          isInSAP] = array;
+
+        if (!matType) {
+          matType = 'Comp';
         }
-        return throwError(err);
+
+        if (!unit) {
+          unit = 'PC';
+        }
+
+        this.form.controls.isReturnedFromSAP.setValue(isInSAP);
+
+        barCodeInfor.materialType = matType;
+        barCodeInfor.unit = unit;
+        return of(barCodeInfor);
       }));
   }
-
   //#endregion
 
   //#region Buffer Reqeust
-  requestMaterialBufferDataSuccess = (_) => {
-    this.numberOfSplitsElem.nativeElement.focus();
+  requestMaterialBufferDataSuccess = () => {
   }
 
   requestMaterialBufferDataFailed = () => {
-    this.bufferInfo = new MaterialBuffer();
-    this.materialBufferElem.nativeElement.select();
   }
 
   requestMaterialBufferData = () => {
-    if (!this.modelData.materialBuffer) {
+    if (!this.form.value.materialBuffer) {
       return of(null);
     }
 
-    if (this.modelData.materialBuffer === this.bufferInfo.name) {
-      return of(null);
-    }
-
-    return this._batchService.getMaterialBuffer(this.modelData.materialBuffer).pipe(
-      map((buffer: MaterialBuffer) => this.bufferInfo = buffer
-      ));
+    return this._batchService.getMaterialBuffer(this.form.value.materialBuffer).pipe(
+      tap(buffer => {
+        if (!buffer) {
+          throw Error(`${this.form.value.materialBuffer} not exist!`);
+        }
+      })
+    );
   }
 
   //#endregion
 
   //#region Number of Splits Reqeust
   requestNumberOfSplitsDataSuccess = () => {
-    this.operatorElem.nativeElement.focus();
+    this.descriptions.set(`numberOfSplits`, this.getSplitInfo());
+    this.storedData = deepExtend(this.storedData, {
+      materialSplits: {
+        [this.form.controls.batchData.value.material]: this.form.value.numberOfSplits
+      }
+    });
   }
 
   requestNumberOfSplitsDataFailed = () => {
-    this.numberOfSplitsElem.nativeElement.focus();
   }
 
   requestNumberOfSplitsData = () => {
-    if (this.modelData.numberOfSplits) {
-      if (parseInt(this.modelData.numberOfSplits, 10) > 1) {
-        if ((this.batchInfo.quantity % parseInt(this.modelData.numberOfSplits, 10)) > 0) {
-          return throwError('Incorrect Child Count');
-        }
-      }
+    if (!/^[0-9]*$/.test(this.form.value.numberOfSplits)) {
+      return throwError('Incorrect Child Count');
+    }
+
+    if (!this.form.value.batchData) {
+      return throwError('Input Batch First');
+    }
+
+    if ((this.form.value.batchData.quantity % this.form.value.numberOfSplits) > 0) {
+      return throwError('Incorrect Child Count');
     }
 
     return of(null);
@@ -164,155 +188,118 @@ export class CreateBatchComponent extends BaseForm {
 
   //#endregion
 
-  //#region Operator Reqeust
-  requestOperatorDataSuccess = (_) => {
+  //#region Badge Reqeust
+  requestBadgeDataSuccess = () => {
   }
 
-  requestOperatorDataFailed = () => {
-    this.operatorInfo = new Operator();
-    this.operatorElem.nativeElement.select();
+  requestBadgeDataFailed = () => {
   }
 
-  requestOperatorData = () => {
-    if (!this.modelData.badge) {
-      return of(null);
-    }
-
-    if (this.modelData.badge === this.operatorInfo.badge) {
-      return of(null);
-    }
-
-    return this._operatorService.getOperatorByBadge(this.modelData.badge).pipe(
-      map((operator: Operator) => this.operatorInfo = operator
-      ));
-  }
   //#endregion
 
   //#endregion
 
   //#region Protected methods
-  protected getSplitInfo() {
-    if (!this.batchInfo) {
-      return ``;
-    }
 
-    const child = parseInt(this.modelData.numberOfSplits, 10);
-
-    if (this.batchInfo.quantity > 0 && !isNaN(child)) {
-      if ((this.batchInfo.quantity % child) > 0) {
-        return `Child Qty:`;
-      }
-
-      if (child > 1) {
-        return `Child Qty: ${this.batchInfo.quantity / child}`;
-      }
-    }
-  }
   //#endregion
 
   //#region Event Handler
 
-  batchEntered(event) {
-    this.stopEvent(event);
-
-    if (this.form.controls['batch'].invalid) {
-      this.batchElem.nativeElement.select();
-      return;
-    }
-
-    this.batchElem.nativeElement.blur();
-  }
-
-  materialBufferEntered(event) {
-    this.stopEvent(event);
-
-    if (this.form.controls['materialBuffer'].invalid) {
-      this.materialBufferElem.nativeElement.select();
-      return;
-    }
-
-    this.materialBufferElem.nativeElement.blur();
-  }
-
-  numberOfSplitsEntered(event) {
-    this.stopEvent(event);
-
-    if (this.form.controls['numberOfSplits'].invalid) {
-      this.numberOfSplitsElem.nativeElement.select();
-      return;
-    }
-
-    this.numberOfSplitsElem.nativeElement.blur();
-  }
-
-  operatorEntered(event) {
-    this.stopEvent(event);
-
-    if (this.form.controls['operator'].invalid) {
-      this.operatorElem.nativeElement.select();
-      return;
-    }
-
-    this.operatorElem.nativeElement.blur();
-  }
-
   //#endregion
 
   //#region Exeuction
-  createBatchSuccess = () => {
-    // this._tipService['primary'](`Batch ${this.batchInfo.name} Created!`);
+  createBatchSuccess = (ret: IActionResult) => {
+    this.showSuccess(ret.description);
   }
 
   createBatchFailed = () => {
-    this.batchElem.nativeElement.focus();
   }
 
   createBatch = () => {
-    this.executionContext = {
-      batchName: this.batchInfo.name,
-      material: this.batchInfo.material,
-      qty: this.batchInfo.quantity,
-      bufferName: this.bufferInfo.name,
-      SAPBatch: this.batchInfo.SAPBatch,
-      dateCode: this.batchInfo.dateCode,
-      operator: this.operatorInfo.badge
-    };
-    return this._bapiService
-      .createBatch(
-        this.batchInfo.name,
-        this.batchInfo.material,
-        this.batchInfo.quantity,
-        this.bufferInfo.name,
-        this.operatorInfo.badge,
-        this.batchInfo.SAPBatch,
-        this.batchInfo.dateCode
-      ).pipe(
-        switchMap(ret => {
-          const numberOfSplits = parseInt(this.modelData.numberOfSplits, 10);
-          if (numberOfSplits > 1) {
-            return this._bapiService.splitBatch(this.batchInfo,
-              numberOfSplits, this.batchInfo.quantity / numberOfSplits, this.operatorInfo.badge);
-          }
-          return of(ret);
-        })
-      );
+    let firstAction$: Observable<IActionResult>;
+    if (this.form.value.isReturnedFromSAP) {
+      firstAction$ = this._bapiService
+        .moveBatch(this.form.value.batchData, this.form.value.materialBuffer, this.form.value.badge).pipe(
+          switchMap(_ => {
+            return this._bapiService.changeBatchQuantity(this.form.value.batchData,
+              this.form.value.batchData.quantity, this.form.value.badge);
+          }),
+          map((_) => {
+            return {
+              isSuccess: true,
+              description: `Batch ${this.form.value.batchData.name} Moved to ${this.form.value.materialBuffer}!`,
+            };
+          })
+        );
+    } else {
+      firstAction$ = this._bapiService
+        .createBatch(
+          this.form.value.batchData.name,
+          this.form.value.batchData.material,
+          this.form.value.batchData.materialType,
+          this.form.value.batchData.unit,
+          this.form.value.batchData.quantity,
+          this.form.value.materialBuffer,
+          this.form.value.badge,
+          this.form.value.batchData.SAPBatch,
+          this.form.value.batchData.dateCode
+        );
+    }
+    return firstAction$.pipe(
+      switchMap(ret => {
+        const children = toNumber(this.form.value.numberOfSplits, 1);
+        if (children > 1) {
+          return this._bapiService.splitBatch(this.form.value.batchData,
+            toNumber(children, 0), this.form.value.batchData.quantity / children,
+            this.form.value.badge);
+        }
+        return of(ret);
+      }),
+      switchMap(ret => {
+        if (ret.context) {
+          const print$: Observable<IActionResult>[] = [];
+          ret.context.forEach((childBatch) => {
+            print$.push(this._printService.printMaterialBatchLabel(childBatch, `Machine`, 9999));
+          });
+          return forkJoin(print$).pipe(
+            map((_) => {
+              return {
+                isSuccess: true,
+                error: ``,
+                content: ``,
+                description: `Batch ${this.form.value.batchData.name} Split to ${ret.context.join(`,`)} And Label Printed!`,
+                context: ret.context
+              };
+            })
+          );
+        }
+        return of(ret);
+      })
+    );
   }
 
   //#endregion
 
   //#region Override methods
-
-  resetForm() {
-    this.bufferInfo = new MaterialBuffer();
-    this.batchInfo = new MaterialBatch();
-    this.operatorInfo = new Operator();
-
-    this.batchElem.nativeElement.focus();
+  protected isValid() {
+    return !Array.from(this.descriptions.entries()).some(value => {
+      return (value[0] !== `batchData` && value[0] !== 'isReturnedFromSAP' && value[0] !== `barCode` && !value[1]);
+    });
   }
 
-  isValid() {
-    return this.bufferInfo.name && this.batchInfo.name && this.operatorInfo.badge;
+  protected afterReset() {
+    this._document.getElementById(`batch`).focus();
+
+    this.form.controls.badge.setValue(this.storedData.badge);
+    this.form.controls.numberOfSplits.setValue(1);
   }
 
+  //#endregion
+
+
+  //#region Private methods
+  private getSplitInfo() {
+    return `Child Qty: ${this.form.value.batchData.quantity / this.form.value.numberOfSplits}`;
+  }
   //#endregion
 }

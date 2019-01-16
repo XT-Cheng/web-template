@@ -21,7 +21,11 @@ import { MachineSummaryComponent } from './dashboard/machine.summary.component';
 import { BatchGeneralComponent } from './report/batch/batch.general.component';
 import { ImportBapiComponent } from './import/import.bapi.exec.component';
 import { CreateBatchComponent } from './mobile/material/create-batch.component';
-import { CreateBatchNewComponent } from './mobile/material/create-batch.new.component';
+import { MoveBatchComponent } from './mobile/material/move-batch.component';
+import { SplitBatchComponent } from './mobile/material/split-batch.component';
+import { MoveBatchTo914Component } from './mobile/material/move-batch-914.component';
+import { MoveBatchToSAPComponent } from './mobile/material/move-batch-sap.component';
+import { AdjustBatchQuantityComponent } from './mobile/material/adjust-batch-quantity.component';
 
 const routes: Routes = [
   {
@@ -35,7 +39,11 @@ const routes: Routes = [
       { path: 'import/bapi', component: ImportBapiComponent, data: { title: 'BAPI 批量执行' } },
       { path: 'reports/batchSummary', component: BatchGeneralComponent, data: { title: '物料批次概览' } },
       { path: 'material/create', component: CreateBatchComponent },
-      { path: 'material/createnew', component: CreateBatchNewComponent },
+      { path: 'material/move', component: MoveBatchComponent },
+      { path: 'material/moveTo914', component: MoveBatchTo914Component },
+      { path: 'material/moveToSAP', component: MoveBatchToSAPComponent },
+      { path: 'material/split', component: SplitBatchComponent },
+      { path: 'material/adjustQty', component: AdjustBatchQuantityComponent },
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }
     ]

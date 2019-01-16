@@ -7,13 +7,15 @@ export class MaterialBatch {
   quantity: number;
   material: string;
   materialType: string;
+  status: string;
+  unit: string;
   SAPBatch: string;
   dateCode: string;
   lastChanged: Date;
   barCode: string;
   get display(): string {
     if (this.bufferDescription) {
-      return `${this.name}, ${this.material}, ${this.quantity} ${this.bufferDescription}`;
+      return `${this.name}, ${this.material}, ${this.quantity}, ${this.bufferDescription}`;
     } else {
       return `${this.name}, ${this.material}, ${this.quantity}`;
     }

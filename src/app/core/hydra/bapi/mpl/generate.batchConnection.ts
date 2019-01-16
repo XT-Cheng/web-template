@@ -1,5 +1,6 @@
 import { DialogBase } from '@core/hydra/bapi/dialog.base';
 import { DialogTypeEnum } from '@core/hydra/bapi/constants';
+import { leftPad } from '@core/utils/helpers';
 
 export class GenerateBatchConnection extends DialogBase {
   constructor(private inputBatchName: string, private outputBatchName: string,
@@ -12,7 +13,7 @@ export class GenerateBatchConnection extends DialogBase {
   public dialogString(): string {
     const date = new Date();
     const seconds = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
-    const dateString = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+    const dateString = `${leftPad(date.getMonth() + 1, 2)}/${leftPad(date.getDate(), 2)}/${date.getFullYear()}`;
 
     return `${super.dialogString()}` +
       `CNRBAUM.CNR:E=${this.inputBatchName}|` +
