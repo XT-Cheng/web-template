@@ -7,13 +7,12 @@ import { BatchService } from '@core/hydra/service/batch.service';
 import { OperatorService } from '@core/hydra/service/operator.service';
 import { BapiService } from '@core/hydra/service/bapi.service';
 import { FormBuilder, Validators } from '@angular/forms';
-import { of } from 'rxjs';
-import { switchMap, tap, map } from 'rxjs/operators';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { DOCUMENT } from '@angular/common';
 import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
-import { requestBatchData, requestMaterialBufferData, requestBadgeData } from './request.common';
+import { requestBatchData, requestMaterialBufferData } from './request.common';
+import { requestBadgeData } from '../request.common';
 
 @Component({
   selector: 'fw-batch-move',

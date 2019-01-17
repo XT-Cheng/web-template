@@ -15,7 +15,7 @@ import { DOCUMENT } from '@angular/common';
 import { I18NService } from '@core/i18n/i18n.service';
 import { deepExtend, IActionResult } from '@core/utils/helpers';
 import { PrintService } from '@core/hydra/service/print.service';
-import { requestBadgeData } from './request.common';
+import { requestBadgeData } from '../request.common';
 
 @Component({
   selector: 'fw-batch-create',

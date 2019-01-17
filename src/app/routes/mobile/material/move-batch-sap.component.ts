@@ -12,7 +12,8 @@ import { DOCUMENT } from '@angular/common';
 import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
 import { BUFFER_SAP } from './constants';
-import { requestBatchData, requestMaterialBufferData, requestBadgeData } from './request.common';
+import { requestBatchData } from './request.common';
+import { requestBadgeData } from '../request.common';
 
 @Component({
   selector: 'fw-batch-move-sap',

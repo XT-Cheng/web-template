@@ -1,8 +1,10 @@
 import { of } from 'rxjs';
 import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
 import { switchMap, map, tap } from 'rxjs/operators';
+import { FormGroup } from '@angular/forms';
+import { BatchService } from '@core/hydra/service/batch.service';
 
-export const requestBatchData = (form, batchService) => () => {
+export const requestBatchData = (form: FormGroup, batchService: BatchService) => () => {
   if (!form.value.batch) {
     return of(null);
   }
@@ -42,17 +44,4 @@ export const requestMaterialBufferData = (form, batchService) => () => {
       }
     })
   );
-};
-
-export const requestBadgeData = (form, operatorService) => () => {
-  if (!form.value.badge) {
-    return of(null);
-  }
-
-  return operatorService.getOperatorByBadge(form.value.badge).pipe(
-    tap(operator => {
-      if (!operator) {
-        throw Error(`${form.value.badge} not exist!`);
-      }
-    }));
 };
