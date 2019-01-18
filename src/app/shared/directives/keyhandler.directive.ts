@@ -64,7 +64,11 @@ export class KeyHandlerDirective {
   }
 
   onEnter(srcElement) {
-    if (srcElement.tagName !== 'INPUT' || !srcElement.value || !this.keyHandler || !this.keyHandler.req) {
+    if (srcElement.tagName !== 'INPUT' || !this.keyHandler || !this.keyHandler.req) {
+      return;
+    }
+
+    if (!this.keyHandler.allowEmpty && !srcElement.value) {
       return;
     }
 

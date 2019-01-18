@@ -304,6 +304,219 @@ export class MachineService {
       this._fetchService.query(replaceAll(MachineService.loggedOnComponentSql, [MachineService.machineNameTBR], [machineName])),
       this._fetchService.query(replaceAll(MachineService.loggedOnToolSql, [MachineService.machineNameTBR], [machineName])),
       this._fetchService.query(replaceAll(MachineService.machineCheckListItemSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.machinePreviousOPSql, [MachineService.machineNameTBR], [machineName])))
+      .pipe(
+        map((array: Array<Array<any>>) => {
+          const [
+            machine,
+            machineCurrentOP,
+            bomItems,
+            toolItems,
+            machineNextOP,
+            loggedOnOperator,
+            loggedOnComponent,
+            loggedOnTool,
+            checkListItems,
+            machinePreviousOP,
+          ] = array;
+
+          if (machine.length === 0) {
+            return null;
+          }
+
+          //#region Initialize Machine
+          machineRet = Object.assign(new Machine(), {
+            machineName: machine[0].MACHINE,
+            description: machine[0].DESCRIPTION,
+            currentStatusNr: machine[0].STATUS,
+            currentStatus: machine[0].TEXT,
+            currentShift: machine[0].SHIFTNR,
+            currentShiftDate: new Date(machine[0].SHIFTDATE),
+            currentShiftStart: new Date(machine[0].SHIFTSTART),
+            currentShiftEnd: new Date(machine[0].SHIFTEND),
+          });
+
+          //#endregion
+
+          //#region Setup Current Operations
+          machineCurrentOP.forEach(rec => {
+            const operation = Object.assign(new Operation(), {
+              order: rec.WORKORDER,
+              sequence: rec.SEQUENCE,
+              article: rec.ARTICLE,
+              targetQty: rec.TARGETQTY,
+              totalYield: rec.YIELD,
+              totalScrap: rec.SCRAP,
+              leadOrder: rec.LEADORDER,
+              targetCycleTime: rec.TARGET_CYCLE,
+              earliestStart: new Date(rec.EARLIEST_START),
+              earliestEnd: new Date(rec.EARLIEST_FINISH),
+              latestStart: new Date(rec.LATEST_START),
+              latestEnd: new Date(rec.LATEST_FINISH),
+              scheduleStart: new Date(rec.SCHEDULE_START),
+              scheduleEnd: new Date(rec.SCHEDULE_FINISH),
+              planStart: new Date(rec.PLAN_START),
+              planEnd: new Date(rec.PLAN_FINISH),
+              lastLoggedOn: new Date(rec.LAST_LOGGEDON),
+            });
+
+            // Setup BOM Items
+            bomItems.filter(item => item.OPERATION === operation.name).map(item => {
+              operation.bomItems.set(item.POS, {
+                material: item.MATERIAL,
+                pos: item.POS,
+                quantity: item.QUANTITY,
+                unit: item.UNIT,
+              });
+            });
+
+            // Setup Tool Items
+            toolItems.filter(item => item.OPERATION === operation.name).map(item => {
+              operation.toolItems.set(item.REQUIRED_TOOL, {
+                requiredTooL: item.REQUIRED_TOOL,
+                requiredQty: item.QUANTITY,
+              });
+            });
+
+
+            // Setup Logged On Operators
+            loggedOnOperator.filter(item => item.OPERATION === operation.name).map(operator => {
+              operation.operatorLoggedOn.set(operator.PERSON, {
+                personNumber: operator.PERSON,
+                name: operator.NAME,
+                badgeId: operator.BADGE,
+              });
+            });
+
+            // Setup Logged On Components
+            loggedOnComponent.filter(item => item.OPERATION === operation.name).map(component => {
+              operation.componentsLoggedOn.set(component.POS, {
+                batchName: component.BATCHID,
+                batchQty: component.REMAINQTY,
+                pos: component.POS,
+                material: component.MATERIAL,
+              });
+            });
+
+            // Setup Logged On Tools
+            loggedOnTool.filter(item => item.OPERATION === operation.name).map(tool => {
+              operation.toolLoggedOn.set(tool.TOOLNAME, {
+                toolName: tool.TOOLNAME,
+                requiredTool: tool.REQUIREDRESOURCE,
+              });
+            });
+
+            machineRet.currentOperations.push(operation);
+          });
+
+          //#endregion
+
+          //#region Setup Previous Article
+          if (machineRet.currentOperation) {
+            machinePreviousOP.map(rec => {
+              if (rec.OPERATIONNAME === machineRet.currentOperation.name) {
+                return;
+              } else {
+                machineRet.previousOperation = rec.OPERATIONNAME;
+                machineRet.previousArticle = rec.ARTICLE;
+              }
+            });
+          } else if (machinePreviousOP.length > 0) {
+            machineRet.previousOperation = machinePreviousOP[0].OPERATIONNAME;
+            machineRet.previousArticle = machinePreviousOP[0].ARTICLE;
+          }
+
+          //#endregion
+
+          //#region Setup Next Operations
+          machineNextOP.forEach(rec => {
+            const operation = Object.assign(new Operation(), {
+              order: rec.WORKORDER,
+              sequence: rec.SEQUENCE,
+              article: rec.ARTICLE,
+              targetQty: rec.TARGETQTY,
+              totalYield: rec.YIELD,
+              totalScrap: rec.SCRAP,
+              leadOrder: rec.LEADORDER,
+              targetCycleTime: rec.TARGET_CYCLE,
+              earliestStart: new Date(rec.EARLIEST_START),
+              earliestEnd: new Date(rec.EARLIEST_FINISH),
+              latestStart: new Date(rec.LATEST_START),
+              latestEnd: new Date(rec.LATEST_FINISH),
+              scheduleStart: new Date(rec.SCHEDULE_START),
+              scheduleEnd: new Date(rec.SCHEDULE_FINISH),
+              planStart: new Date(rec.PLAN_START),
+              planEnd: new Date(rec.PLAN_FINISH),
+              lastLoggedOn: new Date(rec.LAST_LOGGEDON),
+            });
+
+            machineRet.nextOperations.push(operation);
+          });
+
+          machineRet.nextOperations.sort((a, b) => a.planStart > b.planStart ? 1 : -1);
+
+          //#endregion
+
+          //#region Setup Machine's Check List Items
+
+          checkListItems.map(rec => {
+            const checkList = new CheckList();
+            checkList.headerId = rec.PMDM_HEADER_ID;
+            checkList.checkListType = rec.CHECKLIST_TYPE;
+            checkList.processType = rec.PROCESS_TYPE;
+            checkList.items = this.processCheckListItems(rec.PMDM_DATA);
+
+            machineRet.checkLists.set(checkList.processType, checkList);
+          });
+
+          //#endregion
+
+          return machineRet;
+        }),
+        //#region Setup Opearation's Last LoggedOn
+        switchMap((machine) => {
+          if (machine.currentOperations.length === 0) return of([]);
+
+          const operationNames = [];
+          machine.currentOperations.map((op) => operationNames.push(`'` + op.name + `'`));
+
+          return this._fetchService.query(replaceAll(MachineService.machineCurrentOPLoggedOnDateSql
+            , [MachineService.operationsTBR]
+            , [operationNames.join(',')]));
+
+        }),
+        map((lastLoggedOn: any[]) => {
+          if (lastLoggedOn.length === 0) return machineRet;
+
+          machineRet.currentOperations.map((op) => {
+            // Setup Last Logged On
+            const allLoggedOn = lastLoggedOn
+              .filter(rec => rec.OPERATION === op.name)
+              .sort((a, b) => a.LOGGEDONDATE > b.LOGGEDONDATE ? 1 : -1);
+            if (allLoggedOn.length > 0) {
+              op.lastLoggedOn = new Date(allLoggedOn[0].LOGGEDONDATE);
+            }
+          });
+          machineRet.currentOperations.sort((a, b) => a.lastLoggedOn > b.lastLoggedOn ? 1 : -1);
+
+          return machineRet;
+        }),
+        //#endregion
+      );
+  }
+
+  getMachineWithStatistic(machineName: string): Observable<Machine> {
+    let machineRet: Machine;
+    return forkJoin(
+      this._fetchService.query(replaceAll(MachineService.machineSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.machineCurrentOPSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.operationBOMItemsSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.operationToolItemsSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.machineNextOPSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.loggedOnOperatorSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.loggedOnComponentSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.loggedOnToolSql, [MachineService.machineNameTBR], [machineName])),
+      this._fetchService.query(replaceAll(MachineService.machineCheckListItemSql, [MachineService.machineNameTBR], [machineName])),
       this._fetchService.query(replaceAll(MachineService.machinePreviousOPSql, [MachineService.machineNameTBR], [machineName])),
       this._vBoardService.Get24HoursMachineMRAData(machineName),
       this._vBoardService.GetCurrentShiftMachineOEEData(machineName),
@@ -713,7 +926,9 @@ export class MachineService {
           });
 
           return machineRet;
-        }));
+        })
+        //#endregion
+      );
     //#endregion
   }
 

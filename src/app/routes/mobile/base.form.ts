@@ -2,12 +2,14 @@ import { ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormControl, ValidatorFn } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, tap } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { TitleService, SettingsService } from '@delon/theme';
 import { NzMessageService, NzSpinComponent } from 'ng-zorro-antd';
 import { MaskComponent, ToastService, ToptipsService } from 'ngx-weui';
 import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
+import { OperatorService } from '@core/hydra/service/operator.service';
+import { Operator } from '@core/hydra/entity/operator';
 
 interface ITranError {
   context: any;
@@ -19,8 +21,9 @@ interface ITranSuccess {
 }
 
 export abstract class BaseForm {
-  //#region Abstract property
+  static SETUP_OPERATOR: string;
 
+  //#region Abstract member
   protected abstract key: string;
 
   //#endregion
@@ -40,7 +43,8 @@ export abstract class BaseForm {
   //#endregion
 
   //#region Public members
-
+  showBadgeButton = true;
+  badgeButtonText: string;
   descriptions: Map<string, string> = new Map<string, string>();
   form: FormGroup;
   Inputing = (srcElement, controlName) => {
@@ -56,12 +60,35 @@ export abstract class BaseForm {
 
   constructor(fb: FormBuilder, private _settingService: SettingsService, protected _toastService: ToastService,
     private _routeService: Router, private _tipService: ToptipsService,
-    protected _titleService: TitleService, private i18n: I18NService, protected _resetFormAfterSuccessExecution = true) {
-    this.form = fb.group({});
+    protected _titleService: TitleService, private i18n: I18NService, protected _operatorService: OperatorService,
+    protected _resetFormAfterSuccessExecution = true) {
+    BaseForm.SETUP_OPERATOR = i18n.fanyi(`app.mobile.common.setupOperator`);
+    this.badgeButtonText = BaseForm.SETUP_OPERATOR;
+    this.form = fb.group({
+      badge: [null, [Validators.required]],
+      badgeData: [null, []],
+    });
+    this.descriptions.set(`badge`, ``);
     this._routeService.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this._titleService.setTitle(this.title);
+
+        let operator = null;
+        if (this.storedData && this.storedData.badgeData) {
+          operator = new Operator();
+          operator.badge = this.storedData.badgeData.badge;
+          operator.firstName = this.storedData.badgeData.firstName;
+          operator.lastName = this.storedData.badgeData.lastName;
+        }
+
+        this.form.setValue(Object.assign(this.form.value, {
+          badge: operator ? operator.badge : ``,
+          badgeData: operator,
+        }));
+
+        this.badgeButtonText = operator ? operator.display : BaseForm.SETUP_OPERATOR;
+        this.descriptions.set(`badge`, operator ? operator.display : ``);
       });
   }
 
@@ -92,7 +119,7 @@ export abstract class BaseForm {
 
   protected isValid() {
     return !Array.from(this.descriptions.entries()).some(value => {
-      return (!value);
+      return (value[0] !== `badgeData` && !value[1]);
     });
   }
   //#endregion
@@ -155,10 +182,70 @@ export abstract class BaseForm {
 
   resetForm() {
     this.form.reset();
-    this.descriptions.forEach((value, key, map) => map.set(key, ``));
+    this.descriptions.forEach((value, key, map) => {
+      if (key !== `badge`) {
+        map.set(key, ``);
+      }
+    });
 
+    let operator = null;
+    if (this.storedData && this.storedData.badgeData) {
+      operator = new Operator();
+      operator.badge = this.storedData.badgeData.badge;
+      operator.firstName = this.storedData.badgeData.firstName;
+      operator.lastName = this.storedData.badgeData.lastName;
+    }
+
+    this.form.setValue(Object.assign(this.form.value, {
+      badge: operator ? operator.badge : ``,
+      badgeData: operator,
+    }));
     this.afterReset();
   }
+
+  //#region Badge related
+  getBadgeButtonType() {
+    if (this.form.controls.badge.value) {
+      return `primary`;
+    }
+
+    return `warn`;
+  }
+
+  setupOperator() {
+    this.showBadgeButton = false;
+  }
+
+  requestBadgeDataSuccess = (ret: Operator) => {
+    this.showBadgeButton = true;
+    if (ret) {
+      this.form.controls.badge.setValue(ret.badge);
+      this.form.controls.badgeData.setValue(ret);
+      this.badgeButtonText = ret.display;
+    } else {
+      this.form.controls.badge.setValue(``);
+      this.form.controls.badgeData.setValue(null);
+      this.badgeButtonText = BaseForm.SETUP_OPERATOR;
+    }
+  }
+
+  requestBadgeDataFailed = () => {
+  }
+
+  requestBadgeData = () => {
+    if (!this.form.value.badge) {
+      return of(null);
+    }
+
+    return this._operatorService.getOperatorByBadge(this.form.value.badge).pipe(
+      tap(operator => {
+        if (!operator) {
+          throw Error(`${this.form.value.badge} not exist!`);
+        }
+      }));
+  }
+
+  //#endregion
 
   //#endregion
 

@@ -57,7 +57,7 @@ export class MachineSummaryComponent implements OnInit {
       this.reuseTabService.title = `${this.i18n.fanyi('app.route.line-summary')} - ${this.machineName}`;
 
       // this.machineService.getMachineWithMock(this.machineName);
-      this.machineService.getMachine(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
+      this.machineService.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
         this.machine = machine;
       });
     });

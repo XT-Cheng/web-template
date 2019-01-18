@@ -32,7 +32,6 @@ export class MoveBatchToSAPComponent extends BaseForm {
   //#region Public member
 
   requestBatchData = requestBatchData(this.form, this._batchService);
-  requestBadgeData = requestBadgeData(this.form, this._operatorService);
 
   //#endregion
 
@@ -46,12 +45,12 @@ export class MoveBatchToSAPComponent extends BaseForm {
     _titleService: TitleService,
     _settingService: SettingsService,
     private _batchService: BatchService,
-    private _operatorService: OperatorService,
+    _operatorService: OperatorService,
     private _bapiService: BapiService,
     @Inject(DOCUMENT) private _document: Document,
     @Inject(ALAIN_I18N_TOKEN) _i18n: I18NService,
   ) {
-    super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n);
+    super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n, _operatorService);
     this.addControls({
       barCode: [null, [Validators.required]],
       batch: [null, [Validators.required]],
@@ -84,13 +83,6 @@ export class MoveBatchToSAPComponent extends BaseForm {
   }
 
   //#endregion
-
-  //#region Badge Reqeust
-  requestBadgeDataSuccess = () => {
-  }
-
-  requestBadgeDataFailed = () => {
-  }
 
   //#endregion
 
@@ -129,7 +121,6 @@ export class MoveBatchToSAPComponent extends BaseForm {
   protected afterReset() {
     this._document.getElementById(`batch`).focus();
 
-    this.form.controls.badge.setValue(this.storedData.badge);
     this.form.controls.materialBuffer.setValue(BUFFER_SAP);
   }
 

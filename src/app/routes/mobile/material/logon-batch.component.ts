@@ -7,33 +7,41 @@ import { BatchService } from '@core/hydra/service/batch.service';
 import { OperatorService } from '@core/hydra/service/operator.service';
 import { BapiService } from '@core/hydra/service/bapi.service';
 import { FormBuilder, Validators } from '@angular/forms';
-import { of } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { DOCUMENT } from '@angular/common';
 import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
-import { BUFFER_914 } from './constants';
-import { requestBatchData } from './request.common';
+import { requestBatchData, requestMaterialBufferData } from './request.common';
 import { requestBadgeData } from '../request.common';
+import { of, Observable } from 'rxjs';
+import { Machine } from '@core/hydra/entity/machine';
+import { MachineService } from '@core/hydra/service/machine.service';
+import { Operation } from '@core/hydra/entity/operation';
 
 @Component({
-  selector: 'fw-batch-move-914',
-  templateUrl: 'move-batch-914.component.html',
-  styleUrls: ['./move-batch-914.component.scss']
+  selector: 'fw-batch-logon',
+  templateUrl: 'logon-batch.component.html',
+  styleUrls: ['./logon-batch.component.scss']
 })
-export class MoveBatchTo914Component extends BaseForm {
+export class LogonBatchComponent extends BaseForm {
   //#region View Children
 
   //#endregion
 
   //#region Protected member
-  protected key = `app.mobile.material.moveTo914`;
+  protected key = `app.mobile.material.logon`;
+  //#endregion
+
+  //#region Public member
+  componentsInfo = [];
+
+  requestBatchData = requestBatchData(this.form, this._batchService);
+
   //#endregion
 
   //#region Public member
 
-  requestBatchData = requestBatchData(this.form, this._batchService);
+  operations: Operation[] = [];
 
   //#endregion
 
@@ -47,6 +55,7 @@ export class MoveBatchTo914Component extends BaseForm {
     _titleService: TitleService,
     _settingService: SettingsService,
     private _batchService: BatchService,
+    private _machineService: MachineService,
     _operatorService: OperatorService,
     private _bapiService: BapiService,
     @Inject(DOCUMENT) private _document: Document,
@@ -55,10 +64,13 @@ export class MoveBatchTo914Component extends BaseForm {
     super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n, _operatorService);
     this.addControls({
       barCode: [null, [Validators.required]],
+      machine: [null, [Validators.required]],
+      operation: [null, [Validators.required]],
       batch: [null, [Validators.required]],
-      materialBuffer: [null, [Validators.required]],
       badge: [null, [Validators.required]],
-      batchData: [null]
+      batchData: [null],
+      machineData: [null],
+      opeartionData: [null]
     });
 
     this.form.setValue(Object.assign(this.form.value, {
@@ -69,10 +81,35 @@ export class MoveBatchTo914Component extends BaseForm {
   //#endregion
 
   //#region Public methods
-
+  getResultClass(comp) {
+    return {
+      'weui-icon-success': true,
+      'weui-icon-warn': false
+    };
+  }
   //#endregion
 
   //#region Data Request
+
+  //#region Machine Reqeust
+
+  requestMachineDataSuccess = (machine: Machine) => {
+    this.form.controls.machineData.setValue(machine);
+    this.descriptions.set(`machine`, machine.display);
+    this.operations = machine.nextOperations;
+    if (this.operations.length > 0) {
+      this.form.controls.operation.setValue(this.operations[0]);
+    }
+  }
+
+  requestMachineDataFailed = () => {
+  }
+
+  requestMachineData = () => {
+    return this._machineService.getMachine(this.form.value.machine);
+  }
+
+  //#endregion
 
   //#region Batch Reqeust
   requestBatchDataSuccess = (batch: MaterialBatch) => {
@@ -86,31 +123,17 @@ export class MoveBatchTo914Component extends BaseForm {
 
   //#endregion
 
-  //#region Buffer Reqeust
-  requestMaterialBufferDataSuccess = () => {
+  //#region Operation Reqeust
+  requestOperationDataSuccess = () => {
+    console.log(`aaaa`);
+    // this.componentsInfo = this.form.controls.operation.value.componentStatus.values();
   }
 
-  requestMaterialBufferDataFailed = () => {
+  requestOperationDataFailed = () => {
   }
 
-  requestMaterialBufferData = () => {
-    if (!this.form.value.materialBuffer) {
-      return of(null);
-    }
-
-    return this._batchService.getMaterialBuffer(this.form.value.materialBuffer).pipe(
-      tap(buffer => {
-        if (!buffer) {
-          throw Error(`${this.form.value.materialBuffer} not exist!`);
-        }
-        if (!buffer.parentBuffers.find(x => x === BUFFER_914)) {
-          throw Error(`${this.form.value.materialBuffer} not belongs to 914!`);
-        }
-        if (buffer.name === this.form.value.batchData.bufferName) {
-          throw Error(`Batch alreaday in Location ${this.form.value.batchData.bufferName}`);
-        }
-      })
-    );
+  requestOperationData = (): Observable<any> => {
+    return of(null);
   }
 
   //#endregion
@@ -122,20 +145,24 @@ export class MoveBatchTo914Component extends BaseForm {
   //#endregion
 
   //#region Event Handler
-
+  operationSelected() {
+    this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
+      (null, null, `operation`);
+  }
   //#endregion
 
   //#region Exeuction
-  moveBatchSuccess = (ret: IActionResult) => {
+  logonBatchSuccess = (ret: IActionResult) => {
     this.showSuccess(ret.description);
   }
 
-  moveBatchFailed = () => {
+  logonBatchFailed = () => {
   }
 
-  moveBatch = () => {
-    // Move Batch
-    return this._bapiService.moveBatch(this.form.value.batchData, this.form.value.materialBuffer, this.form.value.badge);
+  logonBatch = () => {
+    // LogOn Batch
+    return of(null);
+    // return this._bapiService.logonBatch(this.form.value.batchData, this.form.value.materialBuffer, this.form.value.badge);
   }
 
   //#endregion

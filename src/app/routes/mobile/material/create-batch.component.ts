@@ -15,7 +15,6 @@ import { DOCUMENT } from '@angular/common';
 import { I18NService } from '@core/i18n/i18n.service';
 import { deepExtend, IActionResult } from '@core/utils/helpers';
 import { PrintService } from '@core/hydra/service/print.service';
-import { requestBadgeData } from '../request.common';
 
 @Component({
   selector: 'fw-batch-create',
@@ -33,8 +32,6 @@ export class CreateBatchComponent extends BaseForm {
 
   //#region Public member
 
-  requestBadgeData = requestBadgeData(this.form, this._operatorService);
-
   //#endregion
 
   //#region Constructor
@@ -47,26 +44,21 @@ export class CreateBatchComponent extends BaseForm {
     _titleService: TitleService,
     _settingService: SettingsService,
     private _batchService: BatchService,
-    private _operatorService: OperatorService,
+    _operatorService: OperatorService,
     private _bapiService: BapiService,
     private _printService: PrintService,
     @Inject(DOCUMENT) private _document: Document,
     @Inject(ALAIN_I18N_TOKEN) _i18n: I18NService,
   ) {
-    super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n);
+    super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n, _operatorService);
     this.addControls({
       barCode: [null, [Validators.required]],
       batch: [null, [Validators.required]],
       materialBuffer: [null, [Validators.required]],
       numberOfSplits: [1, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)]],
-      badge: [null, [Validators.required]],
       batchData: [null],
       isReturnedFromSAP: [null]
     });
-
-    this.form.setValue(Object.assign(this.form.value, {
-      badge: this.storedData ? this.storedData.badge : ``,
-    }));
   }
 
   //#endregion
@@ -188,15 +180,6 @@ export class CreateBatchComponent extends BaseForm {
 
   //#endregion
 
-  //#region Badge Reqeust
-  requestBadgeDataSuccess = () => {
-  }
-
-  requestBadgeDataFailed = () => {
-  }
-
-  //#endregion
-
   //#endregion
 
   //#region Protected methods
@@ -290,7 +273,6 @@ export class CreateBatchComponent extends BaseForm {
   protected afterReset() {
     this._document.getElementById(`batch`).focus();
 
-    this.form.controls.badge.setValue(this.storedData.badge);
     this.form.controls.numberOfSplits.setValue(1);
   }
 

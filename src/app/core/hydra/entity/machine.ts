@@ -91,6 +91,17 @@ export class Machine {
 
   //#endregion
 
+  //#region Display
+
+  get display(): string {
+    if (this.currentOperation) {
+      return `${this.machineName}, ${this.currentOperation.leadOrder} / ${this.currentOperation.order}`;
+    } else {
+      return `${this.machineName}, No Order Logon`;
+    }
+  }
+
+  //#endregion
 }
 
 export class MachineAlarmSetting {
