@@ -34,6 +34,9 @@ import { MoveBatchToSAPComponent } from './mobile/material/move-batch-sap.compon
 import { AdjustBatchQuantityComponent } from './mobile/material/adjust-batch-quantity.component';
 import { LogonBatchComponent } from './mobile/material/logon-batch.component';
 import { MobileBottomComponent } from './mobile/bottom.component';
+import { FindBatchComponent } from './mobile/material/find-batch.component';
+import { MobileSearchComponent } from './mobile/search.component';
+import { MobileListComponent } from './mobile/list.component';
 
 const BAPI = [
   BAPITestComponent
@@ -69,8 +72,11 @@ const COMPONENTS = [
   Exception500Component,
   // Mobile
   MobileBottomComponent,
+  MobileSearchComponent,
+  MobileListComponent,
   // Material
   CreateBatchComponent,
+  FindBatchComponent,
   MoveBatchComponent,
   SplitBatchComponent,
   MoveBatchTo914Component,

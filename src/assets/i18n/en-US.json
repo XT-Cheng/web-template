@@ -218,5 +218,15 @@
   "app.mobile.material.logon.batch": "Batch Nr.",
   "app.mobile.material.logon.batch.placeholder": "Pls input Batch Nr.",
   "app.mobile.material.logon.componentsList": "Components",
-  "app.mobile.material.logon.action": "LogOn Batch"
+  "app.mobile.material.logon.action": "LogOn Batch",
+  "app.mobile.material.find": "Find Batch",
+  "app.mobile.material.find.material": "Material",
+  "app.mobile.material.find.material.placeholder": "Pls input Mat",
+  "app.mobile.material.find.loadmaterial": "Loading Material...",
+  "app.mobile.material.find.notfoundmaterial": "Can't find any Material!",
+  "app.mobile.material.find.buffer": "Buffer",
+  "app.mobile.material.find.buffer.placeholder": "Pls input Buffer",
+  "app.mobile.material.find.loadbuffer": "Loading Buffer...",
+  "app.mobile.material.find.notfoundbuffer": "Can't find any Buffer!",
+  "app.mobile.material.find.action": "Find"
 }

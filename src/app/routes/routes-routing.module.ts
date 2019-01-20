@@ -27,6 +27,7 @@ import { MoveBatchTo914Component } from './mobile/material/move-batch-914.compon
 import { MoveBatchToSAPComponent } from './mobile/material/move-batch-sap.component';
 import { AdjustBatchQuantityComponent } from './mobile/material/adjust-batch-quantity.component';
 import { LogonBatchComponent } from './mobile/material/logon-batch.component';
+import { FindBatchComponent } from './mobile/material/find-batch.component';
 
 const routes: Routes = [
   {
@@ -46,7 +47,7 @@ const routes: Routes = [
       { path: 'material/split', component: SplitBatchComponent },
       { path: 'material/adjustQty', component: AdjustBatchQuantityComponent },
       { path: 'material/logon', component: LogonBatchComponent },
-
+      { path: 'material/find', component: FindBatchComponent },
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }
     ]

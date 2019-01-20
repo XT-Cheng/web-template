@@ -66,7 +66,7 @@ export abstract class BaseForm {
     this.badgeButtonText = BaseForm.SETUP_OPERATOR;
     this.form = fb.group({
       badge: [null, [Validators.required]],
-      badgeData: [null, []],
+      badgeData: [null, [Validators.required]],
     });
     this.descriptions.set(`badge`, ``);
     this._routeService.events

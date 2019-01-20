@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { FetchService } from './fetch.service';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
 import { format } from 'date-fns';
 import { dateFormat, dateFormatOracle, replaceAll } from '@core/utils/helpers';
 import { BUFFER_SAP } from 'app/routes/mobile/material/constants';
+import { ResultComponent } from '@delon/abc';
 
 @Injectable()
 export class BatchService {
@@ -77,6 +78,32 @@ export class BatchService {
   //#endregion
 
   //#region Public methods
+  searchBatchMaterial(materialName: string): Observable<string[]> {
+    return this.getAllMaterialNames(materialName);
+  }
+
+  searchBatchBuffer(buffer: string): Observable<string[]> {
+    return this.getMaterialBuffers().pipe(
+      map(buffers => {
+        return buffers.reduce((results, currentValue, currentIndex) => {
+          if (currentValue.name.includes(buffer)) {
+            results.push(currentValue.name);
+          }
+          return results;
+        }, []);
+      }));
+  }
+
+  searchBatch(materialName: string, bufferName: string): Observable<MaterialBatch[]> {
+    return this.getMaterialBuffer(bufferName).pipe(
+      switchMap(buffer => {
+        if (buffer || !bufferName) {
+          return this.getBatches(materialName, buffer);
+        }
+        return of([]);
+      }));
+  }
+
   getAllMaterialNames(value: string = ``): Observable<string[]> {
     return this._fetchService.query(BatchService.allMaterialNameSql.replace(BatchService.materialNameTBR, value)).pipe(
       map(mats => {
@@ -211,7 +238,6 @@ export class BatchService {
       })
     );
   }
-
 
   getBatchInformation(batchName: string): Observable<MaterialBatch> {
     let sql = BatchService.batchByNameSql;

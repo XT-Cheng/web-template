@@ -1,0 +1,26 @@
+<form [formGroup]="form">
+  <div class="weui-cells">
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.material.find.material' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <fw-mobile-search [autoFocus]='true' [searchHandler]='searchMaterial' controlName='material' [placeHolder]="'app.mobile.material.find.material.placeholder' | translate"></fw-mobile-search>
+      </div>
+    </div>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.material.find.buffer' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <fw-mobile-search [searchHandler]='searchBuffer' controlName='materialBuffer' [placeHolder]="'app.mobile.material.find.buffer.placeholder' | translate"></fw-mobile-search>
+      </div>
+    </div>
+    <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(searchBatch, searchBatchSuccess, searchBatchFailed)'>{{'app.mobile.material.find.action'
+      | translate}}</button>
+    <fw-mobile-list [data$]='batches$' [title]="'name'" [description]="'display'"></fw-mobile-list>
+    <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
+      [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
+  </div>
+</form>
+<weui-mask #mask [backdrop]="false"></weui-mask>
