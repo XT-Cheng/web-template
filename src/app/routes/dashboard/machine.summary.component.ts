@@ -216,7 +216,7 @@ export class MachineSummaryComponent implements OnInit {
   get isChangeOverCheckListVisible(): boolean {
     if (!this.machine.currentOperation) return false;
 
-    if (this.machine.previousArticle === this.machine.currentOperation.article) {
+    if (this.machine.lastArticle === this.machine.currentOperation.article) {
       return false;
     }
 

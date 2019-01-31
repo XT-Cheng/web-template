@@ -60,13 +60,13 @@ function setupCurrentShiftOutput(operation: Operation) {
 }
 
 function setupOperatorLoggedOn(operation: Operation) {
-  operation.operatorLoggedOn.set(1, {
+  operation.operatorsLoggedOn.set(1, {
     personNumber: 1,
     name: `ChengXiaotian`,
     badgeId: '20120821',
   });
 
-  operation.operatorLoggedOn.set(2, {
+  operation.operatorsLoggedOn.set(2, {
     personNumber: 2,
     name: `BerlinDong`,
     badgeId: '00999999',
@@ -113,7 +113,7 @@ function setupTool(operation: Operation) {
     });
 
     if (loaded > 0) {
-      operation.toolLoggedOn.set(requiredTool, {
+      operation.toolsLoggedOn.set(requiredTool, {
         toolName: `TOOL`,
         requiredTool: requiredTool,
       });

@@ -9,8 +9,8 @@
           <nz-form-item nzFlex>
             <nz-form-label nzFor="material">{{'app.report.condition.material' | translate}}</nz-form-label>
             <nz-form-control style='width: 100%;'>
-              <nz-select nzMode="default" nzPlaceHolder="Select Material" formControlName="material" nzAllowClear
-                nzShowSearch>
+              <nz-select nzMode="default" [nzPlaceHolder]="'app.report.condition.material.placeholder' | translate"
+                formControlName="material" nzAllowClear nzShowSearch>
                 <ng-container *ngFor="let o of matList">
                   <nz-option [nzValue]="o" [nzLabel]="o"></nz-option>
                 </ng-container>
@@ -22,8 +22,8 @@
           <nz-form-item nzFlex>
             <nz-form-label nzFor="buffer">{{'app.report.condition.buffer' | translate}}</nz-form-label>
             <nz-form-control style='width: 100%;'>
-              <nz-select nzMode="default" nzPlaceHolder="Select Buffer" formControlName="buffer" nzAllowClear
-                nzShowSearch>
+              <nz-select nzMode="default" [nzPlaceHolder]="'app.report.condition.buffer.placeholder' | translate"
+                formControlName="buffer" nzAllowClear nzShowSearch>
                 <ng-container *ngFor="let o of buffers">
                   <nz-option [nzValue]="o" [nzLabel]="o.description"></nz-option>
                 </ng-container>

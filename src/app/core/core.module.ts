@@ -11,6 +11,7 @@ import { MachineService } from './hydra/service/machine.service';
 import { OperatorService } from './hydra/service/operator.service';
 import { WebAPIService } from './hydra/service/webapi.service';
 import { PrintService } from './hydra/service/print.service';
+import { OperationService } from './hydra/service/operation.service';
 
 @NgModule({
   providers: [
@@ -19,6 +20,7 @@ import { PrintService } from './hydra/service/print.service';
     FetchService,
     BapiService,
     MachineService,
+    OperationService,
     BatchService,
     OperatorService,
     VBoardService,

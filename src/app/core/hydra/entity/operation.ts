@@ -51,14 +51,22 @@ export class Operation {
   toolItems: Map<string, ToolItem> = new Map<string, ToolItem>();
 
   componentsLoggedOn: Map<number, ComponentLoggedOn> = new Map<number, ComponentLoggedOn>();
-  toolLoggedOn: Map<string, ToolLoggedOn> = new Map<string, ToolLoggedOn>();
-  operatorLoggedOn: Map<number, OperatorLoggedOn> = new Map<number, OperatorLoggedOn>();
+  toolsLoggedOn: ToolLoggedOn[] = [];
+  operatorsLoggedOn: Map<number, OperatorLoggedOn> = new Map<number, OperatorLoggedOn>();
 
   // Save last 24 Hours Data
   output: Map<Date, OpeartionOutput> = new Map<Date, OpeartionOutput>();
 
   // Current Shift Output
   currentShiftOutput: MachineOutput = new MachineOutput();
+
+  //#endregion
+
+  //#region Display
+
+  get display(): string {
+    return `${this.name}, ${this.article}, ${this.targetQty}, ${this.totalYield}`;
+  }
 
   //#endregion
 
@@ -104,21 +112,21 @@ export class Operation {
   get toolStatus(): Map<string, ToolLoggedOn> {
     const ret = new Map<string, ToolLoggedOn>();
 
-    this.toolItems.forEach((toolItem, key) => {
-      const tool = this.toolLoggedOn.get(key);
+    // this.toolItems.forEach((toolItem, key) => {
+    //   const tool = this.toolsLoggedOn.get(key);
 
-      if (tool) {
-        ret.set(key, {
-          requiredTool: key,
-          toolName: tool.toolName,
-        });
-      } else {
-        ret.set(key, {
-          requiredTool: key,
-          toolName: '',
-        });
-      }
-    });
+    //   if (tool) {
+    //     ret.set(key, {
+    //       requiredTool: key,
+    //       toolName: tool.toolName,
+    //     });
+    //   } else {
+    //     ret.set(key, {
+    //       requiredTool: key,
+    //       toolName: '',
+    //     });
+    //   }
+    // });
 
     return ret;
   }
@@ -178,14 +186,14 @@ export class ComponentLoggedOn {
 }
 
 export class ToolItem {
-  requiredTooL = '';
+  requiredMaterial = '';
 
+  availableTools = [];
   requiredQty = -1;
 }
 
 export class ToolLoggedOn {
-  requiredTool = '';
-
+  loggedOnMachine = '';
   toolName = '';
 }
 
@@ -195,5 +203,3 @@ export class OperatorLoggedOn {
   name = '';
   badgeId = '';
 }
-
-

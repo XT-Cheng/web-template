@@ -1,0 +1,50 @@
+<div class="alain-default__content-title">
+  <h1>{{'app.report.batch.trace' | translate}}</h1>
+</div>
+<nz-collapse>
+  <nz-collapse-panel [nzActive]="isConditionActive" [nzHeader]="'app.report.condition' | translate">
+    <form nz-form [formGroup]="searchForm">
+      <div nz-row>
+        <div nz-col [nzSpan]="24" style="text-align: right;">
+          <nz-radio-group formControlName="direction">
+            <label nz-radio [nzValue]="true">{{'app.report.condition.direction.forward' | translate}}</label>
+            <label nz-radio [nzValue]="false">{{'app.report.condition.direction.backward' | translate}}</label>
+          </nz-radio-group>
+        </div>
+      </div>
+      <div nz-row [nzGutter]="24">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item nzFlex>
+            <nz-form-label nzFor="batch">{{'app.report.condition.batch' | translate}}</nz-form-label>
+            <nz-form-control style='width: 100%;'>
+              <input nz-input [placeholder]="'app.report.condition.batch.placeholder' | translate" formControlName="batch">
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div nz-row>
+        <div nz-col [nzSpan]="24" style="text-align: right;">
+          <button nz-button [nzType]="'primary'" (click)="submitForm()">{{'app.report.button.search' | translate}}</button>
+          <button nz-button (click)="resetForm()">{{'app.report.button.clear' | translate}}</button>
+        </div>
+      </div>
+    </form>
+  </nz-collapse-panel>
+</nz-collapse>
+<div nz-row nzType="flex">
+  <nz-collapse nz-col nzSpan="6">
+    <nz-collapse-panel [nzActive]="isChartActive" [nzHeader]="'app.report.chart' | translate">
+      <nz-card [nzTitle]="'app.report.batch.traceability' | translate">
+        <nz-tree [nzData]="treeNodes$ | async" nzMultiple="false"></nz-tree>
+      </nz-card>
+    </nz-collapse-panel>
+  </nz-collapse>
+  <nz-collapse nz-col nzSpan="18">
+    <nz-collapse-panel [nzActive]="isTableActive" [nzHeader]="'app.report.table' | translate">
+      <label nz-checkbox (ngModelChange)='checkChanged()' [(ngModel)]="onlyHighestBatch">
+        {{'app.report.condition.onlyMaterialOrFinishGoods' | translate}}
+      </label>
+      <st #st [data]="batchDatas$ | async" [ps]="50" [columns]="columns" class="mt-sm"></st>
+    </nz-collapse-panel>
+  </nz-collapse>
+</div>

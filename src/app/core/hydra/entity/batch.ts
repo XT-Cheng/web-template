@@ -33,3 +33,54 @@ export class MaterialBuffer {
     return `${this.description}`;
   }
 }
+
+export class BatchConnection {
+  totalLevel: number;
+  root: string;
+  nodes: BatchConnectionNode[];
+}
+
+export class BatchConnectionNode {
+  level: number;
+  inputBatch: string;
+  inputBatchMaterial: string;
+  inputBatchMaterialType: string;
+  outputBatch: string;
+  outputBatchMaterial: string;
+  outputBatchMaterialType: string;
+}
+
+export class BatchConsumeConnectionNode extends BatchConnectionNode {
+  machineName: string;
+  orderName: string;
+}
+
+export class BatchMergeConnectionNode extends BatchConnectionNode {
+  get mergeFrom(): string {
+    return this.inputBatch;
+  }
+  get mergeTo(): string {
+    return this.outputBatch;
+  }
+  get material(): string {
+    return this.inputBatchMaterial;
+  }
+  get materialType(): string {
+    return this.inputBatchMaterialType;
+  }
+}
+
+export class BatchSplitConnectionNode extends BatchConnectionNode {
+  get splitFrom(): string {
+    return this.inputBatch;
+  }
+  get splitTo(): string {
+    return this.outputBatch;
+  }
+  get material(): string {
+    return this.inputBatchMaterial;
+  }
+  get materialType(): string {
+    return this.inputBatchMaterialType;
+  }
+}

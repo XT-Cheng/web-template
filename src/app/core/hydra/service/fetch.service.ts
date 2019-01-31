@@ -20,7 +20,7 @@ export class FetchService {
 
   query(sql: string) {
     return this.http.post(`/${this._url}`, { sql: sql }).pipe(
-      map((res: any) => {
+      map((res: any[]) => {
         return res;
       })
     );

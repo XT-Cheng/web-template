@@ -106,6 +106,14 @@ const menuInfo: Menu[] = [{
       icon: `anticon anticon-rocket`,
       /** 路由 */
       link: `/reports/batchSummary`,
+    },
+    {
+      text: '物料批次追溯',
+      group: false,
+      /** 图标 */
+      icon: `anticon anticon-rocket`,
+      /** 路由 */
+      link: `/reports/batchTrace`,
     }]
   }]
 }];

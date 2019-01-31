@@ -256,7 +256,11 @@ export abstract class BaseForm {
       const validator: ValidatorFn = controlsToAdd[controlName].length > 1 ? controlsToAdd[controlName][1] : null;
       const control = new FormControl(value, validator);
       this.form.addControl(controlName, control);
+
       this.descriptions.set(controlName, ``);
+      if (controlsToAdd[controlName].length > 2 && controlsToAdd[controlName][2]) {
+        this.descriptions.delete(controlName);
+      }
     });
   }
 

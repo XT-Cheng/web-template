@@ -28,6 +28,7 @@ import { MoveBatchToSAPComponent } from './mobile/material/move-batch-sap.compon
 import { AdjustBatchQuantityComponent } from './mobile/material/adjust-batch-quantity.component';
 import { LogonBatchComponent } from './mobile/material/logon-batch.component';
 import { FindBatchComponent } from './mobile/material/find-batch.component';
+import { BatchTraceabilityComponent } from './report/batch/batch.trace.component';
 
 const routes: Routes = [
   {
@@ -40,6 +41,7 @@ const routes: Routes = [
       { path: 'import/buffer', component: ImportBufferComponent, data: { title: '导入 Material Buffer' } },
       { path: 'import/bapi', component: ImportBapiComponent, data: { title: 'BAPI 批量执行' } },
       { path: 'reports/batchSummary', component: BatchGeneralComponent, data: { title: '物料批次概览' } },
+      { path: 'reports/batchTrace', component: BatchTraceabilityComponent, data: { title: '物料批次追溯' } },
       { path: 'material/create', component: CreateBatchComponent },
       { path: 'material/move', component: MoveBatchComponent },
       { path: 'material/moveTo914', component: MoveBatchTo914Component },

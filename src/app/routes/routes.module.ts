@@ -37,13 +37,15 @@ import { MobileBottomComponent } from './mobile/bottom.component';
 import { FindBatchComponent } from './mobile/material/find-batch.component';
 import { MobileSearchComponent } from './mobile/search.component';
 import { MobileListComponent } from './mobile/list.component';
+import { BatchTraceabilityComponent } from './report/batch/batch.trace.component';
 
 const BAPI = [
   BAPITestComponent
 ];
 
 const REPORT = [
-  BatchGeneralComponent
+  BatchGeneralComponent,
+  BatchTraceabilityComponent
 ];
 
 const IMPORT = [

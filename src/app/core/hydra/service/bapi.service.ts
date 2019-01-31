@@ -19,6 +19,7 @@ import { PrintService } from './print.service';
 import { IActionResult } from '@core/utils/helpers';
 import { MoveBatch } from '../bapi/mpl/move.batch';
 import { GoodsMovementBatch } from '../bapi/mpl/goodsMovement.batch';
+import { LogonInputBatch } from '../bapi/mpl/logon.inputBatch';
 
 @Injectable()
 export class BapiService {
@@ -75,6 +76,12 @@ export class BapiService {
   //#endregion
 
   //#region Batch related
+  logonInputBatch(operation: string, machineName: string, badgeName: string,
+    batchId: string, material: string, pos: number) {
+    return new LogonInputBatch(operation, machineName, badgeName, batchId, material, pos)
+      .execute(this._http);
+  }
+
   changeBatchQuantity(batchInfo: MaterialBatch, newQuantity: number, badge: string): Observable<IActionResult> {
     return new GoodsMovementBatch(batchInfo.name, batchInfo.startQty, newQuantity,
       batchInfo.materialType, batchInfo.status, badge).execute(this._http).pipe(

@@ -103,9 +103,6 @@ export class BatchGeneralComponent implements OnInit {
     return this._isTableActive;
   }
 
-
-
-
   //#endregion
 
   //#region Implemented methods

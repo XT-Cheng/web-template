@@ -13,10 +13,12 @@ import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
 import { requestBatchData, requestMaterialBufferData } from './request.common';
 import { requestBadgeData } from '../request.common';
-import { of, Observable } from 'rxjs';
+import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
-import { Operation } from '@core/hydra/entity/operation';
+import { Operation, ComponentLoggedOn } from '@core/hydra/entity/operation';
+import { OperationService } from '@core/hydra/service/operation.service';
+import { map, tap, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'fw-batch-logon',
@@ -33,9 +35,8 @@ export class LogonBatchComponent extends BaseForm {
   //#endregion
 
   //#region Public member
-  componentsInfo = [];
 
-  requestBatchData = requestBatchData(this.form, this._batchService);
+  componentStatus$: BehaviorSubject<[]> = new BehaviorSubject<[]>([]);
 
   //#endregion
 
@@ -56,6 +57,7 @@ export class LogonBatchComponent extends BaseForm {
     _settingService: SettingsService,
     private _batchService: BatchService,
     private _machineService: MachineService,
+    private _operationService: OperationService,
     _operatorService: OperatorService,
     private _bapiService: BapiService,
     @Inject(DOCUMENT) private _document: Document,
@@ -63,14 +65,15 @@ export class LogonBatchComponent extends BaseForm {
   ) {
     super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n, _operatorService);
     this.addControls({
-      barCode: [null, [Validators.required]],
+      barCode: [null, [Validators.required], true],
       machine: [null, [Validators.required]],
       operation: [null, [Validators.required]],
       batch: [null, [Validators.required]],
-      badge: [null, [Validators.required]],
-      batchData: [null],
-      machineData: [null],
-      opeartionData: [null]
+      batchData: [null, [Validators.required], true],
+      machineData: [null, [Validators.required], true],
+      operationData: [null, [Validators.required], true],
+      componentStatus: [null, [Validators.required], true],
+      actionData: [null, [Validators.required], true],
     });
 
     this.form.setValue(Object.assign(this.form.value, {
@@ -98,7 +101,7 @@ export class LogonBatchComponent extends BaseForm {
     this.descriptions.set(`machine`, machine.display);
     this.operations = machine.nextOperations;
     if (this.operations.length > 0) {
-      this.form.controls.operation.setValue(this.operations[0]);
+      this.form.controls.operation.setValue(this.operations[0].name);
     }
   }
 
@@ -112,28 +115,83 @@ export class LogonBatchComponent extends BaseForm {
   //#endregion
 
   //#region Batch Reqeust
-  requestBatchDataSuccess = (batch: MaterialBatch) => {
+  requestBatchDataSuccess = (array: any[]) => {
+    const [found, batch] = array;
     this.form.controls.batch.setValue(batch.name);
     this.form.controls.barCode.setValue(batch.barCode);
     this.form.controls.batchData.setValue(batch);
+
+    this.descriptions.set(`batch`, batch.display);
+    this.form.controls.actionData.setValue(found);
+
+    if (!this.isDisable()) {
+      this.doAction(this.logonBatch, this.logonBatchSuccess, this.logonBatchFailed);
+    }
+    // this.form.controls.componentStatus.setValue((this.form.value.componentStatus as Array<any>).map(cs => {
+    //   if (cs.material === found.material) return {
+    //     material: found.material,
+    //     pos: found.pos,
+    //     isReady: true
+    //   };
+    //   return cs;
+    // }));
+    // this.componentStatus$.next(this.form.value.componentStatus);
   }
 
   requestBatchDataFailed = () => {
   }
 
+  requestBatchData = () => {
+    return requestBatchData(this.form, this._batchService)().pipe(
+      switchMap((batch: MaterialBatch) => {
+        const found = this.form.value.componentStatus.find(cs => cs.material === batch.material);
+        if (!found) {
+          return throwError(`${batch.material} in-correct!`);
+        } else {
+          return of([found, batch]);
+        }
+      }
+      ));
+  }
+
+
   //#endregion
 
   //#region Operation Reqeust
-  requestOperationDataSuccess = () => {
-    console.log(`aaaa`);
-    // this.componentsInfo = this.form.controls.operation.value.componentStatus.values();
+  requestOperationDataSuccess = (array: any[]) => {
+    const [operation, componentStatus] = array;
+    this.form.controls.operationData.setValue(operation);
+    this.form.controls.componentStatus.setValue(componentStatus);
+    this.componentStatus$.next(componentStatus);
   }
 
   requestOperationDataFailed = () => {
   }
 
   requestOperationData = (): Observable<any> => {
-    return of(null);
+    return this._operationService.getOperation(this.form.value.operation).pipe(
+      map(operation => {
+        const componentStatus = [];
+        operation.bomItems.forEach(item => {
+          const machine = this.form.value.machineData as Machine;
+          if (machine.componentsLoggedOn.find(c => c.material === item.material)) {
+            // Material Find
+            componentStatus.push({
+              material: item.material,
+              pos: item.pos,
+              isReady: true
+            });
+          } else {
+            componentStatus.push({
+              material: item.material,
+              pos: item.pos,
+              isReady: false
+            });
+          }
+        });
+        this.descriptions.set(`operation`, operation.display);
+        return [operation, componentStatus];
+      }));
   }
 
   //#endregion
@@ -145,9 +203,11 @@ export class LogonBatchComponent extends BaseForm {
   //#endregion
 
   //#region Event Handler
-  operationSelected() {
-    this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
-      (null, null, `operation`);
+  operationSelected($event) {
+    if (this.form.controls.operation.value) {
+      this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
+        (null, null, `operation`);
+    }
   }
   //#endregion
 
@@ -161,8 +221,10 @@ export class LogonBatchComponent extends BaseForm {
 
   logonBatch = () => {
     // LogOn Batch
-    return of(null);
-    // return this._bapiService.logonBatch(this.form.value.batchData, this.form.value.materialBuffer, this.form.value.badge);
+    const found = this.form.value.actionData;
+    return this._bapiService.logonInputBatch(this.form.value.operationData.name,
+      this.form.value.machineData.machineName, this.form.value.badge,
+      this.form.value.batchData.name, this.form.value.batchData.material, found.pos);
   }
 
   //#endregion
@@ -170,7 +232,7 @@ export class LogonBatchComponent extends BaseForm {
   //#region Override methods
   protected isValid() {
     return !Array.from(this.descriptions.entries()).some(value => {
-      return (value[0] !== `batchData` && value[0] !== `barCode` && !value[1]);
+      return (value[0] !== `barCode` && !value[1]);
     });
   }
 

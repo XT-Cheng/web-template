@@ -11,8 +11,8 @@ export class OperatorService {
   //#region SQL
 
   static operatorSql =
-    `SELECT PERSON_NAME AS FIRSTNAME, PERSON_VORNAME AS LASTNAME ` +
-    ` FROM PERSONALSTAMM WHERE KARTEN_NUMMER = '${OperatorService.badgeNameTBR}'`;
+    `SELECT PERSON_NAME AS FIRSTNAME, PERSON_VORNAME AS LASTNAME
+     FROM PERSONALSTAMM WHERE KARTEN_NUMMER = '${OperatorService.badgeNameTBR}'`;
 
   //#endregion
   //#region Private members

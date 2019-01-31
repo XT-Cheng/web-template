@@ -1,4 +1,4 @@
-import { Operation, OpeartionOutput } from './operation';
+import { Operation, OpeartionOutput, ComponentLoggedOn, ToolLoggedOn, OperatorLoggedOn } from './operation';
 import { toNumber } from '@delon/util';
 import { CheckList, ProcessType, CheckListResult } from './checkList';
 
@@ -14,14 +14,26 @@ export class Machine {
   currentShift = -1;
   currentShiftDate = new Date();
 
-  previousOperation = '';
-  previousArticle = '';
+  lastOperation = '';
+  lastArticle = '';
 
   currentShiftStart = new Date();
   currentShiftEnd = new Date();
 
   nextOperations: Operation[] = [];
   currentOperations: Operation[] = [];
+
+  // Tool Machine belong to this Line
+  toolMachines: string[] = [];
+
+  // Operators Logged On
+  operatorsLoggedOn: OperatorLoggedOn[] = [];
+
+  // Components Logged On
+  componentsLoggedOn: ComponentLoggedOn[] = [];
+
+  // Tools Logged On
+  toolsLoggedOn: ToolLoggedOn[] = [];
 
   // Check List related
   checkLists: Map<ProcessType, CheckList> = new Map<ProcessType, CheckList>();

@@ -2,11 +2,13 @@ import { Injectable } from '@angular/core';
 import { FetchService } from './fetch.service';
 import { map, switchMap } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
-import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
+import {
+  MaterialBatch, MaterialBuffer, BatchConnection,
+  BatchConnectionNode, BatchConsumeConnectionNode, BatchMergeConnectionNode, BatchSplitConnectionNode
+} from '@core/hydra/entity/batch';
 import { format } from 'date-fns';
 import { dateFormat, dateFormatOracle, replaceAll } from '@core/utils/helpers';
 import { BUFFER_SAP } from 'app/routes/mobile/material/constants';
-import { ResultComponent } from '@delon/abc';
 
 @Injectable()
 export class BatchService {
@@ -15,54 +17,84 @@ export class BatchService {
   static lastChangedTBR = '$lastChanged';
   static buffersTBR = '$buffers';
   static batchNameTBR = '$batchName';
+  static batchNamesTBR = '$batchNames';
 
   //#region SQL
   static allMaterialNameSql =
     `SELECT DISTINCT(ARTIKEL) AS ARTIKEL FROM LOS_BESTAND WHERE ARTIKEL LIKE '${BatchService.materialNameTBR}%' `;
 
   static batchNameExistanceIgnoreSAP =
-    `SELECT LOSNR FROM LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' AND MAT_PUF <> '${BUFFER_SAP}' ` +
-    ` UNION SELECT LOSNR FROM A_LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' `;
+    `SELECT LOSNR FROM LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' AND MAT_PUF <> '${BUFFER_SAP}'
+     UNION SELECT LOSNR FROM A_LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' `;
 
   static batchNameExistance =
-    `SELECT LOSNR FROM LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' AND MAT_PUF <> '${BUFFER_SAP}' ` +
-    ` UNION SELECT LOSNR FROM A_LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' `;
+    `SELECT LOSNR FROM LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' AND MAT_PUF <> '${BUFFER_SAP}'
+     UNION SELECT LOSNR FROM A_LOS_BESTAND WHERE LOSNR = '${BatchService.batchNameTBR}' `;
 
   static batchSql =
-    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS, ` +
-    ` (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED, ` +
-    ` BATCH.MAT_PUF AS BUFFERNAME, ` +
-    ` BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH, ` +
-    ` LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER ` +
-    ` WHERE BATCH.STATUS IN ('F','L') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916' ` +
-    ` AND BUFFER.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFER.KFG_KZ01,1,1) = 'N' ` +
-    ` ${BatchService.materialNameTBR} ` +
-    ` ${BatchService.lastChangedTBR} ` +
-    ` ${BatchService.buffersTBR}`;
+    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
+      (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
+      BATCH.MAT_PUF AS BUFFERNAME,
+      BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
+      LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
+      WHERE BATCH.STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916'
+      AND BUFFER.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFER.KFG_KZ01,1,1) = 'N'
+      ${BatchService.materialNameTBR}
+      ${BatchService.lastChangedTBR}
+      ${BatchService.buffersTBR}`;
 
   static batchInSAPSql =
-    `SELECT BATCH.LOSNR AS BATCHNAME FROM LOS_BESTAND BATCH` +
-    ` WHERE BATCH.MAT_PUF = '${BUFFER_SAP}' AND BATCH.LOSNR = '${BatchService.batchNameTBR}' `;
+    `SELECT BATCH.LOSNR AS BATCHNAME FROM LOS_BESTAND BATCH
+     WHERE BATCH.MAT_PUF = '${BUFFER_SAP}' AND BATCH.LOSNR = '${BatchService.batchNameTBR}' `;
 
   static batchByNameSql =
-    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,` +
-    ` (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED, ` +
-    ` BATCH.MAT_PUF AS BUFFERNAME, ` +
-    ` BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH, ` +
-    ` LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER ` +
-    ` WHERE BATCH.STATUS IN ('F','L') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916' ` +
-    ` AND BUFFER.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFER.KFG_KZ01,1,1) = 'N' AND BATCH.LOSNR = '${BatchService.batchNameTBR}' `;
+    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
+      (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
+      BATCH.MAT_PUF AS BUFFERNAME,
+      BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
+      LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
+      WHERE BATCH.STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916'
+      AND BUFFER.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFER.KFG_KZ01,1,1) = 'N' AND BATCH.LOSNR = '${BatchService.batchNameTBR}' `;
+
+  static batchesByNamesSql =
+    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
+      (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
+      BATCH.MAT_PUF AS BUFFERNAME,
+      BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
+      LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
+      WHERE BATCH.STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916'
+      AND BUFFER.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFER.KFG_KZ01,1,1) = 'N' AND BATCH.LOSNR IN (${BatchService.batchNamesTBR})`;
 
   static unitByMaterialSql =
     `SELECT BASE_UOM FROM U_TE_MMLP_PRODUCT_MASTER WHERE PART_NUMBER = '${BatchService.materialNameTBR}'`;
 
   static matTypeByMaterialSql =
-    `SELECT HYDRA_MAT_TYPE FROM U_TE_MMLP_PRODUCT_MASTER MAT_MASTER, U_TE_SAP_HYDRA_MAT_TYPE_REF TYPE_REF ` +
-    ` WHERE MAT_MASTER.PART_NUMBER = '${BatchService.materialNameTBR}' AND TYPE_REF.SAP_MRP_GROUP = MAT_MASTER.MRP_GROUP`;
+    `SELECT HYDRA_MAT_TYPE FROM U_TE_MMLP_PRODUCT_MASTER MAT_MASTER, U_TE_SAP_HYDRA_MAT_TYPE_REF TYPE_REF
+     WHERE MAT_MASTER.PART_NUMBER = '${BatchService.materialNameTBR}' AND TYPE_REF.SAP_MRP_GROUP = MAT_MASTER.MRP_GROUP`;
 
   static batchBufferSql =
-    `SELECT MAT_PUF AS BUFFER_NAME, BEZ AS BUFFER_DESC, HIERARCHIE_ID AS BUFFER_LEVEL, H_MAT_PUF AS PARENT_BUFFER ` +
-    `FROM MAT_PUFFER WHERE WERK = '0916' AND PUFFER_TYP IN ('F','H') AND SUBSTR(KFG_KZ01,1,1) = 'N'`;
+    `SELECT MAT_PUF AS BUFFER_NAME, BEZ AS BUFFER_DESC, HIERARCHIE_ID AS BUFFER_LEVEL, H_MAT_PUF AS PARENT_BUFFER
+     FROM MAT_PUFFER WHERE WERK = '0916' AND PUFFER_TYP IN ('F','H') AND SUBSTR(KFG_KZ01,1,1) = 'N'`;
+
+  static batchConnectionForwardSql =
+    `SELECT CONNECT_BY_ROOT(AL_NR) AS ROOT,LEVEL,EL_NR AS INPUTBATCH, (EL_AN_DAT + EL_AN_ZEIT / 24 / 3600) AS INPUTLOGON ,
+     (EL_AB_DAT + EL_AB_ZEIT / 24 / 3600) AS INPUTLOGOFF ,
+     AL_NR AS OUTPUTBATCH, (AL_AN_DAT + AL_AN_ZEIT / 24 / 3600) AS OUTPUTLOGON,(AL_AB_DAT + AL_AB_ZEIT / 24 / 3600) AS OUTPUTLOGOFF,
+     EL_MATNR AS INPUTMATERIAL, EL_HZTYP AS INPUTMATERIALTYPE,
+     AL_MATNR AS OUTPUTMATERIAL, AL_HZTYP AS OUTPUTMATERIALTYPE,
+     AUFTRAG_NR AS OPERATION, MASCH_NR AS MACHINE
+     FROM LOS_ZUORDNUNG START WITH AL_NR = '${BatchService.batchNameTBR}'
+     CONNECT BY AL_NR = PRIOR EL_NR ORDER BY LEVEL DESC`;
+
+  static batchConnectionBackwardSql =
+    `SELECT CONNECT_BY_ROOT(EL_NR) AS ROOT,LEVEL,EL_NR AS INPUTBATCH, (EL_AN_DAT + EL_AN_ZEIT / 24 / 3600) AS INPUTLOGON ,
+     (EL_AB_DAT + EL_AB_ZEIT / 24 / 3600) AS INPUTLOGOFF ,
+     AL_NR AS OUTPUTBATCH, (AL_AN_DAT + AL_AN_ZEIT / 24 / 3600) AS OUTPUTLOGON,(AL_AB_DAT + AL_AB_ZEIT / 24 / 3600) AS OUTPUTLOGOFF,
+     EL_MATNR AS INPUTMATERIAL, EL_HZTYP AS INPUTMATERIALTYPE,
+     AL_MATNR AS OUTPUTMATERIAL, AL_HZTYP AS OUTPUTMATERIALTYPE,
+     AUFTRAG_NR AS OPERATION, MASCH_NR AS MACHINE
+     FROM LOS_ZUORDNUNG START WITH EL_NR = '${BatchService.batchNameTBR}'
+     CONNECT BY PRIOR AL_NR = EL_NR ORDER BY LEVEL DESC`;
 
   //#endregion
   //#region Private members
@@ -135,8 +167,8 @@ export class BatchService {
 
     if (lastChanged) {
       sql = sql.replace(BatchService.lastChangedTBR,
-        `AND (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) < ` +
-        ` TO_DATE('${format(lastChanged, dateFormat)}', '${dateFormatOracle}') `);
+        `AND (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) <
+        TO_DATE('${format(lastChanged, dateFormat)}', '${dateFormatOracle}')`);
     } else {
       sql = sql.replace(BatchService.lastChangedTBR, ``);
     }
@@ -239,6 +271,34 @@ export class BatchService {
     );
   }
 
+  getBatchesByNames(batchNames: string[]): Observable<MaterialBatch[]> {
+    let sql = BatchService.batchesByNamesSql;
+    sql = sql.replace(BatchService.batchNamesTBR, batchNames.map(b => `'` + b + `'`).join(','));
+
+    return this._fetchService.query(sql).pipe(
+      map((batches) => {
+        const ret: MaterialBatch[] = [];
+        batches.forEach(rec => {
+          const batch = new MaterialBatch();
+          batch.name = rec.BATCHNAME;
+          batch.bufferName = rec.BUFFERNAME;
+          batch.lastChanged = new Date(rec.LASTCHANGED);
+          batch.bufferDescription = rec.DESCRIPTION;
+          batch.parentBuffer = rec.PARENT_BUFFERNAME;
+          batch.quantity = rec.QUANTITY;
+          batch.material = rec.MATERIAL;
+          batch.status = rec.STATUS;
+          batch.SAPBatch = rec.SAPBATCH;
+          batch.dateCode = rec.DATECODE;
+          batch.materialType = rec.MATTYPE;
+          batch.unit = rec.UNIT;
+          ret.push(batch);
+        });
+
+        return ret;
+      }));
+  }
+
   getBatchInformation(batchName: string): Observable<MaterialBatch> {
     let sql = BatchService.batchByNameSql;
     sql = sql.replace(BatchService.batchNameTBR, batchName);
@@ -301,9 +361,78 @@ export class BatchService {
       }));
   }
 
+  getBackwardBatchConnection(batchName: string): Observable<BatchConnection> {
+    let sql = BatchService.batchConnectionBackwardSql;
+    sql = sql.replace(BatchService.batchNameTBR, batchName);
+    return this.getBatchConnection(batchName, sql);
+  }
+
+  getForwardBatchConnection(batchName: string): Observable<BatchConnection> {
+    let sql = BatchService.batchConnectionForwardSql;
+    sql = sql.replace(BatchService.batchNameTBR, batchName);
+    return this.getBatchConnection(batchName, sql);
+  }
+
   //#endregion
 
   //#region Private methods
+  private getBatchConnection(batchName: string, sql: string): Observable<BatchConnection> {
+    return this._fetchService.query(sql).pipe(
+      map((ret: any[]) => {
+        if (ret.length === 0) {
+          return {
+            totalLevel: 0,
+            root: batchName,
+            nodes: []
+          };
+        } else {
+          const connection = {
+            totalLevel: ret[ret.length - 1].LEVEL,
+            root: batchName,
+            nodes: []
+          };
+          ret.forEach(rec => {
+            let node: BatchConnectionNode;
+            if (rec.OPERATION && rec.MACHINE) {
+              node = Object.assign<BatchConsumeConnectionNode, any>(new BatchConsumeConnectionNode(), {
+                level: rec.LEVEL,
+                inputBatch: rec.INPUTBATCH,
+                inputBatchMaterial: rec.INPUTMATERIAL,
+                inputBatchMaterialType: rec.INPUTMATERIALTYPE,
+                outputBatch: rec.OUTPUTBATCH,
+                outputBatchMaterial: rec.OUTPUTMATERIAL,
+                outputBatchMaterialType: rec.OUTPUTMATERIALTYPE,
+                machineName: rec.MACHINE,
+                orderName: rec.OPERATION,
+              });
+            } else if (rec.MACHINE === '0') {
+              node = Object.assign<BatchMergeConnectionNode, any>(new BatchMergeConnectionNode(), {
+                level: rec.LEVEL,
+                inputBatch: rec.INPUTBATCH,
+                inputBatchMaterial: rec.INPUTMATERIAL,
+                inputBatchMaterialType: rec.INPUTMATERIALTYPE,
+                outputBatch: rec.OUTPUTBATCH,
+                outputBatchMaterial: rec.OUTPUTMATERIAL,
+                outputBatchMaterialType: rec.OUTPUTMATERIALTYPE,
+              });
+            } else {
+              node = Object.assign<BatchSplitConnectionNode, any>(new BatchSplitConnectionNode(), {
+                level: rec.LEVEL,
+                inputBatch: rec.INPUTBATCH,
+                inputBatchMaterial: rec.INPUTMATERIAL,
+                inputBatchMaterialType: rec.INPUTMATERIALTYPE,
+                outputBatch: rec.OUTPUTBATCH,
+                outputBatchMaterial: rec.OUTPUTMATERIAL,
+                outputBatchMaterialType: rec.OUTPUTMATERIALTYPE,
+              });
+            }
+
+            connection.nodes.push(node);
+          });
+          return connection;
+        }
+      }));
+  }
 
   private findLeadBuffer(buffers: MaterialBuffer[], buffer: MaterialBuffer, source: MaterialBuffer) {
     const found = buffers.find(target => {

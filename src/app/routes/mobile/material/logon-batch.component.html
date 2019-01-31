@@ -20,7 +20,7 @@
       </div>
       <div class="weui-cell__bd">
         <nz-select id='operation' formControlName="operation" (ngModelChange)="operationSelected($event)">
-          <nz-option *ngFor='let op of operations' [nzValue]="op" [nzLabel]="op.name"></nz-option>
+          <nz-option *ngFor='let op of operations' [nzValue]="op.name" [nzLabel]="op.name"></nz-option>
         </nz-select>
       </div>
     </div>
@@ -43,7 +43,8 @@
         {{getDescription('batch')}}
       </span>
     </label>
-    <div class="weui-cells__title">Mat. List</div>
+    <fw-mobile-list [data$]='componentStatus$' [title]="'material'" [description]="'material'"></fw-mobile-list>
+    <!-- <div class="weui-cells__title">Mat. List</div>
     <nz-list [nzDataSource]="componentsInfo" [nzRenderItem]="item" [nzItemLayout]="'horizontal'">
       <ng-template #item let-item>
         <nz-list-item>
@@ -57,7 +58,7 @@
           </nz-list-item-meta>
         </nz-list-item>
       </ng-template>
-    </nz-list>
+    </nz-list> -->
 
     <!-- <div class="weui-cells__title">Mat. List</div>
     <div class="weui-cells">
