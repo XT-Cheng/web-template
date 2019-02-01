@@ -56,7 +56,6 @@ export class MachineSummaryComponent implements OnInit {
       this.machineName = param.get('machineName');
       this.reuseTabService.title = `${this.i18n.fanyi('app.route.line-summary')} - ${this.machineName}`;
 
-      // this.machineService.getMachineWithMock(this.machineName);
       this.machineService.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
         this.machine = machine;
       });
@@ -217,6 +216,16 @@ export class MachineSummaryComponent implements OnInit {
     if (!this.machine.currentOperation) return false;
 
     if (this.machine.lastArticle === this.machine.currentOperation.article) {
+      return false;
+    }
+
+    return true;
+  }
+
+  get isToolListVisible(): boolean {
+    if (!this.machine.currentOperation) return false;
+
+    if (this.machine.currentOperation.toolItems.size === 0) {
       return false;
     }
 

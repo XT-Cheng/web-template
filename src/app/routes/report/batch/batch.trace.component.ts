@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NzMessageService, toNumber, NzTreeNode, NzTreeNodeOptions } from 'ng-zorro-antd';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { STColumn } from '@delon/abc';
-import { MaterialBatch, MaterialBuffer, BatchConnection } from '@core/hydra/entity/Batch';
+import { MaterialBatch, MaterialBuffer, BatchConnection } from '@core/hydra/entity/batch';
 import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
 import { format } from 'date-fns';
 import { BehaviorSubject, forkJoin, of } from 'rxjs';

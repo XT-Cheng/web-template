@@ -38,6 +38,7 @@ import { FindBatchComponent } from './mobile/material/find-batch.component';
 import { MobileSearchComponent } from './mobile/search.component';
 import { MobileListComponent } from './mobile/list.component';
 import { BatchTraceabilityComponent } from './report/batch/batch.trace.component';
+import { ToolPreparationComponent } from './dashboard/widget/toolPreparation.component';
 
 const BAPI = [
   BAPITestComponent
@@ -62,6 +63,7 @@ const COMPONENTS = [
   NextOperationsComponent,
   CheckListOfShiftChangeComponent,
   CheckListOfChangeOverComponent,
+  ToolPreparationComponent,
   // passport pages
   UserLoginComponent,
   UserRegisterComponent,

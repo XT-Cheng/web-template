@@ -91,6 +91,9 @@
       <nz-tab *ngIf='isChangeOverCheckListVisible' [nzTitle]="'app.machine.summary.checkListOfChangeOver' | translate">
         <fw-widget-check-changeover [machine]='machine'></fw-widget-check-changeover>
       </nz-tab>
+      <nz-tab *ngIf='isToolListVisible' [nzTitle]="'app.machine.summary.toolListOfChangeOver' | translate">
+        <fw-widget-tool-prep [machine]='machine'></fw-widget-tool-prep>
+      </nz-tab>
     </nz-tabset>
   </nz-card>
 </nz-spin>

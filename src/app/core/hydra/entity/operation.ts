@@ -112,21 +112,30 @@ export class Operation {
   get toolStatus(): Map<string, ToolLoggedOn> {
     const ret = new Map<string, ToolLoggedOn>();
 
-    // this.toolItems.forEach((toolItem, key) => {
-    //   const tool = this.toolsLoggedOn.get(key);
+    this.toolItems.forEach((toolItem, key) => {
+      let loggedOnFound: ToolLoggedOn;
+      toolItem.availableTools.some(available => {
+        loggedOnFound = this.toolsLoggedOn.find(loggedOn => {
+          return loggedOn.toolName === available;
+        });
 
-    //   if (tool) {
-    //     ret.set(key, {
-    //       requiredTool: key,
-    //       toolName: tool.toolName,
-    //     });
-    //   } else {
-    //     ret.set(key, {
-    //       requiredTool: key,
-    //       toolName: '',
-    //     });
-    //   }
-    // });
+        return loggedOnFound ? true : false;
+      });
+
+      if (loggedOnFound) {
+        ret.set(key, {
+          requiredMaterial: key,
+          loggedOnMachine: loggedOnFound.loggedOnMachine,
+          toolName: loggedOnFound.toolName,
+        });
+      } else {
+        ret.set(key, {
+          requiredMaterial: key,
+          loggedOnMachine: ``,
+          toolName: ``,
+        });
+      }
+    });
 
     return ret;
   }
@@ -193,6 +202,8 @@ export class ToolItem {
 }
 
 export class ToolLoggedOn {
+  requiredMaterial = '';
+
   loggedOnMachine = '';
   toolName = '';
 }

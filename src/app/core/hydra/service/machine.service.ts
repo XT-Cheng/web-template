@@ -49,7 +49,7 @@ export class MachineService {
   static machineLastOPSql =
     `SELECT OPERATION.AUFTRAG_NR AS OPERATIONNAME, OPERATION.ARTIKEL AS ARTICLE FROM (SELECT AUFTRAG_NR AS OPERATIONNAME
      FROM ADE_PROTOKOLL WHERE MASCH_NR = '${MachineService.machineNameTBR}' AND SATZ_ART = 'A' AND CHARGEN_NR IS NOT NULL
-     ORDER BY  (ABMELD_DAT + ABMELDZEIT / 60 / 60 / 24) ASC) LASTLOGGEDON, AUFTRAGS_BESTAND OPERATION
+     ORDER BY  (ABMELD_DAT + ABMELDZEIT / 60 / 60 / 24) DESC) LASTLOGGEDON, AUFTRAGS_BESTAND OPERATION
      WHERE ROWNUM < 3 AND OPERATION.AUFTRAG_NR = OPERATIONNAME`;
 
   static operationBOMItemsSql =
@@ -460,6 +460,9 @@ export class MachineService {
         //#region Setup Logged On Tools
         switchMap(_ => {
           const toolMacineNames = [];
+
+          if (machineRet.toolMachines.length === 0) return of(null);
+
           machineRet.toolMachines.map((tm) => toolMacineNames.push(`'` + tm + `'`));
 
           return this._fetchService.query(replaceAll(MachineService.loggedOnToolSql
@@ -468,6 +471,7 @@ export class MachineService {
               map(loggedOnTools => {
                 loggedOnTools.forEach(tool => {
                   machineRet.toolsLoggedOn.push({
+                    requiredMaterial: ``,
                     loggedOnMachine: tool.MACHINE,
                     toolName: tool.TOOLNAME,
                   });
@@ -480,12 +484,12 @@ export class MachineService {
         switchMap(_ => {
           return this._fetchService.query(replaceAll(MachineService.machineCurrentOPSql,
             [MachineService.machineNameTBR], [machineName])).pipe(
-              map((machineCurrentOP) => {
+              switchMap((machineCurrentOP) => {
                 const op$ = [];
                 machineCurrentOP.forEach(op => {
                   op$.push(this._operationService.getOperation(op.NAME));
                 });
-                if (op$.length > 1) {
+                if (op$.length > 0) {
                   return forkJoin(op$).pipe(
                     map((operations: Operation[]) => {
                       operations.forEach(op => {

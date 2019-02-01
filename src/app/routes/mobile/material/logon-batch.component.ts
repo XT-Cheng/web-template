@@ -99,6 +99,7 @@ export class LogonBatchComponent extends BaseForm {
   requestMachineDataSuccess = (machine: Machine) => {
     this.form.controls.machineData.setValue(machine);
     this.descriptions.set(`machine`, machine.display);
+    const x = machine.currentOperation.toolStatus;
     this.operations = machine.nextOperations;
     if (this.operations.length > 0) {
       this.form.controls.operation.setValue(this.operations[0].name);
