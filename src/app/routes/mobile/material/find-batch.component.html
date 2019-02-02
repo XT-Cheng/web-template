@@ -1,24 +1,38 @@
 <form [formGroup]="form">
   <div class="weui-cells">
     <div class="weui-cell">
-      <div class="weui-cell__hd">
-        <label class="weui-label">{{'app.mobile.material.find.material' | translate}}</label>
-      </div>
       <div class="weui-cell__bd">
-        <fw-mobile-search [autoFocus]='true' [searchHandler]='searchMaterial' controlName='material' [placeHolder]="'app.mobile.material.find.material.placeholder' | translate"></fw-mobile-search>
+        <weui-searchbar #searchBar (search)="onMaterialInput($event)" [placeholder]="'app.mobile.material.find.material' | translate"
+          (clear)='clearSearch()' (cancel)='cancelSearch()' [cancelText]="'app.common.cancel' | translate"></weui-searchbar>
       </div>
     </div>
-    <div class="weui-cell">
-      <div class="weui-cell__hd">
-        <label class="weui-label">{{'app.mobile.material.find.buffer' | translate}}</label>
+    <div class="weui-panel" [ngStyle]="{'margin-top': '0px'}" *ngIf='materialTerm && !isMaterialSelected'>
+      <div class="weui-panel__bd" *ngIf="!isLoadingMaterial; else loading">
+        <div class="weui-cell weui-cell_access" (click)="selectMaterial(mat)" [ngStyle]="{'padding': '5px 10px'}"
+          *ngFor="let mat of (material$  | async)">
+          <div class="weui-cell__bd">
+            <span>{{mat}}</span>
+          </div>
+        </div>
       </div>
-      <div class="weui-cell__bd">
-        <fw-mobile-search [searchHandler]='searchBuffer' controlName='materialBuffer' [placeHolder]="'app.mobile.material.find.buffer.placeholder' | translate"></fw-mobile-search>
-      </div>
+      <ng-template #loading>
+        <div class="weui-cell__bd">
+          <div class="weui-media-box weui-media-box_text">{{'app.mobile.material.find.loadmaterial' | translate}}</div>
+        </div>
+      </ng-template>
     </div>
     <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(searchBatch, searchBatchSuccess, searchBatchFailed)'>{{'app.mobile.material.find.action'
       | translate}}</button>
-    <fw-mobile-list [data$]='batches$' [title]="'name'" [description]="'display'"></fw-mobile-list>
+    <div class="weui-panel">
+      <div class="weui-panel__bd">
+        <div class="weui-cell" *ngFor="let batch of (batches$  | async)">
+          <div class="weui-cell__bd">
+            <div [ngStyle]="{'font-size': '12px'}">{{caption(batch)}}</div>
+            <div [ngStyle]="{'font-size': '8px'}">{{description(batch)}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
     <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
       [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
   </div>

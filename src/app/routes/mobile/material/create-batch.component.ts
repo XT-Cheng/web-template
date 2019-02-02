@@ -19,7 +19,10 @@ import { PrintService } from '@core/hydra/service/print.service';
 @Component({
   selector: 'fw-batch-create',
   templateUrl: 'create-batch.component.html',
-  styleUrls: ['./create-batch.component.scss']
+  styleUrls: ['./create-batch.component.scss'],
+  host: {
+    '[class.mobile-layout]': 'true',
+  },
 })
 export class CreateBatchComponent extends BaseForm {
   //#region View Children

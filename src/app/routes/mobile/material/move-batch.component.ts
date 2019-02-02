@@ -17,7 +17,10 @@ import { requestBadgeData } from '../request.common';
 @Component({
   selector: 'fw-batch-move',
   templateUrl: 'move-batch.component.html',
-  styleUrls: ['./move-batch.component.scss']
+  styleUrls: ['./move-batch.component.scss'],
+  host: {
+    '[class.mobile-layout]': 'true',
+  },
 })
 export class MoveBatchComponent extends BaseForm {
   //#region View Children

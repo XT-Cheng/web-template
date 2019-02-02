@@ -147,6 +147,7 @@ export class LayoutDefaultComponent
         [`alain-default__fixed`]: layout.fixed,
         [`alain-default__boxed`]: layout.boxed,
         [`alain-default__collapsed`]: layout.collapsed,
+        ['mobile-layout']: isMobile()
       },
       true,
     );

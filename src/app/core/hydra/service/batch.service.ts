@@ -126,7 +126,7 @@ export class BatchService {
       }));
   }
 
-  searchBatch(materialName: string, bufferName: string): Observable<MaterialBatch[]> {
+  searchBatch(materialName: string, bufferName: string = ''): Observable<MaterialBatch[]> {
     return this.getMaterialBuffer(bufferName).pipe(
       switchMap(buffer => {
         if (buffer || !bufferName) {

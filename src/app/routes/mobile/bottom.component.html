@@ -1,7 +1,11 @@
 <div class="form-group" [formGroup]="inputFormGroup">
-  <input class="weui-input badge-input" #badge *ngIf='!showBadgeButton' formControlName="badge" type='password'
-    [fwShareKeyHandler]='keyHandler' [placeholder]="'app.mobile.common.badge.placeholder' | translate">
-  <button class='badge-button' *ngIf='showBadgeButton' weui-button weui-mini="mini" [weui-type]="buttonType" (click)="operatorSetup($event)">{{badgeButtonText}}</button>
-  <button class='reset' weui-button weui-mini="mini" [weui-type]="'warn'" (click)="reset()">{{'app.mobile.common.reset'
-    | translate}}</button>
+  <div [ngStyle]="{'flex': 1}">
+    <input class="weui-input" #badge *ngIf='!showBadgeButton' formControlName="badge" type='password'
+      [fwShareKeyHandler]='keyHandler' [placeholder]="'app.mobile.common.badge.placeholder' | translate">
+    <button *ngIf='showBadgeButton' weui-button weui-mini [weui-type]="buttonType" (click)="operatorSetup($event)">{{badgeButtonText}}</button>
+  </div>
+  <div>
+    <button class='reset' weui-button weui-mini [weui-type]="'warn'" (click)="reset()">{{'app.mobile.common.reset'
+      | translate}}</button>
+  </div>
 </div>
