@@ -1,4 +1,4 @@
-import { Component, Inject, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, Inject, AfterViewInit, ViewChild, OnInit } from '@angular/core';
 import { BaseForm } from '../base.form';
 import { FormBuilder } from '@angular/forms';
 import { ToastService, ToptipsService, SearchBarComponent } from 'ngx-weui';
@@ -19,7 +19,7 @@ import { MaterialBatch } from '@core/hydra/entity/batch';
     '[class.mobile-layout]': 'true',
   },
 })
-export class FindBatchComponent extends BaseForm implements AfterViewInit {
+export class FindBatchComponent extends BaseForm implements OnInit {
   //#region View Children
 
   @ViewChild('searchBar') searchBar: SearchBarComponent;
@@ -134,6 +134,7 @@ export class FindBatchComponent extends BaseForm implements AfterViewInit {
   //#endregion
 
   //#region Override methods
+
   protected isValid() {
     return this.isMaterialSelected;
   }
@@ -141,15 +142,19 @@ export class FindBatchComponent extends BaseForm implements AfterViewInit {
   //#endregion
 
   //#region Portected methods
+
   protected afterReset() {
     this.searchBar._onCancel();
     this.searchBar._doFocus();
   }
+
   //#endregion
 
   //#region Implemented interface
-  ngAfterViewInit(): void {
+
+  ngOnInit(): void {
     this.searchBar._doFocus();
   }
+
   //#endregion
 }

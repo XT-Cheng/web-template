@@ -35,8 +35,6 @@ import { AdjustBatchQuantityComponent } from './mobile/material/adjust-batch-qua
 import { LogonBatchComponent } from './mobile/material/logon-batch.component';
 import { MobileBottomComponent } from './mobile/bottom.component';
 import { FindBatchComponent } from './mobile/material/find-batch.component';
-import { MobileSearchComponent } from './mobile/search.component';
-import { MobileListComponent } from './mobile/list.component';
 import { BatchTraceabilityComponent } from './report/batch/batch.trace.component';
 import { ToolPreparationComponent } from './dashboard/widget/toolPreparation.component';
 
@@ -76,8 +74,6 @@ const COMPONENTS = [
   Exception500Component,
   // Mobile
   MobileBottomComponent,
-  MobileSearchComponent,
-  MobileListComponent,
   // Material
   CreateBatchComponent,
   FindBatchComponent,

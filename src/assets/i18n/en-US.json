@@ -115,6 +115,8 @@
   "app.monitor.resource-surplus": "Resource Surplus",
   "app.monitor.fund-surplus": "Fund Surplus",
   "app.common.cancel": "Cancel",
+  "app.common.require": "Require",
+  "app.common.miss": "Miss",
   "app.route.line-summary": "Line Summary",
   "app.machine.summary.general": "Machine Genearl Info",
   "app.machine.summary.workOrder": "Work Order",

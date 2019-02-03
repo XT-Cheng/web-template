@@ -1,3 +1,7 @@
 .form-group {
   display: flex;
 }
+
+:host {
+  padding: 10px 0px;
+}

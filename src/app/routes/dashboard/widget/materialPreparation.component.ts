@@ -3,6 +3,7 @@ import { STColumn, STColumnTag } from '@delon/abc';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { toNumber } from '@delon/util';
+import { getComponentStatus } from '@core/hydra/utils/operationHelper';
 
 const MAT_TAG: STColumnTag = {
   1: { text: 'In Use', color: 'green' },
@@ -72,17 +73,18 @@ export class MaterialPreparationComponent implements OnInit {
 
     if (this._machine.currentOperation) {
       const op = this._machine.currentOperation;
-      op.componentStatus.forEach((comp, key) => {
+      const componentStatus = getComponentStatus(op, this._machine);
+      componentStatus.forEach((comp) => {
         // 1: 'In Use',
         // 2: 'No Mat.',
         // 3: 'Need Replenish',
         let percentage = 0;
         let loaded = -1;
-        if (!comp.batchName) {
+        if (!comp.isReady) {
           loaded = 2;
         } else {
-          const bomItem = op.bomItems.get(key);
-          const remainTime = toNumber((comp.batchQty / bomItem.quantity * op.targetCycleTime).toFixed());
+          const bomItem = op.bomItems.get(comp.pos);
+          const remainTime = toNumber((comp.quantity / bomItem.quantity * op.targetCycleTime).toFixed());
           percentage = toNumber(((remainTime / MaterialPreparationComponent.COMP_REMAIN_TIME) * 100).toFixed());
           if (percentage > MaterialPreparationComponent.COMP_REMAIN_PERCENTAGE) {
             loaded = 1;
@@ -93,7 +95,7 @@ export class MaterialPreparationComponent implements OnInit {
 
         ret.push({
           batchName: comp.batchName,
-          batchQty: comp.batchQty,
+          batchQty: comp.quantity,
           material: comp.material,
           percentage: percentage,
           loaded: loaded

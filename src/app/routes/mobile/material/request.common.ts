@@ -1,4 +1,4 @@
-import { of } from 'rxjs';
+import { of, MonoTypeOperatorFunction } from 'rxjs';
 import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
 import { switchMap, map, tap } from 'rxjs/operators';
 import { FormGroup } from '@angular/forms';
@@ -29,19 +29,20 @@ export const requestBatchData = (form: FormGroup, batchService: BatchService) =>
     }));
 };
 
-export const requestMaterialBufferData = (form, batchService) => () => {
-  if (!form.value.materialBuffer) {
-    return of(null);
-  }
+export const requestMaterialBufferData = (form: FormGroup, batchService: BatchService,
+  operator: MonoTypeOperatorFunction<any> = null) => () => {
+    if (!form.value.materialBuffer) {
+      return of(null);
+    }
 
-  return batchService.getMaterialBuffer(form.value.materialBuffer).pipe(
-    tap((buffer: MaterialBuffer) => {
-      if (!buffer) {
-        throw Error(`${form.value.materialBuffer} not exist!`);
-      }
-      if (buffer.name === form.value.batchData.bufferName) {
-        throw Error(`Batch alreaday in Location ${form.value.batchData.bufferName}`);
-      }
-    })
-  );
-};
+    const check = operator ? operator : tap(_ => _);
+
+    return batchService.getMaterialBuffer(form.value.materialBuffer).pipe(
+      tap((buffer: MaterialBuffer) => {
+        if (!buffer) {
+          throw Error(`${form.value.materialBuffer} not exist!`);
+        }
+      }),
+      check
+    );
+  };

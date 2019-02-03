@@ -19,13 +19,18 @@ import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation, ComponentLoggedOn } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
 import { map, tap, switchMap } from 'rxjs/operators';
+import { BaseExtendForm } from '../base.form.extend';
+import { getComponentStatus } from '@core/hydra/utils/operationHelper';
 
 @Component({
   selector: 'fw-batch-logon',
   templateUrl: 'logon-batch.component.html',
-  styleUrls: ['./logon-batch.component.scss']
+  styleUrls: ['./logon-batch.component.scss'],
+  host: {
+    '[class.mobile-layout]': 'true',
+  },
 })
-export class LogonBatchComponent extends BaseForm {
+export class LogonBatchComponent extends BaseExtendForm {
   //#region View Children
 
   //#endregion
@@ -66,29 +71,30 @@ export class LogonBatchComponent extends BaseForm {
     super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n, _operatorService);
     this.addControls({
       barCode: [null, [Validators.required], true],
-      machine: [null, [Validators.required]],
-      operation: [null, [Validators.required]],
-      batch: [null, [Validators.required]],
-      batchData: [null, [Validators.required], true],
-      machineData: [null, [Validators.required], true],
-      operationData: [null, [Validators.required], true],
+      machine: [null, [Validators.required], 'machineData'],
+      operation: [null, [Validators.required], 'operationData'],
+      batch: [null, [Validators.required], 'batchData'],
       componentStatus: [null, [Validators.required], true],
       actionData: [null, [Validators.required], true],
     });
-
-    this.form.setValue(Object.assign(this.form.value, {
-      badge: this.storedData ? this.storedData.badge : ``,
-    }));
   }
 
   //#endregion
 
   //#region Public methods
-  getResultClass(comp) {
-    return {
-      'weui-icon-success': true,
-      'weui-icon-warn': false
-    };
+  componentStatusDisplay(componentStatus: any[]) {
+    const request = componentStatus.length;
+    let ready = 0;
+    let missed = 0;
+    componentStatus.map(status => {
+      if (status.isReady) {
+        ready++;
+      } else {
+        missed++;
+      }
+    });
+
+    return `${this.i18n.fanyi('')}`;
   }
   //#endregion
 
@@ -97,12 +103,11 @@ export class LogonBatchComponent extends BaseForm {
   //#region Machine Reqeust
 
   requestMachineDataSuccess = (machine: Machine) => {
-    this.form.controls.machineData.setValue(machine);
-    this.descriptions.set(`machine`, machine.display);
-    const x = machine.currentOperation.toolStatus;
     this.operations = machine.nextOperations;
     if (this.operations.length > 0) {
       this.form.controls.operation.setValue(this.operations[0].name);
+      this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
+        (null, null, `operation`);
     }
   }
 
@@ -116,27 +121,14 @@ export class LogonBatchComponent extends BaseForm {
   //#endregion
 
   //#region Batch Reqeust
-  requestBatchDataSuccess = (array: any[]) => {
-    const [found, batch] = array;
+  requestBatchDataSuccess = (batch) => {
     this.form.controls.batch.setValue(batch.name);
     this.form.controls.barCode.setValue(batch.barCode);
     this.form.controls.batchData.setValue(batch);
 
-    this.descriptions.set(`batch`, batch.display);
-    this.form.controls.actionData.setValue(found);
-
     if (!this.isDisable()) {
       this.doAction(this.logonBatch, this.logonBatchSuccess, this.logonBatchFailed);
     }
-    // this.form.controls.componentStatus.setValue((this.form.value.componentStatus as Array<any>).map(cs => {
-    //   if (cs.material === found.material) return {
-    //     material: found.material,
-    //     pos: found.pos,
-    //     isReady: true
-    //   };
-    //   return cs;
-    // }));
-    // this.componentStatus$.next(this.form.value.componentStatus);
   }
 
   requestBatchDataFailed = () => {
@@ -149,7 +141,8 @@ export class LogonBatchComponent extends BaseForm {
         if (!found) {
           return throwError(`${batch.material} in-correct!`);
         } else {
-          return of([found, batch]);
+          this.form.controls.actionData.setValue(found);
+          return of(batch);
         }
       }
       ));
@@ -159,11 +152,8 @@ export class LogonBatchComponent extends BaseForm {
   //#endregion
 
   //#region Operation Reqeust
-  requestOperationDataSuccess = (array: any[]) => {
-    const [operation, componentStatus] = array;
-    this.form.controls.operationData.setValue(operation);
-    this.form.controls.componentStatus.setValue(componentStatus);
-    this.componentStatus$.next(componentStatus);
+  requestOperationDataSuccess = (_) => {
+    this.componentStatus$.next(this.form.value.componentStatus);
   }
 
   requestOperationDataFailed = () => {
@@ -172,26 +162,8 @@ export class LogonBatchComponent extends BaseForm {
   requestOperationData = (): Observable<any> => {
     return this._operationService.getOperation(this.form.value.operation).pipe(
       map(operation => {
-        const componentStatus = [];
-        operation.bomItems.forEach(item => {
-          const machine = this.form.value.machineData as Machine;
-          if (machine.componentsLoggedOn.find(c => c.material === item.material)) {
-            // Material Find
-            componentStatus.push({
-              material: item.material,
-              pos: item.pos,
-              isReady: true
-            });
-          } else {
-            componentStatus.push({
-              material: item.material,
-              pos: item.pos,
-              isReady: false
-            });
-          }
-        });
-        this.descriptions.set(`operation`, operation.display);
-        return [operation, componentStatus];
+        this.form.controls.componentStatus.setValue(getComponentStatus(operation, this.form.value.machineData));
+        return operation;
       }));
   }
 
@@ -231,11 +203,6 @@ export class LogonBatchComponent extends BaseForm {
   //#endregion
 
   //#region Override methods
-  protected isValid() {
-    return !Array.from(this.descriptions.entries()).some(value => {
-      return (value[0] !== `barCode` && !value[1]);
-    });
-  }
 
   protected afterReset() {
     this._document.getElementById(`batch`).focus();

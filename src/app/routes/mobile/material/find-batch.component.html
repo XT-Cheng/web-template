@@ -23,7 +23,7 @@
     </div>
     <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(searchBatch, searchBatchSuccess, searchBatchFailed)'>{{'app.mobile.material.find.action'
       | translate}}</button>
-    <div class="weui-panel">
+    <div [ngStyle]="{'flex': 1}" class="weui-panel">
       <div class="weui-panel__bd">
         <div class="weui-cell" *ngFor="let batch of (batches$  | async)">
           <div class="weui-cell__bd">

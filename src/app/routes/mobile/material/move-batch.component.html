@@ -28,8 +28,10 @@
         {{getDescription('materialBuffer')}}
       </span>
     </label>
-    <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(moveBatch, moveBatchSuccess, moveBatchFailed)'>{{'app.mobile.material.move.action'
-      | translate}}</button>
+    <div class="weui-cell">
+      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(moveBatch, moveBatchSuccess, moveBatchFailed)'>{{'app.mobile.material.move.action'
+        | translate}}</button>
+    </div>
     <div [style.flex]="1"></div>
     <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
       [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>

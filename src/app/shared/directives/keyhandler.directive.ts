@@ -17,24 +17,15 @@ export class KeyHandlerDirective {
   InputEvent(event) {
     event.preventDefault();
 
-    if (event.srcElement.tagName !== 'INPUT' || !this.keyHandler || !this.keyHandler.inputing) {
-      return;
+    if (event.srcElement.tagName === 'INPUT' && this.keyHandler && this.keyHandler.inputing) {
+      this.keyHandler.inputing(event.srcElement, this.keyHandler.controlName);
     }
 
-    this.keyHandler.inputing(event.srcElement, this.keyHandler.controlName);
+    if (event.srcElement.tagName === 'SELECT' && this.keyHandler && this.keyHandler.req) {
+      const nextInputElement = this.document.getElementById(this.keyHandler.nextInputId);
+      this.keyHandler.req(event.srcElement, nextInputElement, this.keyHandler.controlName);
+    }
   }
-
-  // @HostListener('blur', ['$event'])
-  // BlurEvent(event) {
-  //   event.preventDefault();
-
-  //   if (event.srcElement.tagName !== 'INPUT' || !event.srcElement.value || !this.keyHandler || !this.keyHandler.req) {
-  //     return;
-  //   }
-
-  //   const nextElement = this.document.getElementById(this.keyHandler.nextInputId);
-  //   this.keyHandler.req(event.srcElement, nextElement, this.keyHandler.controlName);
-  // }
 
   @HostListener('focus', ['$event'])
   FocusEvent(event) {

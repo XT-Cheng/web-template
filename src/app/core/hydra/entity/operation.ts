@@ -21,6 +21,7 @@ export class Operation {
   }
 
   //#endregion
+
   //#region Fields
 
   order = '';
@@ -83,63 +84,6 @@ export class Operation {
     return total;
   }
 
-  get componentStatus(): Map<number, ComponentLoggedOn> {
-    const ret = new Map<number, ComponentLoggedOn>();
-
-    this.bomItems.forEach((bomItem, key) => {
-      const component = this.componentsLoggedOn.get(key);
-
-      if (component) {
-        ret.set(key, {
-          batchName: component.batchName,
-          material: component.material,
-          batchQty: component.batchQty,
-          pos: key
-        });
-      } else {
-        ret.set(key, {
-          batchName: ``,
-          material: bomItem.material,
-          batchQty: 0,
-          pos: key
-        });
-      }
-    });
-
-    return ret;
-  }
-
-  get toolStatus(): Map<string, ToolLoggedOn> {
-    const ret = new Map<string, ToolLoggedOn>();
-
-    this.toolItems.forEach((toolItem, key) => {
-      let loggedOnFound: ToolLoggedOn;
-      toolItem.availableTools.some(available => {
-        loggedOnFound = this.toolsLoggedOn.find(loggedOn => {
-          return loggedOn.toolName === available;
-        });
-
-        return loggedOnFound ? true : false;
-      });
-
-      if (loggedOnFound) {
-        ret.set(key, {
-          requiredMaterial: key,
-          loggedOnMachine: loggedOnFound.loggedOnMachine,
-          toolName: loggedOnFound.toolName,
-        });
-      } else {
-        ret.set(key, {
-          requiredMaterial: key,
-          loggedOnMachine: ``,
-          toolName: ``,
-        });
-      }
-    });
-
-    return ret;
-  }
-
   get name(): string {
     return `${this.order}${this.sequence}`;
   }
@@ -194,6 +138,14 @@ export class ComponentLoggedOn {
   pos = -1;
 }
 
+export interface ComponentStatus {
+  material: string;
+  pos: number;
+  isReady: boolean;
+  batchName?: string;
+  quantity?: number;
+}
+
 export class ToolItem {
   requiredMaterial = '';
 
@@ -206,6 +158,14 @@ export class ToolLoggedOn {
 
   loggedOnMachine = '';
   toolName = '';
+}
+
+export interface ToolStatus {
+  requiredMaterial: string;
+
+  isReady: boolean;
+  loggedOnMachine?: string;
+  toolName?: number;
 }
 
 export class OperatorLoggedOn {

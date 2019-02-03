@@ -4,7 +4,7 @@ import { FormGroup, ControlContainer } from '@angular/forms';
 @Component({
   selector: 'fw-mobile-bottom',
   templateUrl: 'bottom.component.html',
-  styleUrls: ['./bottom.component.scss']
+  styleUrls: ['./bottom.component.scss'],
 })
 export class MobileBottomComponent implements OnInit {
   inputFormGroup: FormGroup;

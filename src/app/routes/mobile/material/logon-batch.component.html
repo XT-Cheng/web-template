@@ -11,22 +11,19 @@
     </div>
     <label for="weuiAgree" class="weui-agree">
       <span class="weui-agree__text">
-        {{getDescription('machine')}}
+        {{getAssociateDataDisplay('machine')}}
       </span>
     </label>
-    <div class="weui-cell">
-      <div class="weui-cell__hd">
-        <label class="weui-label">{{'app.mobile.material.logon.operation' | translate}}</label>
-      </div>
+    <div class="weui-cell weui-cell_select">
       <div class="weui-cell__bd">
-        <nz-select id='operation' formControlName="operation" (ngModelChange)="operationSelected($event)">
-          <nz-option *ngFor='let op of operations' [nzValue]="op.name" [nzLabel]="op.name"></nz-option>
-        </nz-select>
+        <select class="weui-select" id='operation' formControlName="operation" [fwShareKeyHandler]='{controlName: "operation", nextInputId: "batch", req: request(requestOperationData, requestOperationDataSuccess, requestOperationDataFailed)}'>
+          <option *ngFor='let op of operations' [value]="op.name">{{op.leadOrder + "," + op.article}}</option>
+        </select>
       </div>
     </div>
     <label for="weuiAgree" class="weui-agree">
       <span class="weui-agree__text">
-        {{getDescription('operation')}}
+        {{getAssociateDataDisplay('operation')}}
       </span>
     </label>
     <div class="weui-cell">
@@ -40,10 +37,21 @@
     </div>
     <label for="weuiAgree" class="weui-agree">
       <span class="weui-agree__text">
-        {{getDescription('batch')}}
+        {{getAssociateDataDisplay('batch')}}
       </span>
     </label>
-    <fw-mobile-list [data$]='componentStatus$' [title]="'material'" [description]="'material'"></fw-mobile-list>
+    <!-- <fw-mobile-list [ngStyle]="{'flex': 1}" [data$]='componentStatus$' [title]="'material'" [description]="'material'"></fw-mobile-list> -->
+    <!-- <div [ngStyle]="{'flex': 1}" class="weui-cell weui-cell_board weui-cell_access">
+      <div class="weui-cell__bd" *ngIf='(componentStatus$ | async) as componentStatus'>
+        <div>Require: {{componentStatus.length}}, Missed: <span [ngStyle]="{'color': 'red'}">{{componentStatus.length}}</span></div>
+      </div>
+      <div class="weui-cell__ft"></div>
+    </div> -->
+    <div [ngStyle]="{'flex': 1}">
+      <button class='centered' weui-button weui-plain weui-type='default' *ngIf='(componentStatus$ | async) as componentStatus'>
+        <span>Require: {{componentStatus.length}}, Missed: <span [ngStyle]="{'color': 'red'}">{{componentStatus.length}}</span></span>
+      </button>
+    </div>
     <!-- <div class="weui-cells__title">Mat. List</div>
     <nz-list [nzDataSource]="componentsInfo" [nzRenderItem]="item" [nzItemLayout]="'horizontal'">
       <ng-template #item let-item>

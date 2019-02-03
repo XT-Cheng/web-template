@@ -3,6 +3,7 @@ import { STColumn, STColumnTag } from '@delon/abc';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { toNumber } from '@delon/util';
+import { getToolStatus } from '@core/hydra/utils/operationHelper';
 
 const TOOL_TAG: STColumnTag = {
   1: { text: 'In Use', color: 'green' },
@@ -70,11 +71,12 @@ export class ToolPreparationComponent implements OnInit {
 
     if (this._machine.currentOperation) {
       const op = this._machine.currentOperation;
-      op.toolStatus.forEach((tool, key) => {
+      const toolStatus = getToolStatus(op, this._machine);
+      toolStatus.forEach((tool) => {
         // 1: { text: 'In Use', color: 'green' },
         // 2: { text: 'No Tool.', color: 'red' },
         let loaded = -1;
-        if (!tool.toolName) {
+        if (!tool.isReady) {
           loaded = 2;
         } else {
           loaded = 1;

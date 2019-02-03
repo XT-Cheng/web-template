@@ -13,6 +13,7 @@ import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
 import { requestBatchData, requestMaterialBufferData } from './request.common';
 import { requestBadgeData } from '../request.common';
+import { tap } from 'rxjs/operators';
 
 @Component({
   selector: 'fw-batch-move',
@@ -34,7 +35,11 @@ export class MoveBatchComponent extends BaseForm {
   //#region Public member
 
   requestBatchData = requestBatchData(this.form, this._batchService);
-  requestMaterialBufferData = requestMaterialBufferData(this.form, this._batchService);
+  requestMaterialBufferData = requestMaterialBufferData(this.form, this._batchService, tap(buffer => {
+    if (this.form.value.batchData && buffer.name === this.form.value.batchData.bufferName) {
+      throw Error(`Batch alreaday in Location ${this.form.value.batchData.bufferName}`);
+    }
+  }));
 
   //#endregion
 
