@@ -348,6 +348,7 @@ export class MachineService {
           //#region Setup Logged On Components
           loggedOnComponent.map(component => {
             machineRet.componentsLoggedOn.push({
+              operation: component.OPERATION,
               batchName: component.BATCHID,
               batchQty: component.REMAINQTY,
               pos: component.POS,
@@ -364,21 +365,20 @@ export class MachineService {
           //#endregion
 
           //#region Setup Machine's output
-          mraData.map(mraItem => {
+          const firstOperationRecord = new Map<string, boolean>();
+          mraData.sort((a, b) => (new Date(a.SNAPSHOT_TIMESTAMP) > new Date(b.SNAPSHOT_TIMESTAMP)) ? 1 : -1).map(mraItem => {
             const found = Array.from(machineRet.output.keys()).find(key =>
               key.getTime() === new Date(mraItem.SNAPSHOT_TIMESTAMP).getTime());
 
             if (found) {
-              const ot = machineRet.output.get(found);
-              ot.yield += mraItem.QUANTITY_GOOD;
-              ot.scrap += mraItem.QUANTITY_SCRAP;
-              ot.performance += mraItem.PERFORMANCE;
-            } else {
-              machineRet.output.set(new Date(mraItem.SNAPSHOT_TIMESTAMP), {
-                yield: mraItem.QUANTITY_GOOD,
-                scrap: mraItem.QUANTITY_SCRAP,
-                performance: mraItem.PERFORMANCE,
-              });
+              if (firstOperationRecord.has(mraItem.ORDERNUMBER)) {
+                const ot = machineRet.output.get(found);
+                ot.yield += mraItem.QUANTITY_GOOD;
+                ot.scrap += mraItem.QUANTITY_SCRAP;
+                ot.performance += mraItem.PERFORMANCE;
+              } else {
+                firstOperationRecord.set(mraItem.ORDERNUMBER, true);
+              }
             }
           });
 

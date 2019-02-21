@@ -24,6 +24,14 @@
     flex-direction: column;
   }
 
+  .weui-popup {
+    .weui-cells {
+      margin-top: 0px;
+      display: block;
+      overflow-y: auto;
+    }
+  }
+
   .weui-cell_select {
     .weui-select {
       padding-right: 0px;
@@ -44,7 +52,7 @@
   }
 
   .weui-cell_board {
-    font-size: 17px;
+    font-size: 14px;
     padding: 10px 15px;
   }
 
@@ -58,9 +66,8 @@
   }
 
   .centered {
-    position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, 0);
+    transform: translate(-50%, -50%);
   }
 }

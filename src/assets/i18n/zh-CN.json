@@ -114,8 +114,8 @@
   "app.monitor.popular-searches": "热门搜索",
   "app.monitor.resource-surplus": "资源剩余",
   "app.monitor.fund-surplus": "补贴资金剩余",
-  "app.common.cancel": "取消",
-  "app.common.require": "需要",
+  "app.common.component.require": "物料需求",
+  "app.common.tool.require": "模具需求",
   "app.common.miss": "缺失",
   "app.route.line-summary": "产线概览",
   "app.machine.summary.general": "设备基本信息",
@@ -234,7 +234,6 @@
   "app.mobile.material.logon.operation.placeholder": "请输入工单",
   "app.mobile.material.logon.batch": "批号",
   "app.mobile.material.logon.batch.placeholder": "请输入批号",
-  "app.mobile.material.logon.componentsList": "物料状况",
   "app.mobile.material.logon.action": "登录物料",
   "app.mobile.material.find": "批次查找",
   "app.mobile.material.find.material": "料号",
@@ -245,5 +244,12 @@
   "app.mobile.material.find.buffer.placeholder": "请输入库存位置",
   "app.mobile.material.find.loadbuffer": "查找库存位置...",
   "app.mobile.material.find.notfoundbuffer": "找不到库存位置!",
-  "app.mobile.material.find.action": "查找"
+  "app.mobile.material.find.action": "查找",
+
+  "app.mobile.operation.logon": "工单登录",
+  "app.mobile.operation.logon.machine": "设备",
+  "app.mobile.operation.logon.machine.placeholder": "请输入设备",
+  "app.mobile.operation.logon.operation": "工单",
+  "app.mobile.operation.logon.operation.placeholder": "请输入工单",
+  "app.mobile.operation.logon.action": "登录工单"
 }

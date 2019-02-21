@@ -7,7 +7,7 @@ import {
   BatchConnectionNode, BatchConsumeConnectionNode, BatchMergeConnectionNode, BatchSplitConnectionNode
 } from '@core/hydra/entity/batch';
 import { format } from 'date-fns';
-import { dateFormat, dateFormatOracle, replaceAll } from '@core/utils/helpers';
+import { dateFormat, dateFormatOracle, replaceAll, leftPad } from '@core/utils/helpers';
 import { BUFFER_SAP } from 'app/routes/mobile/material/constants';
 
 @Injectable()
@@ -230,22 +230,27 @@ export class BatchService {
   }
 
   getBatchInfoFrom2DBarCode(barCodeOf2D: string): Observable<MaterialBatch> {
-    // Sample: 1573290-1$Z181006J21$25$10$18407$3SH53Y22001293
-    //         Material$Batch$Qty$Reel$DateCode$3S
+
     const batchInfo: MaterialBatch = new MaterialBatch();
 
     const ret = barCodeOf2D.split('$');
 
-    if (ret.length !== 6) {
+    if (ret.length === 6) {
+      // Sample: 1573290-1$Z181006J21$25$10$18407$3SH53Y22001293
+      //         Material$Batch$Qty$Reel$DateCode$3S
+      batchInfo.name = ret[5];
+      batchInfo.barCode = barCodeOf2D;
+      batchInfo.material = ret[0];
+      batchInfo.dateCode = ret[4];
+      batchInfo.SAPBatch = ret[1];
+      batchInfo.quantity = batchInfo.startQty = parseInt(ret[2], 10);
+    } else if (barCodeOf2D.startsWith(`3S`)) {
+      // Sample: 3SH53Y22001293
+      batchInfo.name = barCodeOf2D;
+      batchInfo.barCode = barCodeOf2D;
+    } else {
       return throwError('Batch Label format in-correct');
     }
-
-    batchInfo.name = ret[5];
-    batchInfo.barCode = barCodeOf2D;
-    batchInfo.material = ret[0];
-    batchInfo.dateCode = ret[4];
-    batchInfo.SAPBatch = ret[1];
-    batchInfo.quantity = batchInfo.startQty = parseInt(ret[2], 10);
     return of(batchInfo);
   }
 
@@ -371,6 +376,15 @@ export class BatchService {
     let sql = BatchService.batchConnectionForwardSql;
     sql = sql.replace(BatchService.batchNameTBR, batchName);
     return this.getBatchConnection(batchName, sql);
+  }
+
+  getNextBatchName(): Observable<string> {
+    const sql = 'SELECT S_MPL_NEXT_LT.NEXTVAL FROM DUAL';
+    return this._fetchService.query(sql).pipe(
+      map(res => {
+        return `3SCXTOUT` + leftPad(res[0].NEXTVAL, 6);
+      })
+    );
   }
 
   //#endregion

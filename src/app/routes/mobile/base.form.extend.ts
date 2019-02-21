@@ -1,15 +1,16 @@
-import { ViewChild, ElementRef } from '@angular/core';
+import { ViewChild, ElementRef, Injector } from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormControl, ValidatorFn } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { TitleService, SettingsService } from '@delon/theme';
-import { NzMessageService, NzSpinComponent } from 'ng-zorro-antd';
-import { MaskComponent, ToastService, ToptipsService } from 'ngx-weui';
+import { MaskComponent, ToastService, ToptipsService, PopupComponent } from 'ngx-weui';
 import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
 import { OperatorService } from '@core/hydra/service/operator.service';
 import { Operator } from '@core/hydra/entity/operator';
+import { Operation } from '@core/hydra/entity/operation';
+import { DOCUMENT } from '@angular/common';
 
 interface ITranError {
   context: any;
@@ -32,9 +33,21 @@ export abstract class BaseExtendForm {
 
   @ViewChild(MaskComponent) mask: MaskComponent;
 
+  @ViewChild(`componentStatus`) componentStatusPopup: PopupComponent;
+  @ViewChild(`operationList`) operationListPopup: PopupComponent;
+
   //#endregion
 
   //#region Protected member
+  protected fb: FormBuilder;
+  protected settingService: SettingsService;
+  protected toastService: ToastService;
+  protected routeService: Router;
+  protected tipService: ToptipsService;
+  protected titleService: TitleService;
+  protected i18n: I18NService;
+  protected operatorService: OperatorService;
+  protected document: Document;
 
   protected errors: ITranError[] = [];
   protected success: ITranSuccess[] = [];
@@ -58,21 +71,30 @@ export abstract class BaseExtendForm {
 
   //#region Constructor
 
-  constructor(fb: FormBuilder, private _settingService: SettingsService, protected _toastService: ToastService,
-    private _routeService: Router, private _tipService: ToptipsService,
-    protected _titleService: TitleService, protected i18n: I18NService, protected _operatorService: OperatorService,
-    protected _resetFormAfterSuccessExecution = true) {
-    BaseExtendForm.SETUP_OPERATOR = i18n.fanyi(`app.mobile.common.setupOperator`);
+  constructor(private injector: Injector, protected resetFormAfterSuccessExecution = true) {
+
+    // Setup Services
+    this.fb = injector.get(FormBuilder);
+    this.settingService = injector.get(SettingsService);
+    this.toastService = injector.get(ToastService);
+    this.routeService = injector.get(Router);
+    this.tipService = injector.get(ToptipsService);
+    this.titleService = injector.get(TitleService);
+    this.i18n = injector.get(I18NService);
+    this.operatorService = injector.get(OperatorService);
+    this.document = injector.get(DOCUMENT);
+
+    BaseExtendForm.SETUP_OPERATOR = this.i18n.fanyi(`app.mobile.common.setupOperator`);
     this.badgeButtonText = BaseExtendForm.SETUP_OPERATOR;
-    this.form = fb.group({
+    this.form = this.fb.group({
       badge: [null, [Validators.required]],
       badgeData: [null, [Validators.required]],
     });
     this.associatedControl.set(`badge`, `badgeData`);
-    this._routeService.events
+    this.routeService.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
-        this._titleService.setTitle(this.title);
+        this.titleService.setTitle(this.title);
 
         let operator = null;
         if (this.storedData && this.storedData.badgeData) {
@@ -93,13 +115,21 @@ export abstract class BaseExtendForm {
 
   //#region Protected properties
   protected set storedData(data: any) {
-    this._settingService.setApp(Object.assign(this._settingService.app, {
+    this.settingService.setApp(Object.assign(this.settingService.app, {
       [this.key]: data
     }));
   }
 
   protected get storedData(): any {
-    return this._settingService.app[this.key];
+    return this.settingService.app[this.key];
+  }
+
+  protected get machineData() {
+    return this.form.value.machineData;
+  }
+
+  protected get operationData() {
+    return this.form.value.operationData;
   }
 
   //#endregion
@@ -156,7 +186,7 @@ export abstract class BaseExtendForm {
         this.beforeActionSuccess(ret);
         success(ret);
         this.afterActionSuccess(ret);
-        if (this._resetFormAfterSuccessExecution) {
+        if (this.resetFormAfterSuccessExecution) {
           this.resetForm();
         }
       }, (err) => {
@@ -201,6 +231,74 @@ export abstract class BaseExtendForm {
     this.afterReset();
   }
 
+  showComponentStatus(focusId = ``) {
+    if (this.componentStatusPopup) {
+      this.componentStatusPopup.show().subscribe(() => {
+        if (!focusId) return;
+        const element = this.document.getElementById(focusId);
+        if (element) {
+          element.focus();
+        }
+      });
+    }
+  }
+
+  showOperationList(focusId = ``) {
+    if (this.operationListPopup) {
+      this.operationListPopup.show().subscribe(() => {
+        if (!focusId) return;
+        const element = this.document.getElementById(focusId);
+        if (element) {
+          element.focus();
+        }
+      });
+    }
+  }
+
+  getComponentStatusDisplay(componentStatus: any[]) {
+    if (this.form.value.operationData) {
+      let ready = 0;
+      let missed = 0;
+      componentStatus.map(status => {
+        if (status.isReady) {
+          ready++;
+        } else {
+          missed++;
+        }
+      });
+
+      return {
+        total: ready + missed,
+        ready: ready,
+        missed: missed
+      };
+    }
+
+    return null;
+  }
+
+  getCurrentOperationDisplay() {
+    if (this.form.value.operationData) {
+      const operation = this.form.value.operationData as Operation;
+      return {
+        title: operation.leadOrder,
+        description: `${operation.order} ${operation.article} ${operation.targetQty}`
+      };
+    }
+
+    return null;
+  }
+
+  hasMachineData() {
+    return (!!this.form.value.machineData);
+  }
+
+  hasOperationData() {
+    return (!!this.form.value.operationData);
+  }
+
+
+
   //#region Badge related
   getBadgeButtonType() {
     if (this.form.controls.badge.value) {
@@ -235,7 +333,7 @@ export abstract class BaseExtendForm {
       return of(null);
     }
 
-    return this._operatorService.getOperatorByBadge(this.form.value.badge).pipe(
+    return this.operatorService.getOperatorByBadge(this.form.value.badge).pipe(
       tap(operator => {
         if (!operator) {
           throw Error(`${this.form.value.badge} not exist!`);
@@ -250,7 +348,7 @@ export abstract class BaseExtendForm {
   //#region Protected methods
   // controlsToAdd :
   // controlName: [initValue, [Validators], associatedDataControlName]
-  // barCode: [null, [Validators.required], true]
+  // barCode: [null, [Validators.required], `batchData`]
   protected addControls(controlsToAdd: { [key: string]: Array<any> }) {
     Object.keys(controlsToAdd).forEach(controlName => {
       const value = controlsToAdd[controlName][0];
@@ -271,23 +369,23 @@ export abstract class BaseExtendForm {
   }
 
   protected showSuccess(message) {
-    this._tipService.success(message, 2000);
+    this.tipService.success(message, 2000);
   }
 
   protected showError(message) {
-    this._tipService.warn(message, 5000);
+    this.tipService.warn(message, 5000);
   }
 
   //#endregion
 
   //#region Private methods
   private start() {
-    this._tipService.destroyAll();
+    this.tipService.destroyAll();
     this.form.disable({ emitEvent: false });
     if (this.mask) {
       this.mask.show();
     }
-    this._toastService.loading();
+    this.toastService.loading();
   }
 
   private end(err: any = null) {
@@ -300,7 +398,7 @@ export abstract class BaseExtendForm {
         this.mask.hide();
       }
     });
-    this._toastService.hide();
+    this.toastService.hide();
     this.form.enable({ emitEvent: false });
   }
 

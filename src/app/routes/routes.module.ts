@@ -37,6 +37,9 @@ import { MobileBottomComponent } from './mobile/bottom.component';
 import { FindBatchComponent } from './mobile/material/find-batch.component';
 import { BatchTraceabilityComponent } from './report/batch/batch.trace.component';
 import { ToolPreparationComponent } from './dashboard/widget/toolPreparation.component';
+import { MobileComponentStatusComponent } from './mobile/component.status.component';
+import { LogonOperationComponent } from './mobile/operation/logon-operation.component';
+import { MobileOperationListComponent } from './mobile/operation.list.component';
 
 const BAPI = [
   BAPITestComponent
@@ -74,6 +77,8 @@ const COMPONENTS = [
   Exception500Component,
   // Mobile
   MobileBottomComponent,
+  MobileComponentStatusComponent,
+  MobileOperationListComponent,
   // Material
   CreateBatchComponent,
   FindBatchComponent,
@@ -83,6 +88,8 @@ const COMPONENTS = [
   MoveBatchToSAPComponent,
   AdjustBatchQuantityComponent,
   LogonBatchComponent,
+  // Opeartion
+  LogonOperationComponent,
 ];
 const COMPONENTS_NOROUNT = [];
 

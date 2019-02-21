@@ -115,7 +115,8 @@
   "app.monitor.resource-surplus": "Resource Surplus",
   "app.monitor.fund-surplus": "Fund Surplus",
   "app.common.cancel": "Cancel",
-  "app.common.require": "Require",
+  "app.common.component.require": "Mat. Require",
+  "app.common.tool.require": "Tool Require",
   "app.common.miss": "Miss",
   "app.route.line-summary": "Line Summary",
   "app.machine.summary.general": "Machine Genearl Info",
@@ -234,7 +235,6 @@
   "app.mobile.material.logon.operation.placeholder": "Pls input Operation",
   "app.mobile.material.logon.batch": "Batch Nr.",
   "app.mobile.material.logon.batch.placeholder": "Pls input Batch Nr.",
-  "app.mobile.material.logon.componentsList": "Components",
   "app.mobile.material.logon.action": "LogOn Batch",
   "app.mobile.material.find": "Find Batch",
   "app.mobile.material.find.material": "Material",
@@ -245,5 +245,12 @@
   "app.mobile.material.find.buffer.placeholder": "Pls input Buffer",
   "app.mobile.material.find.loadbuffer": "Loading Buffer...",
   "app.mobile.material.find.notfoundbuffer": "Can't find any Buffer!",
-  "app.mobile.material.find.action": "Find"
+  "app.mobile.material.find.action": "Find",
+
+  "app.mobile.operation.logon": "LogOn Operation",
+  "app.mobile.operation.logon.machine": "Machine",
+  "app.mobile.operation.logon.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.operation.logon.operation": "Operation",
+  "app.mobile.operation.logon.operation.placeholder": "Pls input Operation",
+  "app.mobile.operation.logon.action": "LogOn Operatoin"
 }

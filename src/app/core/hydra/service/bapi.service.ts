@@ -20,6 +20,7 @@ import { IActionResult } from '@core/utils/helpers';
 import { MoveBatch } from '../bapi/mpl/move.batch';
 import { GoodsMovementBatch } from '../bapi/mpl/goodsMovement.batch';
 import { LogonInputBatch } from '../bapi/mpl/logon.inputBatch';
+import { LogonOperation } from '../bapi/bde/logon.operation';
 
 @Injectable()
 export class BapiService {
@@ -79,7 +80,13 @@ export class BapiService {
   logonInputBatch(operation: string, machineName: string, badgeName: string,
     batchId: string, material: string, pos: number) {
     return new LogonInputBatch(operation, machineName, badgeName, batchId, material, pos)
-      .execute(this._http);
+      .execute(this._http).pipe(
+        map((ret: IActionResult) => {
+          return Object.assign(ret, {
+            description: `Batch ${batchId} Logged On!`
+          });
+        })
+      );
   }
 
   changeBatchQuantity(batchInfo: MaterialBatch, newQuantity: number, badge: string): Observable<IActionResult> {
@@ -159,6 +166,24 @@ export class BapiService {
           }));
       }
     }, of([]));
+  }
+  //#endregion
+
+  //#region Operation related
+  logonOperation(operation: string, machineName: string, badgeName: string) {
+    // Get new Batch as Output Batch
+    let batchName;
+    return this._batchService.getNextBatchName().pipe(
+      switchMap((name) => {
+        batchName = name;
+        return new LogonOperation(operation, machineName, badgeName, batchName).execute(this._http);
+      }),
+      map((ret: IActionResult) => {
+        return Object.assign(ret, {
+          description: `Operation ${operation} Logged On!`
+        });
+      })
+    );
   }
   //#endregion
 }

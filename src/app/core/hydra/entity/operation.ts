@@ -11,7 +11,7 @@ export class Operation {
     const interval = 1000 * 60 * 30;
     const beginDay = (new Date(now.getTime() - (now.getTime() % interval))).getTime();
 
-    for (let i = 48; i >= 0; i -= 1) {
+    for (let i = 48; i > 0; i -= 1) {
       this.output.set(new Date(beginDay - interval * i), {
         yield: 0,
         scrap: 0,
@@ -131,6 +131,7 @@ export class BomItem {
 }
 
 export class ComponentLoggedOn {
+  operation = '';
   batchName = '';
   material = '';
 
@@ -139,6 +140,7 @@ export class ComponentLoggedOn {
 }
 
 export interface ComponentStatus {
+  operation: string;
   material: string;
   pos: number;
   isReady: boolean;

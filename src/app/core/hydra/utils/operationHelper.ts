@@ -2,12 +2,13 @@ import { Machine } from '../entity/machine';
 import { Operation, ComponentStatus, ToolStatus, ToolLoggedOn } from '../entity/operation';
 
 export function getComponentStatus(operation: Operation, machine: Machine): ComponentStatus[] {
-  const componentStatus = [];
+  const componentStatus: ComponentStatus[] = [];
   operation.bomItems.forEach(item => {
     const loggedOn = machine.componentsLoggedOn.find(c => c.material === item.material);
     if (loggedOn) {
       // Material Find
       componentStatus.push({
+        operation: loggedOn.operation,
         material: item.material,
         pos: item.pos,
         isReady: true,
@@ -16,14 +17,14 @@ export function getComponentStatus(operation: Operation, machine: Machine): Comp
       });
     } else {
       componentStatus.push({
+        operation: ``,
         material: item.material,
         pos: item.pos,
         isReady: false
       });
     }
   });
-
-  return componentStatus;
+  return componentStatus.sort((a, b) => a.isReady ? 1 : -1);
 }
 
 export function getToolStatus(operation: Operation, machine: Machine): ToolStatus[] {
