@@ -11,6 +11,9 @@ export class Machine {
   description = '';
   currentStatus = '';
   currentStatusNr = -1;
+
+  numberOfOperationAllowed = -1;
+
   currentShift = -1;
   currentShiftDate = new Date();
 
@@ -72,6 +75,10 @@ export class Machine {
   //#endregion
 
   //#region Properties
+
+  get operationLoggOnAllowed() {
+    return this.currentOperations.length < this.numberOfOperationAllowed;
+  }
 
   //#region Shift Statistic
 

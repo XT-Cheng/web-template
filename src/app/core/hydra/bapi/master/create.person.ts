@@ -1,9 +1,9 @@
 import { DialogTypeEnum } from '@core/hydra/bapi/constants';
 import { DialogBase } from '@core/hydra/bapi/dialog.base';
 
-export class DeletePersonBapi extends DialogBase {
+export class CreatePerson extends DialogBase {
   constructor() {
-    super(DialogTypeEnum.HR_DELETE_PERSON);
+    super(DialogTypeEnum.HR_CREATE_PERSON);
   }
 
   public dialogString(): string {

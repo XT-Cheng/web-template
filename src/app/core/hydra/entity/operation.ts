@@ -48,6 +48,14 @@ export class Operation {
 
   //#endregion
 
+  //#region Not confirmed quantity
+
+  pendingProblemQty = 0;
+  pendingYieldQty = 0;
+  pendingScrapQty = 0;
+
+  //#endregion
+
   bomItems: Map<number, BomItem> = new Map<number, BomItem>();
   toolItems: Map<string, ToolItem> = new Map<string, ToolItem>();
 
@@ -60,8 +68,6 @@ export class Operation {
 
   // Current Shift Output
   currentShiftOutput: MachineOutput = new MachineOutput();
-
-  //#endregion
 
   //#region Display
 

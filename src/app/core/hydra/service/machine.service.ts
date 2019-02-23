@@ -31,7 +31,7 @@ export class MachineService {
      WHERE MACHINE = '${MachineService.machineNameTBR}'`;
 
   static machineSql =
-    `SELECT MACHINE.MASCH_NR AS MACHINE, MACHINE.BEZ_LANG AS DESCRIPTION, STATUS.M_STATUS AS STATUS,
+    `SELECT MACHINE.MASCH_NR AS MACHINE, MACHINE.AUFTR_ERFASS AS NUMBEROFOPS, MACHINE.BEZ_LANG AS DESCRIPTION, STATUS.M_STATUS AS STATUS,
      TEXT.STOER_TEXT AS TEXT, STATUS.SCHICHTNR AS SHIFTNR, STATUS.DATUM AS SHIFTDATE,
      (STATUS.DATUM + STATUS.SCHICHTANF / 60 / 60 / 24) AS SHIFTSTART,
      (STATUS.DATUM + STATUS.SCHICHTEND / 60 / 60 / 24) AS SHIFTEND
@@ -331,6 +331,14 @@ export class MachineService {
             currentShiftStart: new Date(machine[0].SHIFTSTART),
             currentShiftEnd: new Date(machine[0].SHIFTEND),
           });
+
+          if (machine[0].NUMBEROFOPS === 'J') {
+            machineRet.numberOfOperationAllowed = 999;
+          } else if (machine[0].NUMBEROFOPS === 'N') {
+            machineRet.numberOfOperationAllowed = 1;
+          } else {
+            machineRet.numberOfOperationAllowed = toNumber(machine[0].NUMBEROFOPS);
+          }
 
           //#endregion
 

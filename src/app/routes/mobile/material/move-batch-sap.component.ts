@@ -14,6 +14,7 @@ import { IActionResult } from '@core/utils/helpers';
 import { BUFFER_SAP } from './constants';
 import { requestBatchData } from './request.common';
 import { requestBadgeData } from '../request.common';
+import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 
 @Component({
   selector: 'fw-batch-move-sap',
@@ -46,7 +47,7 @@ export class MoveBatchToSAPComponent extends BaseForm {
     _settingService: SettingsService,
     private _batchService: BatchService,
     _operatorService: OperatorService,
-    private _bapiService: BapiService,
+    private _bapiService: MPLBapiService,
     @Inject(DOCUMENT) private _document: Document,
     @Inject(ALAIN_I18N_TOKEN) _i18n: I18NService,
   ) {

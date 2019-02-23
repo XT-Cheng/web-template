@@ -70,6 +70,9 @@ export class OperationService {
      FROM HYBUCH, RES_BEDARFSZUORD, RES_BESTAND
      WHERE KEY_TYPE = 'O' AND SUBKEY2 = '${OperationService.operationNameTBR}' AND RES_ID = SUBKEY6 AND RES_NR_T(+) = RES_NR`;
 
+  static loggedOnOperationSql =
+    `SELECT PROBLEM_PRI AS PROBLEM , GUT_PRI AS YIELD, AUS_PRI AS SCRAP
+     FROM HYBUCH WHERE KEY_TYPE = 'A' AND SUBKEY2 = '${OperationService.operationNameTBR}'`;
   //#endregion
 
   //#region Private members
@@ -93,7 +96,8 @@ export class OperationService {
       this._fetchService.query(replaceAll(OperationService.operationBOMItemSql, [OperationService.operationNameTBR], [operationName])),
       this._fetchService.query(replaceAll(OperationService.operationToolItemsSql, [OperationService.operationNameTBR], [operationName])),
       this._fetchService.query(replaceAll(OperationService.loggedOnOperatorSql, [OperationService.operationNameTBR], [operationName])),
-      this._fetchService.query(replaceAll(OperationService.loggedOnComponentSql, [OperationService.operationNameTBR], [operationName])))
+      this._fetchService.query(replaceAll(OperationService.loggedOnComponentSql, [OperationService.operationNameTBR], [operationName])),
+      this._fetchService.query(replaceAll(OperationService.loggedOnOperationSql, [OperationService.operationNameTBR], [operationName])))
       .pipe(
         map((array: Array<Array<any>>) => {
           const [
@@ -103,6 +107,7 @@ export class OperationService {
             operationTool,
             loggedOnOperator,
             loggedOnComponent,
+            loggedOnOperation,
           ] = array;
 
           if (opeartion.length === 0) {
@@ -192,6 +197,13 @@ export class OperationService {
 
           //#endregion
 
+          //#region Setup not confirmed quantity
+          loggedOnOperation.map(operation => {
+            operationRet.pendingProblemQty = toNumber(operation.PROBLEM);
+            operationRet.pendingYieldQty = toNumber(operation.YIELD);
+            operationRet.pendingScrapQty = toNumber(operation.SCRAP);
+          });
+          //#endregion
           return operationRet;
         }));
   }

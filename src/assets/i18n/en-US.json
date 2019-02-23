@@ -252,5 +252,12 @@
   "app.mobile.operation.logon.machine.placeholder": "Pls input Machine Nr.",
   "app.mobile.operation.logon.operation": "Operation",
   "app.mobile.operation.logon.operation.placeholder": "Pls input Operation",
-  "app.mobile.operation.logon.action": "LogOn Operatoin"
+  "app.mobile.operation.logon.action": "LogOn Operatoin",
+
+  "app.mobile.operation.generateOutputBatch": "Generate Output Batch",
+  "app.mobile.operation.generateOutputBatch.machine": "Machine",
+  "app.mobile.operation.generateOutputBatch.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.operation.generateOutputBatch.quantity": "Quantity",
+  "app.mobile.operation.generateOutputBatch.quantity.placeholder": "Pls input quantity",
+  "app.mobile.operation.generateOutputBatch.action": "Generate Output Batch"
 }

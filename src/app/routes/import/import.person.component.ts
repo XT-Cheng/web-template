@@ -3,6 +3,7 @@ import { XlsxService, STColumn } from '@delon/abc';
 import { HttpClient } from '@angular/common/http';
 import { ImportHandleBase } from '@shared/components/import.handle.base';
 import { BapiService } from '@core/hydra/service/bapi.service';
+import { MasterBapiService } from '@core/hydra/bapi/master/bapi.service';
 
 @Component({
   selector: 'app-import-person',
@@ -18,7 +19,7 @@ export class ImportPersonComponent extends ImportHandleBase {
 
   //#region Constructor
 
-  constructor(_xlsx: XlsxService, private _bapiService: BapiService) {
+  constructor(_xlsx: XlsxService, private _bapiService: MasterBapiService) {
     super(_xlsx);
   }
 

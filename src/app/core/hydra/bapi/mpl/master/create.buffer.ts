@@ -1,7 +1,7 @@
 import { DialogTypeEnum } from '@core/hydra/bapi/constants';
 import { DialogBase } from '@core/hydra/bapi/dialog.base';
 
-export class CreateBufferBapi extends DialogBase {
+export class CreateBuffer extends DialogBase {
   constructor(private name: string, private description: string,
     private type: string, private plant: string, private area: string,
     private storageLocation: string, private parent: string, private level: number

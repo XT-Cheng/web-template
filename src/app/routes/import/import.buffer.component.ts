@@ -2,6 +2,7 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import { XlsxService, STColumn } from '@delon/abc';
 import { ImportHandleBase } from '@shared/components/import.handle.base';
 import { BapiService } from '@core/hydra/service/bapi.service';
+import { MPLMasterBapiService } from '@core/hydra/bapi/mpl/master/bapi.service';
 
 @Component({
   selector: 'app-import-buffer',
@@ -17,7 +18,7 @@ export class ImportBufferComponent extends ImportHandleBase {
 
   //#region Constructor
 
-  constructor(_xlsx: XlsxService, private _bapiService: BapiService) {
+  constructor(_xlsx: XlsxService, private _bapiService: MPLMasterBapiService) {
     super(_xlsx);
   }
 
@@ -35,16 +36,6 @@ export class ImportBufferComponent extends ImportHandleBase {
   import() {
     this.execute((records) => {
       const rec = records[0];
-
-      // if (Math.floor(Math.random() * 1000) > 500) {
-      //   return throwError('').pipe(
-      //     delay(10)
-      //   );
-      // } else {
-      //   return of('success').pipe(
-      //     delay(10)
-      //   );
-      // }
 
       return this._bapiService.createMPLBuffer(
         rec['Buffer Area'], rec['Designation'], rec['Type'], rec['Plant'], rec['Area'],

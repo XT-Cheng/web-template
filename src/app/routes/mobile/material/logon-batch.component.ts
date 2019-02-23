@@ -21,6 +21,7 @@ import { OperationService } from '@core/hydra/service/operation.service';
 import { map, tap, switchMap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { getComponentStatus } from '@core/hydra/utils/operationHelper';
+import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 
 @Component({
   selector: 'fw-batch-logon',
@@ -59,7 +60,7 @@ export class LogonBatchComponent extends BaseExtendForm {
     private _batchService: BatchService,
     private _machineService: MachineService,
     private _operationService: OperationService,
-    private _bapiService: BapiService,
+    private _bapiService: MPLBapiService,
   ) {
     super(injector, false);
     this.addControls({
@@ -203,7 +204,7 @@ export class LogonBatchComponent extends BaseExtendForm {
     const actionData = this.form.value.actionData;
     return this._bapiService.logonInputBatch(this.form.value.operationData.name,
       this.form.value.machineData.machineName, this.form.value.badge,
-      this.form.value.batchData.name, this.form.value.batchData.material, actionData.pos);
+      { name: this.form.value.batchData.name, material: this.form.value.batchData.material }, actionData.pos);
   }
 
   //#endregion

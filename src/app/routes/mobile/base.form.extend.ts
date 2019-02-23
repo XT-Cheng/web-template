@@ -11,6 +11,8 @@ import { OperatorService } from '@core/hydra/service/operator.service';
 import { Operator } from '@core/hydra/entity/operator';
 import { Operation } from '@core/hydra/entity/operation';
 import { DOCUMENT } from '@angular/common';
+import { Machine } from '@core/hydra/entity/machine';
+import { MaterialBatch } from '@core/hydra/entity/batch';
 
 interface ITranError {
   context: any;
@@ -39,6 +41,9 @@ export abstract class BaseExtendForm {
   //#endregion
 
   //#region Protected member
+  protected form: FormGroup;
+  protected associatedControl: Map<string, string> = new Map<string, string>();
+
   protected fb: FormBuilder;
   protected settingService: SettingsService;
   protected toastService: ToastService;
@@ -58,8 +63,7 @@ export abstract class BaseExtendForm {
   //#region Public members
   showBadgeButton = true;
   badgeButtonText: string;
-  associatedControl: Map<string, string> = new Map<string, string>();
-  form: FormGroup;
+
   Inputing = (srcElement, controlName) => {
     if (controlName && this.associatedControl.has(controlName)) {
       this.form.controls[this.associatedControl.get(controlName)].setValue(null);
@@ -74,15 +78,15 @@ export abstract class BaseExtendForm {
   constructor(private injector: Injector, protected resetFormAfterSuccessExecution = true) {
 
     // Setup Services
-    this.fb = injector.get(FormBuilder);
-    this.settingService = injector.get(SettingsService);
-    this.toastService = injector.get(ToastService);
-    this.routeService = injector.get(Router);
-    this.tipService = injector.get(ToptipsService);
-    this.titleService = injector.get(TitleService);
-    this.i18n = injector.get(I18NService);
-    this.operatorService = injector.get(OperatorService);
-    this.document = injector.get(DOCUMENT);
+    this.fb = this.injector.get(FormBuilder);
+    this.settingService = this.injector.get(SettingsService);
+    this.toastService = this.injector.get(ToastService);
+    this.routeService = this.injector.get(Router);
+    this.tipService = this.injector.get(ToptipsService);
+    this.titleService = this.injector.get(TitleService);
+    this.i18n = this.injector.get(I18NService);
+    this.operatorService = this.injector.get(OperatorService);
+    this.document = this.injector.get(DOCUMENT);
 
     BaseExtendForm.SETUP_OPERATOR = this.i18n.fanyi(`app.mobile.common.setupOperator`);
     this.badgeButtonText = BaseExtendForm.SETUP_OPERATOR;
@@ -96,7 +100,7 @@ export abstract class BaseExtendForm {
       .subscribe(() => {
         this.titleService.setTitle(this.title);
 
-        let operator = null;
+        let operator: Operator = null;
         if (this.storedData && this.storedData.badgeData) {
           operator = new Operator();
           operator.badge = this.storedData.badgeData.badge;
@@ -124,12 +128,16 @@ export abstract class BaseExtendForm {
     return this.settingService.app[this.key];
   }
 
-  protected get machineData() {
-    return this.form.value.machineData;
+  protected get machineData(): Machine {
+    return this.form.value.machineData as Machine;
   }
 
-  protected get operationData() {
-    return this.form.value.operationData;
+  protected get operationData(): Operation {
+    return this.form.value.operationData as Operation;
+  }
+
+  protected get batchData(): MaterialBatch {
+    return this.form.value.batchData as MaterialBatch;
   }
 
   //#endregion
@@ -296,8 +304,6 @@ export abstract class BaseExtendForm {
   hasOperationData() {
     return (!!this.form.value.operationData);
   }
-
-
 
   //#region Badge related
   getBadgeButtonType() {

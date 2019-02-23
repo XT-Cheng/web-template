@@ -16,6 +16,7 @@ import { IActionResult } from '@core/utils/helpers';
 import { BUFFER_914 } from './constants';
 import { requestBatchData } from './request.common';
 import { requestBadgeData } from '../request.common';
+import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 
 @Component({
   selector: 'fw-batch-move-914',
@@ -48,7 +49,7 @@ export class MoveBatchTo914Component extends BaseForm {
     _settingService: SettingsService,
     private _batchService: BatchService,
     _operatorService: OperatorService,
-    private _bapiService: BapiService,
+    private _bapiService: MPLBapiService,
     @Inject(DOCUMENT) private _document: Document,
     @Inject(ALAIN_I18N_TOKEN) _i18n: I18NService,
   ) {

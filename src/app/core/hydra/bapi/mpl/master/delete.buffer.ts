@@ -1,7 +1,7 @@
 import { DialogTypeEnum } from '@core/hydra/bapi/constants';
 import { DialogBase } from '@core/hydra/bapi/dialog.base';
 
-export class DeleteBufferBapi extends DialogBase {
+export class DeleteBuffer extends DialogBase {
   constructor(private name: string) {
     super(DialogTypeEnum.MPL_DELETE_BUFFER);
   }

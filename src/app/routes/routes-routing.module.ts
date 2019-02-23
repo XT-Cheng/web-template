@@ -30,6 +30,7 @@ import { LogonBatchComponent } from './mobile/material/logon-batch.component';
 import { FindBatchComponent } from './mobile/material/find-batch.component';
 import { BatchTraceabilityComponent } from './report/batch/batch.trace.component';
 import { LogonOperationComponent } from './mobile/operation/logon-operation.component';
+import { GenerateOutputBatchComponent } from './mobile/operation/generateOutputBatch-operation.component';
 
 const routes: Routes = [
   {
@@ -51,6 +52,7 @@ const routes: Routes = [
       { path: 'material/adjustQty', component: AdjustBatchQuantityComponent },
       { path: 'material/logon', component: LogonBatchComponent },
       { path: 'operation/logon', component: LogonOperationComponent },
+      { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },
       { path: 'material/find', component: FindBatchComponent },
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }

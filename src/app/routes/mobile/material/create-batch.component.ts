@@ -15,6 +15,7 @@ import { DOCUMENT } from '@angular/common';
 import { I18NService } from '@core/i18n/i18n.service';
 import { deepExtend, IActionResult } from '@core/utils/helpers';
 import { PrintService } from '@core/hydra/service/print.service';
+import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 
 @Component({
   selector: 'fw-batch-create',
@@ -48,7 +49,7 @@ export class CreateBatchComponent extends BaseForm {
     _settingService: SettingsService,
     private _batchService: BatchService,
     _operatorService: OperatorService,
-    private _bapiService: BapiService,
+    private _bapiService: MPLBapiService,
     private _printService: PrintService,
     @Inject(DOCUMENT) private _document: Document,
     @Inject(ALAIN_I18N_TOKEN) _i18n: I18NService,

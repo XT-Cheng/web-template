@@ -12,6 +12,10 @@ import { OperatorService } from './hydra/service/operator.service';
 import { WebAPIService } from './hydra/service/webapi.service';
 import { PrintService } from './hydra/service/print.service';
 import { OperationService } from './hydra/service/operation.service';
+import { MPLBapiService } from './hydra/bapi/mpl/bapi.service';
+import { BDEBapiService } from './hydra/bapi/bde/bapi.service';
+import { MasterBapiService } from './hydra/bapi/master/bapi.service';
+import { MPLMasterBapiService } from './hydra/bapi/mpl/master/bapi.service';
 
 @NgModule({
   providers: [
@@ -26,6 +30,11 @@ import { OperationService } from './hydra/service/operation.service';
     VBoardService,
     WebAPIService,
     PrintService,
+
+    MasterBapiService,
+    MPLBapiService,
+    MPLMasterBapiService,
+    BDEBapiService,
   ]
 })
 export class CoreModule {

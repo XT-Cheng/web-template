@@ -251,5 +251,12 @@
   "app.mobile.operation.logon.machine.placeholder": "请输入设备",
   "app.mobile.operation.logon.operation": "工单",
   "app.mobile.operation.logon.operation.placeholder": "请输入工单",
-  "app.mobile.operation.logon.action": "登录工单"
+  "app.mobile.operation.logon.action": "登录工单",
+
+  "app.mobile.operation.generateOutputBatch": "生成输出批次",
+  "app.mobile.operation.generateOutputBatch.machine": "设备",
+  "app.mobile.operation.generateOutputBatch.machine.placeholder": "请输入设备",
+  "app.mobile.operation.generateOutputBatch.quantity": "数量",
+  "app.mobile.operation.generateOutputBatch.quantity.placeholder": "请输入数量",
+  "app.mobile.operation.generateOutputBatch.action": "生成输出批次"
 }

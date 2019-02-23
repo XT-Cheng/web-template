@@ -40,6 +40,7 @@ import { ToolPreparationComponent } from './dashboard/widget/toolPreparation.com
 import { MobileComponentStatusComponent } from './mobile/component.status.component';
 import { LogonOperationComponent } from './mobile/operation/logon-operation.component';
 import { MobileOperationListComponent } from './mobile/operation.list.component';
+import { GenerateOutputBatchComponent } from './mobile/operation/generateOutputBatch-operation.component';
 
 const BAPI = [
   BAPITestComponent
@@ -90,6 +91,7 @@ const COMPONENTS = [
   LogonBatchComponent,
   // Opeartion
   LogonOperationComponent,
+  GenerateOutputBatchComponent,
 ];
 const COMPONENTS_NOROUNT = [];
 

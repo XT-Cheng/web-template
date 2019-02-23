@@ -4,7 +4,7 @@ import { DialogBase } from '@core/hydra/bapi/dialog.base';
 export class CreateBatch extends DialogBase {
   constructor(private batchNumber: string, private materialNumber: string, private materialType: string,
     private unit: string, private batchQty: number, private materialBuffer: string,
-    private badge: string, private batch: string = '', private dateCode: string = '') {
+    private badge: string, private batchSAP: string = '', private dateCode: string = '') {
     super(DialogTypeEnum.CREATE_BATCH);
   }
 
@@ -18,7 +18,7 @@ export class CreateBatch extends DialogBase {
       `EGR:GUT=${this.batchQty}|` +
       `EGE:GUT=${this.unit}|` +
       `KNR=${this.badge}|` +
-      `CNR:SAPCNR=${this.batch}|` +
+      `CNR:SAPCNR=${this.batchSAP}|` +
       `EXTCNR=${this.dateCode}|` +
       `STA=F|` +
       `KLASSE=G|` +
