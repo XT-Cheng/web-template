@@ -47,8 +47,12 @@
   }
 
   .weui-cell {
-    padding: 5px 10px;
+    padding: 8px 10px;
     font-size: 14px;
+  }
+
+  .weui-cell:before {
+    left: 10px;
   }
 
   .weui-cell_board {
@@ -57,7 +61,7 @@
   }
 
   .weui-agree {
-    padding: 0 5px;
+    padding: 0 8px;
     font-size: 12px;
   }
 
@@ -69,5 +73,14 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  .mobile-fill {
+    flex: 1;
+    display: flex;
+
+    button {
+      align-self: flex-end;
+    }
   }
 }

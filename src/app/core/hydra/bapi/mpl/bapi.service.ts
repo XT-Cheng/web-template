@@ -68,7 +68,7 @@ export class MPLBapiService {
     return new MoveBatch(batch.name, batch.materialType, destination.name, operator.badge).execute(this._http).pipe(
       map((ret: IActionResult) => {
         return Object.assign(ret, {
-          description: `Batch ${batch.name} Moved to ${destination}!`
+          description: `Batch ${batch.name} Moved to ${destination.name}!`
         });
       })
     );

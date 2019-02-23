@@ -114,7 +114,9 @@
   "app.monitor.popular-searches": "Popular Searches",
   "app.monitor.resource-surplus": "Resource Surplus",
   "app.monitor.fund-surplus": "Fund Surplus",
+
   "app.common.cancel": "Cancel",
+  "app.common.childQty": "childQty",
   "app.common.component.require": "Mat. Require",
   "app.common.tool.require": "Tool Require",
   "app.common.miss": "Miss",

@@ -1,15 +1,10 @@
-import { Component, Inject, AfterViewInit, ViewChild, OnInit } from '@angular/core';
-import { BaseForm } from '../base.form';
-import { FormBuilder } from '@angular/forms';
-import { ToastService, ToptipsService, SearchBarComponent } from 'ngx-weui';
-import { Router } from '@angular/router';
-import { TitleService, SettingsService, ALAIN_I18N_TOKEN } from '@delon/theme';
+import { Component, ViewChild, OnInit, Injector } from '@angular/core';
+import { SearchBarComponent } from 'ngx-weui';
 import { BatchService } from '@core/hydra/service/batch.service';
-import { OperatorService } from '@core/hydra/service/operator.service';
-import { I18NService } from '@core/i18n/i18n.service';
-import { of, BehaviorSubject, combineLatest, Subject } from 'rxjs';
-import { map, switchMap, startWith, delay } from 'rxjs/operators';
+import { of, BehaviorSubject, Subject } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { MaterialBatch } from '@core/hydra/entity/batch';
+import { BaseExtendForm } from '../base.form.extend';
 
 @Component({
   selector: 'fw-batch-find',
@@ -19,7 +14,7 @@ import { MaterialBatch } from '@core/hydra/entity/batch';
     '[class.mobile-layout]': 'true',
   },
 })
-export class FindBatchComponent extends BaseForm implements OnInit {
+export class FindBatchComponent extends BaseExtendForm implements OnInit {
   //#region View Children
 
   @ViewChild('searchBar') searchBar: SearchBarComponent;
@@ -73,28 +68,21 @@ export class FindBatchComponent extends BaseForm implements OnInit {
   //#region Constructor
 
   constructor(
-    fb: FormBuilder,
-    _toastService: ToastService,
-    _routeService: Router,
-    _tipService: ToptipsService,
-    _titleService: TitleService,
-    _settingService: SettingsService,
+    injector: Injector,
     private _batchService: BatchService,
-    _operatorService: OperatorService,
-    @Inject(ALAIN_I18N_TOKEN) _i18n: I18NService,
   ) {
-    super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n, _operatorService, false);
+    super(injector, false, false);
   }
 
   //#endregion
 
   //#region Public methods
-  caption(batch) {
+  caption(batch: MaterialBatch) {
     return batch.name;
   }
 
-  description(batch) {
-    return `${batch.material},${batch.quantity}`;
+  description(batch: MaterialBatch) {
+    return `${batch.material},${batch.quantity},${batch.bufferDescription}`;
   }
   //#endregion
 

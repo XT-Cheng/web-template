@@ -11,7 +11,7 @@
     </div>
     <label for="weuiAgree" class="weui-agree">
       <span class="weui-agree__text">
-        {{getDescription('batch')}}
+        {{getAssociateDataDisplay('batch')}}
       </span>
     </label>
     <div class="weui-cell">
@@ -25,11 +25,13 @@
     </div>
     <label for="weuiAgree" class="weui-agree">
       <span class="weui-agree__text">
-        {{getDescription('numberOfSplits')}}
+        {{getSplitInfo()}}
       </span>
     </label>
-    <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(splitBatch, splitBatchSuccess, splitBatchFailed)'>{{'app.mobile.material.split.action'
-      | translate}}</button>
+    <div class="mobile-fill">
+      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(splitBatch, splitBatchSuccess, splitBatchFailed)'>{{'app.mobile.material.split.action'
+        | translate}}</button>
+    </div>
     <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
       [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
   </div>

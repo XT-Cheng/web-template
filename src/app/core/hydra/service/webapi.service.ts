@@ -22,7 +22,7 @@ export class WebAPIService {
     const sql = 'SELECT S_MPL_NEXT_LT.NEXTVAL FROM DUAL';
     return this._fetchService.query(sql).pipe(
       map(res => {
-        return `3SDUMMY${leftPad(res[0].NEXTVAL, 6)}`;
+        return `3SH53H${leftPad(res[0].NEXTVAL, 8)}`;
       })
     );
   }

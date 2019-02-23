@@ -1,20 +1,12 @@
-import { BaseForm } from '../base.form';
-import { Component, Inject } from '@angular/core';
-import { ToastService, ToptipsService } from 'ngx-weui';
-import { Router } from '@angular/router';
-import { TitleService, SettingsService, ALAIN_I18N_TOKEN } from '@delon/theme';
+import { Component, Injector } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
-import { OperatorService } from '@core/hydra/service/operator.service';
-import { BapiService } from '@core/hydra/service/bapi.service';
-import { FormBuilder, Validators } from '@angular/forms';
+import { Validators } from '@angular/forms';
 import { MaterialBatch } from '@core/hydra/entity/batch';
-import { DOCUMENT } from '@angular/common';
-import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
-import { requestBatchData, requestMaterialBufferData } from './request.common';
-import { requestBadgeData } from '../request.common';
+import { requestBatchData } from './request.common';
 import { tap } from 'rxjs/operators';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
+import { BaseExtendForm } from '../base.form.extend';
 
 @Component({
   selector: 'fw-batch-move',
@@ -24,7 +16,7 @@ import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
     '[class.mobile-layout]': 'true',
   },
 })
-export class MoveBatchComponent extends BaseForm {
+export class MoveBatchComponent extends BaseExtendForm {
   //#region View Children
 
   //#endregion
@@ -36,41 +28,21 @@ export class MoveBatchComponent extends BaseForm {
   //#region Public member
 
   requestBatchData = requestBatchData(this.form, this._batchService);
-  requestMaterialBufferData = requestMaterialBufferData(this.form, this._batchService, tap(buffer => {
-    if (this.form.value.batchData && buffer.name === this.form.value.batchData.bufferName) {
-      throw Error(`Batch alreaday in Location ${this.form.value.batchData.bufferName}`);
-    }
-  }));
 
   //#endregion
 
   //#region Constructor
 
   constructor(
-    fb: FormBuilder,
-    _toastService: ToastService,
-    _routeService: Router,
-    _tipService: ToptipsService,
-    _titleService: TitleService,
-    _settingService: SettingsService,
+    injector: Injector,
     private _batchService: BatchService,
-    _operatorService: OperatorService,
     private _bapiService: MPLBapiService,
-    @Inject(DOCUMENT) private _document: Document,
-    @Inject(ALAIN_I18N_TOKEN) _i18n: I18NService,
   ) {
-    super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n, _operatorService);
+    super(injector);
     this.addControls({
-      barCode: [null, [Validators.required]],
-      batch: [null, [Validators.required]],
-      materialBuffer: [null, [Validators.required]],
-      badge: [null, [Validators.required]],
-      batchData: [null]
+      batch: [null, [Validators.required], 'batchData'],
+      materialBuffer: [null, [Validators.required], 'materialBufferData'],
     });
-
-    this.form.setValue(Object.assign(this.form.value, {
-      badge: this.storedData ? this.storedData.badge : ``,
-    }));
   }
 
   //#endregion
@@ -84,8 +56,6 @@ export class MoveBatchComponent extends BaseForm {
   //#region Batch Reqeust
   requestBatchDataSuccess = (batch: MaterialBatch) => {
     this.form.controls.batch.setValue(batch.name);
-    this.form.controls.barCode.setValue(batch.barCode);
-    this.form.controls.batchData.setValue(batch);
   }
 
   requestBatchDataFailed = () => {
@@ -98,6 +68,19 @@ export class MoveBatchComponent extends BaseForm {
   }
 
   requestMaterialBufferDataFailed = () => {
+  }
+
+  requestMaterialBufferData = () => {
+    return this._batchService.getMaterialBuffer(this.form.value.materialBuffer).pipe(
+      tap(buffer => {
+        if (!buffer) {
+          throw Error(`${this.form.value.materialBuffer} not exist!`);
+        }
+        if (buffer.name === this.batchData.bufferName) {
+          throw Error(`Batch alreaday in Location ${this.batchData.bufferName}`);
+        }
+      })
+    );
   }
 
   //#endregion
@@ -115,8 +98,7 @@ export class MoveBatchComponent extends BaseForm {
   //#endregion
 
   //#region Exeuction
-  moveBatchSuccess = (ret: IActionResult) => {
-    this.showSuccess(ret.description);
+  moveBatchSuccess = () => {
   }
 
   moveBatchFailed = () => {
@@ -124,20 +106,14 @@ export class MoveBatchComponent extends BaseForm {
 
   moveBatch = () => {
     // Move Batch
-    return this._bapiService.moveBatch(this.form.value.batchData, this.form.value.materialBuffer, this.form.value.badge);
+    return this._bapiService.moveBatch(this.batchData, this.form.value.materialBufferData, this.operatorData);
   }
 
   //#endregion
 
   //#region Override methods
-  protected isValid() {
-    return !Array.from(this.descriptions.entries()).some(value => {
-      return (value[0] !== `batchData` && value[0] !== `barCode` && !value[1]);
-    });
-  }
-
   protected afterReset() {
-    this._document.getElementById(`batch`).focus();
+    this.document.getElementById(`batch`).focus();
   }
 
   //#endregion

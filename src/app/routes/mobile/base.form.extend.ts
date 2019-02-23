@@ -1,5 +1,5 @@
-import { ViewChild, ElementRef, Injector } from '@angular/core';
-import { FormGroup, AbstractControl, FormBuilder, Validators, FormControl, ValidatorFn } from '@angular/forms';
+import { ViewChild, Injector } from '@angular/core';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
@@ -75,7 +75,7 @@ export abstract class BaseExtendForm {
 
   //#region Constructor
 
-  constructor(private injector: Injector, protected resetFormAfterSuccessExecution = true) {
+  constructor(private injector: Injector, protected resetFormAfterSuccessExecution = true, protected isBadgeRequired = true) {
 
     // Setup Services
     this.fb = this.injector.get(FormBuilder);
@@ -90,10 +90,17 @@ export abstract class BaseExtendForm {
 
     BaseExtendForm.SETUP_OPERATOR = this.i18n.fanyi(`app.mobile.common.setupOperator`);
     this.badgeButtonText = BaseExtendForm.SETUP_OPERATOR;
-    this.form = this.fb.group({
-      badge: [null, [Validators.required]],
-      badgeData: [null, [Validators.required]],
-    });
+    if (isBadgeRequired) {
+      this.form = this.fb.group({
+        badge: [null, [Validators.required]],
+        badgeData: [null, [Validators.required]],
+      });
+    } else {
+      this.form = this.fb.group({
+        badge: [null, []],
+        badgeData: [null, []],
+      });
+    }
     this.associatedControl.set(`badge`, `badgeData`);
     this.routeService.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -140,6 +147,10 @@ export abstract class BaseExtendForm {
     return this.form.value.batchData as MaterialBatch;
   }
 
+  protected get operatorData(): Operator {
+    return this.form.value.badgeData as Operator;
+  }
+
   //#endregion
 
   //#region Abstract methods
@@ -166,15 +177,15 @@ export abstract class BaseExtendForm {
 
       handler().subscribe((ret) => {
         this.end();
-        this.beforeReqDataSuccess(ret, srcElement, nextElement, controlName);
+        this.beforeReqDataSuccess(ret, controlName);
         success(ret);
-        this.afterReqDataSuccess(ret, srcElement, nextElement, controlName);
+        this.afterReqDataSuccess(nextElement);
       },
         (err) => {
           this.end(err);
-          this.beforeReqDataFailed(err, srcElement, nextElement, controlName);
+          this.beforeReqDataFailed(controlName);
           failed(err);
-          this.afterReqDataFailed(err, srcElement, nextElement, controlName);
+          this.afterReqDataFailed(srcElement);
         });
     };
   }
@@ -193,21 +204,21 @@ export abstract class BaseExtendForm {
         this.genSuccess();
         this.beforeActionSuccess(ret);
         success(ret);
-        this.afterActionSuccess(ret);
+        this.afterActionSuccess();
         if (this.resetFormAfterSuccessExecution) {
           this.resetForm();
         }
       }, (err) => {
         this.end(err);
         this.genErrors(err);
-        this.beforeActionFailed(err);
+        this.beforeActionFailed();
         failed(err);
-        this.afterActionFailed(err);
+        this.afterActionFailed();
       });
   }
 
   getAssociateDataDisplay(controlName: string, propertyName: string = 'display') {
-    if (!this.associatedControl.has(controlName)) return '';
+    if (!this.associatedControl.has(controlName)) return ' ';
 
     const data = this.form.value[this.associatedControl.get(controlName)];
 
@@ -358,11 +369,11 @@ export abstract class BaseExtendForm {
   protected addControls(controlsToAdd: { [key: string]: Array<any> }) {
     Object.keys(controlsToAdd).forEach(controlName => {
       const value = controlsToAdd[controlName][0];
-      const validator: ValidatorFn = controlsToAdd[controlName].length > 1 ? controlsToAdd[controlName][1] : null;
+      const validator = controlsToAdd[controlName].length > 1 ? controlsToAdd[controlName][1] : null;
       const associatedDataControlName = controlsToAdd[controlName][2];
       this.form.addControl(controlName, new FormControl(value, validator));
       if (associatedDataControlName) {
-        this.form.addControl(associatedDataControlName, new FormControl(null, validator));
+        this.form.addControl(associatedDataControlName, new FormControl(null, [Validators.required]));
         this.associatedControl.set(controlName, associatedDataControlName);
       }
     });
@@ -408,7 +419,7 @@ export abstract class BaseExtendForm {
     this.form.enable({ emitEvent: false });
   }
 
-  private beforeReqDataSuccess(data, source, next, controlName) {
+  private beforeReqDataSuccess(data, controlName) {
     if (controlName && this.associatedControl.has(controlName)) {
       this.form.controls[this.associatedControl.get(controlName)].setValue(data);
     }
@@ -420,13 +431,13 @@ export abstract class BaseExtendForm {
     }
   }
 
-  private afterReqDataSuccess(data, source, next, controlName) {
+  private afterReqDataSuccess(next) {
     if (next) {
       next.focus();
     }
   }
 
-  private beforeReqDataFailed(err, source, next, controlName) {
+  private beforeReqDataFailed(controlName) {
     if (this.form.controls[controlName]) {
       this.form.controls[controlName].setValue(``);
       if (this.associatedControl.has(controlName)) {
@@ -435,22 +446,25 @@ export abstract class BaseExtendForm {
     }
   }
 
-  private afterReqDataFailed(err, source, next, controlName) {
+  private afterReqDataFailed(source) {
     if (source) {
       source.focus();
     }
   }
 
-  private beforeActionSuccess(result: any) {
+  private beforeActionSuccess(result: IActionResult) {
+    if (result.description) {
+      this.showSuccess(result.description);
+    }
   }
 
-  private afterActionSuccess(result: any) {
+  private afterActionSuccess() {
   }
 
-  private beforeActionFailed(err) {
+  private beforeActionFailed() {
   }
 
-  private afterActionFailed(err) {
+  private afterActionFailed() {
   }
 
   private genSuccess() {

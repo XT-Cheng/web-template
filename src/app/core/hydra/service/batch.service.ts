@@ -8,7 +8,7 @@ import {
 } from '@core/hydra/entity/batch';
 import { format } from 'date-fns';
 import { dateFormat, dateFormatOracle, replaceAll, leftPad } from '@core/utils/helpers';
-import { BUFFER_SAP } from 'app/routes/mobile/material/constants';
+import { BUFFER_SAP, BUFFER_PLANT } from 'app/routes/mobile/material/constants';
 
 @Injectable()
 export class BatchService {
@@ -37,7 +37,7 @@ export class BatchService {
       BATCH.MAT_PUF AS BUFFERNAME,
       BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
       LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
-      WHERE BATCH.STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916'
+      WHERE BATCH.STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '${BUFFER_PLANT}'
       AND BUFFER.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFER.KFG_KZ01,1,1) = 'N'
       ${BatchService.materialNameTBR}
       ${BatchService.lastChangedTBR}
@@ -53,8 +53,17 @@ export class BatchService {
       BATCH.MAT_PUF AS BUFFERNAME,
       BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
       LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
-      WHERE BATCH.STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916'
+      WHERE BATCH.STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '${BUFFER_PLANT}'
       AND BUFFER.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFER.KFG_KZ01,1,1) = 'N' AND BATCH.LOSNR = '${BatchService.batchNameTBR}' `;
+
+  static batchInSAPByNameSql =
+    `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
+      (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
+      BATCH.MAT_PUF AS BUFFERNAME,
+      BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
+      LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
+      WHERE BATCH.STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '${BUFFER_PLANT}'
+      AND BUFFER.MAT_PUF = '${BUFFER_SAP}' AND BATCH.LOSNR = '${BatchService.batchNameTBR}' `;
 
   static batchesByNamesSql =
     `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
@@ -62,7 +71,7 @@ export class BatchService {
       BATCH.MAT_PUF AS BUFFERNAME,
       BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
       LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
-      WHERE BATCH.STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '0916'
+      WHERE BATCH.STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND BUFFER.WERK = '${BUFFER_PLANT}'
       AND BUFFER.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFER.KFG_KZ01,1,1) = 'N' AND BATCH.LOSNR IN (${BatchService.batchNamesTBR})`;
 
   static unitByMaterialSql =
@@ -74,7 +83,7 @@ export class BatchService {
 
   static batchBufferSql =
     `SELECT MAT_PUF AS BUFFER_NAME, BEZ AS BUFFER_DESC, HIERARCHIE_ID AS BUFFER_LEVEL, H_MAT_PUF AS PARENT_BUFFER
-     FROM MAT_PUFFER WHERE WERK = '0916' AND PUFFER_TYP IN ('F','H') AND SUBSTR(KFG_KZ01,1,1) = 'N'`;
+     FROM MAT_PUFFER WHERE WERK = '${BUFFER_PLANT}' AND PUFFER_TYP IN ('F','H') AND SUBSTR(KFG_KZ01,1,1) = 'N'`;
 
   static batchConnectionForwardSql =
     `SELECT CONNECT_BY_ROOT(AL_NR) AS ROOT,LEVEL,EL_NR AS INPUTBATCH, (EL_AN_DAT + EL_AN_ZEIT / 24 / 3600) AS INPUTLOGON ,
@@ -132,7 +141,7 @@ export class BatchService {
         if (buffer || !bufferName) {
           return this.getBatches(materialName, buffer);
         }
-        return of([]);
+        return this.getBatches(materialName);
       }));
   }
 
@@ -298,6 +307,33 @@ export class BatchService {
           batch.materialType = rec.MATTYPE;
           batch.unit = rec.UNIT;
           ret.push(batch);
+        });
+
+        return ret;
+      }));
+  }
+
+  getBatchInSAPformation(batchName: string): Observable<MaterialBatch> {
+    let sql = BatchService.batchInSAPByNameSql;
+    sql = sql.replace(BatchService.batchNameTBR, batchName);
+
+    return this._fetchService.query(sql).pipe(
+      map((batches) => {
+        let ret: MaterialBatch = null;
+        batches.forEach(batch => {
+          ret = new MaterialBatch();
+          ret.name = batch.BATCHNAME;
+          ret.bufferName = batch.BUFFERNAME;
+          ret.lastChanged = new Date(batch.LASTCHANGED);
+          ret.bufferDescription = batch.DESCRIPTION;
+          ret.parentBuffer = batch.PARENT_BUFFERNAME;
+          ret.quantity = batch.QUANTITY;
+          ret.material = batch.MATERIAL;
+          ret.status = batch.STATUS;
+          ret.SAPBatch = batch.SAPBATCH;
+          ret.dateCode = batch.DATECODE;
+          ret.materialType = batch.MATTYPE;
+          ret.unit = batch.UNIT;
         });
 
         return ret;

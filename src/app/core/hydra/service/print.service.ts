@@ -2,8 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { FetchService } from './fetch.service';
-import { map } from 'rxjs/operators';
-import { leftPad, IActionResult } from '@core/utils/helpers';
+import { IActionResult } from '@core/utils/helpers';
 
 @Injectable()
 export class PrintService {

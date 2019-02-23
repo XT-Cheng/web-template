@@ -23,8 +23,6 @@ import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 export class LogonOperationComponent extends BaseExtendForm {
   //#region View Children
 
-  @ViewChild(`componentStatus`) componentStatusPopup: PopupComponent;
-
   //#endregion
 
   //#region Protected member
@@ -123,7 +121,6 @@ export class LogonOperationComponent extends BaseExtendForm {
 
   //#region Exeuction
   logonOperationSuccess = (ret: IActionResult) => {
-    this.showSuccess(ret.description);
   }
 
   logonOperationFailed = () => {

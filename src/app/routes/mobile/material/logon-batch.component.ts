@@ -1,24 +1,16 @@
-import { BaseForm } from '../base.form';
-import { Component, Inject, ViewChild, Injector } from '@angular/core';
-import { ToastService, ToptipsService, PopupComponent } from 'ngx-weui';
-import { Router } from '@angular/router';
-import { TitleService, SettingsService, ALAIN_I18N_TOKEN } from '@delon/theme';
+import { Component, Injector } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
-import { OperatorService } from '@core/hydra/service/operator.service';
-import { BapiService } from '@core/hydra/service/bapi.service';
-import { FormBuilder, Validators } from '@angular/forms';
+import { Validators } from '@angular/forms';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { DOCUMENT } from '@angular/common';
-import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
-import { requestBatchData, requestMaterialBufferData } from './request.common';
-import { requestBadgeData } from '../request.common';
+import { requestBatchData } from './request.common';
 import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
-import { Operation, ComponentLoggedOn, ComponentStatus } from '@core/hydra/entity/operation';
+import { Operation, ComponentStatus } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
-import { map, tap, switchMap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { getComponentStatus } from '@core/hydra/utils/operationHelper';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
@@ -173,7 +165,7 @@ export class LogonBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Exeuction
-  logonBatchSuccess = (ret: IActionResult) => {
+  logonBatchSuccess = () => {
     const changed = this.form.value.actionData;
     const batch = this.form.value.batchData;
 
@@ -192,7 +184,6 @@ export class LogonBatchComponent extends BaseExtendForm {
     this.form.controls.barCode.setValue(``);
     this.form.controls.batchData.setValue(null);
 
-    this.showSuccess(ret.description);
     this.document.getElementById(`batch`).focus();
   }
 

@@ -132,7 +132,6 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
 
   //#region Exeuction
   generateOutputBatchSuccess = (ret: IActionResult) => {
-    // this.showSuccess(ret.description);
   }
 
   generateOutputBatchFailed = () => {

@@ -1,21 +1,15 @@
-import { BaseForm } from '../base.form';
-import { Component, Inject } from '@angular/core';
-import { ToastService, ToptipsService } from 'ngx-weui';
-import { Router } from '@angular/router';
+import { Component, Injector } from '@angular/core';
 import { toNumber } from 'ng-zorro-antd';
-import { TitleService, SettingsService, ALAIN_I18N_TOKEN } from '@delon/theme';
 import { BatchService } from '@core/hydra/service/batch.service';
-import { OperatorService } from '@core/hydra/service/operator.service';
-import { BapiService } from '@core/hydra/service/bapi.service';
-import { FormBuilder, Validators } from '@angular/forms';
+import { Validators } from '@angular/forms';
 import { of, throwError, Observable, forkJoin } from 'rxjs';
 import { switchMap, tap, map } from 'rxjs/operators';
 import { MaterialBatch } from '@core/hydra/entity/batch';
-import { DOCUMENT } from '@angular/common';
-import { I18NService } from '@core/i18n/i18n.service';
 import { deepExtend, IActionResult } from '@core/utils/helpers';
 import { PrintService } from '@core/hydra/service/print.service';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
+import { BaseExtendForm } from '../base.form.extend';
+import { BUFFER_SAP, BUFFER_914 } from './constants';
 
 @Component({
   selector: 'fw-batch-create',
@@ -25,7 +19,7 @@ import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
     '[class.mobile-layout]': 'true',
   },
 })
-export class CreateBatchComponent extends BaseForm {
+export class CreateBatchComponent extends BaseExtendForm {
   //#region View Children
 
   //#endregion
@@ -41,46 +35,41 @@ export class CreateBatchComponent extends BaseForm {
   //#region Constructor
 
   constructor(
-    fb: FormBuilder,
-    _toastService: ToastService,
-    _routeService: Router,
-    _tipService: ToptipsService,
-    _titleService: TitleService,
-    _settingService: SettingsService,
+    injector: Injector,
     private _batchService: BatchService,
-    _operatorService: OperatorService,
     private _bapiService: MPLBapiService,
     private _printService: PrintService,
-    @Inject(DOCUMENT) private _document: Document,
-    @Inject(ALAIN_I18N_TOKEN) _i18n: I18NService,
   ) {
-    super(fb, _settingService, _toastService, _routeService, _tipService, _titleService, _i18n, _operatorService);
+    super(injector);
     this.addControls({
-      barCode: [null, [Validators.required]],
-      batch: [null, [Validators.required]],
-      materialBuffer: [null, [Validators.required]],
-      numberOfSplits: [1, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)]],
-      batchData: [null],
-      isReturnedFromSAP: [null]
+      batch: [null, [Validators.required], 'batchData'],
+      materialBuffer: [null, [Validators.required], 'materialBufferData'],
+      numberOfSplits: [1, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)], 'numberOfSplitsData'],
+      isReturnedFromSAP: [false]
     });
   }
 
   //#endregion
 
   //#region Public methods
+  getSplitInfo() {
+    if (!this.batchData) return ` `;
 
+    if (this.form.value.numberOfSplits === '') return ` `;
+
+    return `${this.i18n.fanyi('app.common.childQty')}: ${this.batchData.quantity / this.form.value.numberOfSplits}`;
+  }
   //#endregion
 
   //#region Data Request
 
   //#region Batch Reqeust
-  requestBatchDataSuccess = (barCodeInfor) => {
-    this.form.controls.batch.setValue(barCodeInfor.name);
-    this.form.controls.barCode.setValue(barCodeInfor.barCode);
-    this.form.controls.batchData.setValue(barCodeInfor);
+  requestBatchDataSuccess = (batch) => {
+    this.form.controls.batch.setValue(batch.name);
 
-    if (this.storedData && this.storedData.materialSplits && this.storedData.materialSplits[barCodeInfor.material]) {
-      this.form.controls.numberOfSplits.setValue(this.storedData.materialSplits[barCodeInfor.material]);
+    if (!this.form.value.isReturnedFromSAP
+      && this.storedData && this.storedData.materialSplits && this.storedData.materialSplits[batch.material]) {
+      this.form.controls.numberOfSplits.setValue(this.storedData.materialSplits[batch.material]);
     }
   }
 
@@ -88,44 +77,42 @@ export class CreateBatchComponent extends BaseForm {
   }
 
   requestBatchData = () => {
-    if (!this.form.value.batch) {
-      return of(null);
-    }
-
-    let barCodeInfor: MaterialBatch;
+    let batch: MaterialBatch;
 
     return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch).pipe(
       switchMap((barCodeData: MaterialBatch) => {
-        barCodeInfor = barCodeData;
+        batch = barCodeData;
         return this._batchService.isBatchNameExist(barCodeData.name);
       }),
       switchMap((exist: boolean) => {
         if (exist) {
-          return throwError(`Batch ${barCodeInfor.name} exist！`);
+          return throwError(`Batch ${batch.name} exist！`);
         }
-        return forkJoin(this._batchService.getMaterialType(barCodeInfor.material),
-          this._batchService.getMaterialUnit(barCodeInfor.material), this._batchService.isBatchInSAP(barCodeInfor.name));
+        return forkJoin(this._batchService.getMaterialType(batch.material),
+          this._batchService.getMaterialUnit(batch.material), this._batchService.getBatchInSAPformation(batch.name));
       }),
       switchMap((array: Array<any>) => {
         let [
           matType,
           unit,
           // tslint:disable-next-line:prefer-const
-          isInSAP] = array;
+          batchInSAP] = array;
+        this.form.controls.isReturnedFromSAP.setValue(!!batchInSAP);
+        if (batchInSAP) {
+          return of(batchInSAP);
+        } else {
+          if (!matType) {
+            matType = 'Comp';
+          }
 
-        if (!matType) {
-          matType = 'Comp';
+          if (!unit) {
+            unit = 'PC';
+          }
+
+          batch.materialType = matType;
+          batch.unit = unit;
+          return of(batch);
         }
-
-        if (!unit) {
-          unit = 'PC';
-        }
-
-        this.form.controls.isReturnedFromSAP.setValue(isInSAP);
-
-        barCodeInfor.materialType = matType;
-        barCodeInfor.unit = unit;
-        return of(barCodeInfor);
       }));
   }
   //#endregion
@@ -138,14 +125,18 @@ export class CreateBatchComponent extends BaseForm {
   }
 
   requestMaterialBufferData = () => {
-    if (!this.form.value.materialBuffer) {
-      return of(null);
-    }
-
     return this._batchService.getMaterialBuffer(this.form.value.materialBuffer).pipe(
       tap(buffer => {
         if (!buffer) {
           throw Error(`${this.form.value.materialBuffer} not exist!`);
+        }
+
+        if (buffer.name.startsWith(BUFFER_SAP)) {
+          throw Error(`SAP Buffer not allowed`);
+        }
+
+        if (!buffer.parentBuffers.some((bufferName) => bufferName === BUFFER_914)) {
+          throw Error(`Must be 914 Buffer`);
         }
       })
     );
@@ -155,10 +146,9 @@ export class CreateBatchComponent extends BaseForm {
 
   //#region Number of Splits Reqeust
   requestNumberOfSplitsDataSuccess = () => {
-    this.descriptions.set(`numberOfSplits`, this.getSplitInfo());
     this.storedData = deepExtend(this.storedData, {
       materialSplits: {
-        [this.form.controls.batchData.value.material]: this.form.value.numberOfSplits
+        [this.batchData.material]: this.form.value.numberOfSplitsData
       }
     });
   }
@@ -171,15 +161,21 @@ export class CreateBatchComponent extends BaseForm {
       return throwError('Incorrect Child Count');
     }
 
-    if (!this.form.value.batchData) {
+    if (!this.batchData) {
       return throwError('Input Batch First');
     }
 
-    if ((this.form.value.batchData.quantity % this.form.value.numberOfSplits) > 0) {
+    const numberOfSplits = toNumber(this.form.value.numberOfSplits, 1);
+
+    if ((this.batchData.quantity % numberOfSplits) > 0) {
       return throwError('Incorrect Child Count');
     }
 
-    return of(null);
+    if (this.form.value.isReturnedFromSAP && numberOfSplits > 1) {
+      return throwError('Incorrect Child Count');
+    }
+
+    return of(numberOfSplits);
   }
 
   //#endregion
@@ -195,8 +191,7 @@ export class CreateBatchComponent extends BaseForm {
   //#endregion
 
   //#region Exeuction
-  createBatchSuccess = (ret: IActionResult) => {
-    this.showSuccess(ret.description);
+  createBatchSuccess = () => {
   }
 
   createBatchFailed = () => {
@@ -206,39 +201,39 @@ export class CreateBatchComponent extends BaseForm {
     let firstAction$: Observable<IActionResult>;
     if (this.form.value.isReturnedFromSAP) {
       firstAction$ = this._bapiService
-        .moveBatch(this.form.value.batchData, this.form.value.materialBuffer, this.form.value.badge).pipe(
+        .moveBatch(this.batchData, this.form.value.materialBufferData, this.operatorData).pipe(
           switchMap(_ => {
-            return this._bapiService.changeBatchQuantity(this.form.value.batchData,
-              this.form.value.batchData.quantity, this.form.value.badge);
+            return this._bapiService.changeBatchQuantity(this.batchData,
+              this.batchData.quantity, this.operatorData);
           }),
           map((_) => {
             return {
               isSuccess: true,
-              description: `Batch ${this.form.value.batchData.name} Moved to ${this.form.value.materialBuffer}!`,
+              description: `Batch ${this.batchData.name} Moved to ${this.form.value.materialBuffer}!`,
             };
           })
         );
     } else {
       firstAction$ = this._bapiService
         .createBatch(
-          this.form.value.batchData.name,
-          this.form.value.batchData.material,
-          this.form.value.batchData.materialType,
-          this.form.value.batchData.unit,
-          this.form.value.batchData.quantity,
-          this.form.value.materialBuffer,
-          this.form.value.badge,
-          this.form.value.batchData.SAPBatch,
-          this.form.value.batchData.dateCode
+          this.batchData.name,
+          this.batchData.material,
+          this.batchData.materialType,
+          this.batchData.unit,
+          this.batchData.quantity,
+          this.form.value.materialBufferData,
+          this.operatorData,
+          this.batchData.SAPBatch,
+          this.batchData.dateCode
         );
     }
     return firstAction$.pipe(
       switchMap(ret => {
-        const children = toNumber(this.form.value.numberOfSplits, 1);
+        const children = toNumber(this.form.value.numberOfSplitsData, 1);
         if (children > 1) {
-          return this._bapiService.splitBatch(this.form.value.batchData,
-            toNumber(children, 0), this.form.value.batchData.quantity / children,
-            this.form.value.badge);
+          return this._bapiService.splitBatch(this.batchData,
+            children, this.batchData.quantity / children,
+            this.operatorData);
         }
         return of(ret);
       }),
@@ -254,7 +249,7 @@ export class CreateBatchComponent extends BaseForm {
                 isSuccess: true,
                 error: ``,
                 content: ``,
-                description: `Batch ${this.form.value.batchData.name} Split to ${ret.context.join(`,`)} And Label Printed!`,
+                description: `Batch ${this.batchData.name} Split to ${ret.context.join(`,`)} and Label Printed!`,
                 context: ret.context
               };
             })
@@ -268,14 +263,9 @@ export class CreateBatchComponent extends BaseForm {
   //#endregion
 
   //#region Override methods
-  protected isValid() {
-    return !Array.from(this.descriptions.entries()).some(value => {
-      return (value[0] !== `batchData` && value[0] !== 'isReturnedFromSAP' && value[0] !== `barCode` && !value[1]);
-    });
-  }
 
   protected afterReset() {
-    this._document.getElementById(`batch`).focus();
+    this.document.getElementById(`batch`).focus();
 
     this.form.controls.numberOfSplits.setValue(1);
   }
@@ -284,8 +274,6 @@ export class CreateBatchComponent extends BaseForm {
 
 
   //#region Private methods
-  private getSplitInfo() {
-    return `Child Qty: ${this.form.value.batchData.quantity / this.form.value.numberOfSplits}`;
-  }
+
   //#endregion
 }
