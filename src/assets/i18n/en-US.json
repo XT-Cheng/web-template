@@ -120,6 +120,10 @@
   "app.common.component.require": "Mat. Require",
   "app.common.tool.require": "Tool Require",
   "app.common.miss": "Miss",
+  "app.common.component.material": "Material",
+  "app.common.component.batch": "Batch",
+  "app.common.component.qty": "Qty",
+
   "app.route.line-summary": "Line Summary",
   "app.machine.summary.general": "Machine Genearl Info",
   "app.machine.summary.workOrder": "Work Order",
@@ -190,9 +194,11 @@
   "app.report.batch.SAPBatch": "SAP Batch",
   "app.report.batch.dateCode": "Date Code",
   "app.report.batch.lastChanged": "Last Changed",
+
   "app.mobile.common.setupOperator": "Setup Operator",
   "app.mobile.common.badge.placeholder": "Pls input Badge",
   "app.mobile.common.reset": "Reset",
+
   "app.mobile.material.create": "Create Batch",
   "app.mobile.material.create.batch": "Batch Nr.",
   "app.mobile.material.create.batch.placeholder": "Pls input Batch Nr.",
@@ -238,6 +244,14 @@
   "app.mobile.material.logon.batch": "Batch Nr.",
   "app.mobile.material.logon.batch.placeholder": "Pls input Batch Nr.",
   "app.mobile.material.logon.action": "LogOn Batch",
+
+  "app.mobile.material.logoff": "LogOff Batch",
+  "app.mobile.material.logoff.machine": "Machine",
+  "app.mobile.material.logoff.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.material.logoff.newQty": "Qty",
+  "app.mobile.material.logoff.newQty.placeholder": "Pls input Qty.",
+  "app.mobile.material.logoff.action": "LogOff Batch",
+
   "app.mobile.material.find": "Find Batch",
   "app.mobile.material.find.material": "Material",
   "app.mobile.material.find.material.placeholder": "Pls input Mat",

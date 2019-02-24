@@ -356,6 +356,7 @@ export class MachineService {
           //#region Setup Logged On Components
           loggedOnComponent.map(component => {
             machineRet.componentsLoggedOn.push({
+              allowLogoff: true,
               operation: component.OPERATION,
               batchName: component.BATCHID,
               batchQty: component.REMAINQTY,
@@ -503,6 +504,11 @@ export class MachineService {
                       operations.forEach(op => {
                         op.toolsLoggedOn = machineRet.toolsLoggedOn;
                         machineRet.currentOperations.push(op);
+                        machineRet.componentsLoggedOn.forEach((comp) => {
+                          if (comp.operation === op.name) {
+                            comp.allowLogoff = false;
+                          }
+                        });
                       });
                       machineRet.currentOperations.sort((a, b) => a.lastLoggedOn > b.lastLoggedOn ? 1 : -1);
                     }));

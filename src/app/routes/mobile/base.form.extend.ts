@@ -9,7 +9,7 @@ import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
 import { OperatorService } from '@core/hydra/service/operator.service';
 import { Operator } from '@core/hydra/entity/operator';
-import { Operation } from '@core/hydra/entity/operation';
+import { Operation, ComponentLoggedOn } from '@core/hydra/entity/operation';
 import { DOCUMENT } from '@angular/common';
 import { Machine } from '@core/hydra/entity/machine';
 import { MaterialBatch } from '@core/hydra/entity/batch';
@@ -274,7 +274,7 @@ export abstract class BaseExtendForm {
     }
   }
 
-  getComponentStatusDisplay(componentStatus: any[]) {
+  getOperationComponentStatusDisplay(componentStatus: any[]) {
     if (this.form.value.operationData) {
       let ready = 0;
       let missed = 0;

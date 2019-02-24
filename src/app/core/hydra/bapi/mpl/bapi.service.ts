@@ -14,6 +14,7 @@ import { CreateBatch } from './create.batch';
 import { WebAPIService } from '@core/hydra/service/webapi.service';
 import { CopyBatch } from './copy.batch';
 import { GenerateBatchConnection } from './generate.batchConnection';
+import { LogoffInputBatch } from './logoff.inputBatch';
 
 @Injectable()
 export class MPLBapiService {
@@ -40,6 +41,17 @@ export class MPLBapiService {
       );
   }
 
+  logoffInputBatch(operation: Operation | { name: string }, machine: Machine, operator: Operator,
+    batch: MaterialBatch | { name: string }, pos: number) {
+    return new LogoffInputBatch(operation.name, machine.machineName, operator.badge, batch.name, pos).execute(this._http).pipe(
+      map((ret: IActionResult) => {
+        return Object.assign(ret, {
+          description: `Batch ${batch.name} Logged Off!`
+        });
+      })
+    );
+  }
+
   createBatch(batchName: string, materialNumber: string, matType: string, unit: string, batchQty: number,
     materialBuffer: MaterialBuffer | { name: string }, operator: Operator,
     batchSAP: string = '', dateCode: string = ''): Observable<IActionResult> {
@@ -54,8 +66,8 @@ export class MPLBapiService {
   }
 
   changeBatchQuantity(batch: MaterialBatch, newQuantity: number, operator: Operator): Observable<IActionResult> {
-    return new GoodsMovementBatch(batch.name, batch.startQty, newQuantity,
-      batch.materialType, batch.status, operator.badge).execute(this._http).pipe(
+    return new GoodsMovementBatch(batch.name, newQuantity,
+      batch.materialType, batch.status, batch.class, operator.badge).execute(this._http).pipe(
         map((ret: IActionResult) => {
           return Object.assign(ret, {
             description: `Batch ${batch.name} Quantity Changed!`
@@ -79,8 +91,8 @@ export class MPLBapiService {
       if (currentIndex === numberOfChildren) {
         return next$.pipe(
           switchMap((childrenBatchNames: [string]) => {
-            return new GoodsMovementBatch(batch.name, batch.startQty,
-              batch.quantity, batch.materialType, batch.status, operator.badge)
+            return new GoodsMovementBatch(batch.name, batch.quantity,
+              batch.materialType, batch.status, batch.class, operator.badge)
               .execute(this._http).pipe(
                 map(_ => {
                   return {

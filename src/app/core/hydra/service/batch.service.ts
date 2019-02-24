@@ -33,7 +33,7 @@ export class BatchService {
 
   static batchSql =
     `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
-      (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
+      BATCH.KLASSE AS CLASS,(BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
       BATCH.MAT_PUF AS BUFFERNAME,
       BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
       LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
@@ -49,7 +49,7 @@ export class BatchService {
 
   static batchByNameSql =
     `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
-      (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
+      BATCH.KLASSE AS CLASS, (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
       BATCH.MAT_PUF AS BUFFERNAME,
       BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
       LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
@@ -58,7 +58,7 @@ export class BatchService {
 
   static batchInSAPByNameSql =
     `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
-      (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
+      BATCH.KLASSE AS CLASS, (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
       BATCH.MAT_PUF AS BUFFERNAME,
       BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
       LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
@@ -67,7 +67,7 @@ export class BatchService {
 
   static batchesByNamesSql =
     `SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
-      (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
+      BATCH.KLASSE AS CLASS, (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
       BATCH.MAT_PUF AS BUFFERNAME,
       BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
       LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
@@ -197,6 +197,7 @@ export class BatchService {
             material: batch.MATERIAL,
             SAPBatch: batch.SAPBATCH,
             status: batch.STATUS,
+            class: batch.CLASS,
             dateCode: batch.DATECODE,
             materialType: batch.MATTYPE,
             unit: batch.UNIT
@@ -302,6 +303,7 @@ export class BatchService {
           batch.quantity = rec.QUANTITY;
           batch.material = rec.MATERIAL;
           batch.status = rec.STATUS;
+          batch.class = rec.CLASS;
           batch.SAPBatch = rec.SAPBATCH;
           batch.dateCode = rec.DATECODE;
           batch.materialType = rec.MATTYPE;
@@ -330,6 +332,7 @@ export class BatchService {
           ret.quantity = batch.QUANTITY;
           ret.material = batch.MATERIAL;
           ret.status = batch.STATUS;
+          ret.class = batch.CLASS;
           ret.SAPBatch = batch.SAPBATCH;
           ret.dateCode = batch.DATECODE;
           ret.materialType = batch.MATTYPE;
@@ -357,6 +360,7 @@ export class BatchService {
           ret.quantity = batch.QUANTITY;
           ret.material = batch.MATERIAL;
           ret.status = batch.STATUS;
+          ret.class = batch.CLASS;
           ret.SAPBatch = batch.SAPBATCH;
           ret.dateCode = batch.DATECODE;
           ret.materialType = batch.MATTYPE;

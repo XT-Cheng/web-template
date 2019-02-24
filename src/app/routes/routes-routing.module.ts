@@ -30,6 +30,7 @@ import { FindBatchComponent } from './mobile/material/find-batch.component';
 import { BatchTraceabilityComponent } from './report/batch/batch.trace.component';
 import { LogonOperationComponent } from './mobile/operation/logon-operation.component';
 import { GenerateOutputBatchComponent } from './mobile/operation/generateOutputBatch-operation.component';
+import { LogoffBatchComponent } from './mobile/material/logoff-batch.component';
 
 const routes: Routes = [
   {
@@ -50,6 +51,7 @@ const routes: Routes = [
       { path: 'material/split', component: SplitBatchComponent },
       { path: 'material/adjustQty', component: AdjustBatchQuantityComponent },
       { path: 'material/logon', component: LogonBatchComponent },
+      { path: 'material/logoff', component: LogoffBatchComponent },
       { path: 'operation/logon', component: LogonOperationComponent },
       { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },
       { path: 'material/find', component: FindBatchComponent },

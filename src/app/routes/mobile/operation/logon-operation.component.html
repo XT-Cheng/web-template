@@ -26,7 +26,7 @@
       </div>
     </ng-container>
     <div [ngStyle]="{'flex': 1}">
-      <ng-container *ngIf='getComponentStatusDisplay((componentStatus$ | async)) as display'>
+      <ng-container *ngIf='getOperationComponentStatusDisplay((componentStatus$ | async)) as display'>
         <div class="weui-cell weui-cell_board weui-cell_access" (click)='showComponentStatus()'>
           <div class="weui-cell__bd ">
             <span>{{'app.common.component.require' | translate}}: {{display.total}}, {{'app.common.miss' |

@@ -187,6 +187,7 @@ export class OperationService {
           //#region Setup Logged On Components
           loggedOnComponent.map(component => {
             operationRet.componentsLoggedOn.set(component.POS, {
+              allowLogoff: false,
               operation: component.OPERATION,
               batchName: component.BATCHID,
               batchQty: component.REMAINQTY,

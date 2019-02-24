@@ -129,7 +129,7 @@ export class LogonBatchComponent extends BaseExtendForm {
 
   //#region Operation Reqeust
   requestOperationDataSuccess = (_) => {
-    this.document.getElementById(`batch`).focus();
+    setTimeout(() => this.document.getElementById(`batch`).focus(), 0);
   }
 
   requestOperationDataFailed = () => {

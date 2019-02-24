@@ -1,0 +1,51 @@
+<form [formGroup]="form">
+  <div class="weui-cells">
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.material.logoff.machine' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='machine' formControlName="machine" fwShareAutoFocus [fwShareKeyHandler]='{controlName: "machine", inputing: Inputing, nextInputId: "batch", req: request(requestMachineData, requestMachineDataSuccess, requestMachineDataFailed)}'
+          [placeholder]="'app.mobile.material.logoff.machine.placeholder' | translate">
+      </div>
+    </div>
+    <label for="weuiAgree" class="weui-agree">
+      <span class="weui-agree__text">
+        {{getAssociateDataDisplay('machine')}}
+      </span>
+    </label>
+    <ng-container *ngIf='getMachineComponentLoggedOnDisplay() as display'>
+      <div class="weui-cell weui-cell_access">
+        <div class="weui-panel__bd" (click)="showComponentStatus('newQty')">
+          <div class="weui-media-box weui-media-box_text">
+            <h4 class="weui-media-box__title">{{'app.common.component.material' | translate}}: {{display.material}}</h4>
+            <p class="weui-media-box__desc">{{'app.common.component.batch' | translate}}: {{display.batchName}}</p>
+            <p class="weui-media-box__desc">{{'app.common.component.qty' | translate}}: {{display.quantity}}</p>
+          </div>
+        </div>
+        <div class="weui-panel__ft"></div>
+      </div>
+    </ng-container>
+    <ng-container *ngIf='hasComponentToBeLoggedOffData()'>
+      <div class="weui-cell">
+        <div class="weui-cell__hd">
+          <label class="weui-label">{{'app.mobile.material.logoff.newQty' | translate}}</label>
+        </div>
+        <div class="weui-cell__bd">
+          <input class="weui-input" id='newQty' formControlName="newQty" [fwShareKeyHandler]='{controlName: "newQty", inputing: Inputing, req: request(requestNewQtyData, requestNewQtyDataSuccess, requestNewQtyDataFailed)}'
+            [placeholder]="'app.mobile.material.logoff.newQty.placeholder' | translate">
+        </div>
+      </div>
+    </ng-container>
+    <div class="mobile-fill">
+      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(logoffBatch, logoffBatchSuccess, logoffBatchFailed)'>{{'app.mobile.material.logoff.action'
+        | translate}}</button>
+    </div>
+    <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
+      [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
+  </div>
+</form>
+<weui-mask #mask [backdrop]="false"></weui-mask>
+<weui-popup #componentStatus>
+  <fw-mobile-component-list [componentItems$]='componentsToBeLoggedOff$' (itemClicked)='componentSelected($event)'></fw-mobile-component-list>
+</weui-popup>

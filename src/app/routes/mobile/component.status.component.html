@@ -1,6 +1,6 @@
 <div class="weui-cells" [ngStyle]="{'max-height': '200px'}">
   <ng-container *ngIf='(componentStatus$ | async) as componentStatus'>
-    <div class="weui-cell" *ngFor='let status of componentStatus'>
+    <div class="weui-cell" *ngFor='let status of componentStatus' (click)='click(status)'>
       <div class="weui-cell__bd" [ngStyle]="getColor(status)">
         <span>{{status.material}}</span>
       </div>

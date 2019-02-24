@@ -8,6 +8,7 @@ export class MaterialBatch {
   material: string;
   materialType: string;
   status: string;
+  class: string;
   unit: string;
   SAPBatch: string;
   dateCode: string;

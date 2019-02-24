@@ -1,5 +1,4 @@
-import { Component, ViewChild, Injector } from '@angular/core';
-import { PopupComponent } from 'ngx-weui';
+import { Component, Injector } from '@angular/core';
 import { Validators } from '@angular/forms';
 import { IActionResult } from '@core/utils/helpers';
 import { Observable, BehaviorSubject } from 'rxjs';
@@ -120,7 +119,7 @@ export class LogonOperationComponent extends BaseExtendForm {
   //#endregion
 
   //#region Exeuction
-  logonOperationSuccess = (ret: IActionResult) => {
+  logonOperationSuccess = () => {
   }
 
   logonOperationFailed = () => {

@@ -1,6 +1,36 @@
 import { Machine } from '../entity/machine';
 import { Operation, ComponentStatus, ToolStatus, ToolLoggedOn } from '../entity/operation';
 
+export interface ComponentToBeLoggedOff {
+  batchName: string;
+  allowLogoff: boolean;
+  material: string;
+  batchQty: number;
+  operations: { name: string, pos: number }[];
+}
+
+export function getComponentToBeLoggedOff(machine: Machine): ComponentToBeLoggedOff[] {
+  const componentToBeLoggedOff: ComponentToBeLoggedOff[] = [];
+  machine.componentsLoggedOn.forEach(item => {
+    const find = componentToBeLoggedOff.find(c => c.batchName === item.batchName);
+    if (find) {
+      find.operations.push({ name: item.operation, pos: item.pos });
+      if (!item.allowLogoff) {
+        find.allowLogoff = false;
+      }
+    } else {
+      componentToBeLoggedOff.push({
+        batchName: item.batchName,
+        allowLogoff: item.allowLogoff,
+        material: item.material,
+        batchQty: item.batchQty,
+        operations: [{ name: item.operation, pos: item.pos }]
+      });
+    }
+  });
+  return componentToBeLoggedOff;
+}
+
 export function getComponentStatus(operation: Operation, machine: Machine): ComponentStatus[] {
   const componentStatus: ComponentStatus[] = [];
   operation.bomItems.forEach(item => {

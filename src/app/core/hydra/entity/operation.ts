@@ -140,6 +140,7 @@ export class ComponentLoggedOn {
   operation = '';
   batchName = '';
   material = '';
+  allowLogoff = true;
 
   batchQty = -1;
   pos = -1;

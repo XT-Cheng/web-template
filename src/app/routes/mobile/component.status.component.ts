@@ -1,6 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ComponentStatus } from '@core/hydra/entity/operation';
 
 @Component({
   selector: 'fw-mobile-component-status',
@@ -9,7 +8,13 @@ import { ComponentStatus } from '@core/hydra/entity/operation';
 })
 export class MobileComponentStatusComponent {
   @Input()
-  componentStatus$: Observable<ComponentStatus[]>;
+  componentStatus$: Observable<{ material: string }[]>;
+  @Output()
+  itemClicked: EventEmitter<string> = new EventEmitter();
+
+  click(componentLoggedOn) {
+    this.itemClicked.next(componentLoggedOn);
+  }
 
   getColor(status) {
     if (status.isReady) {
