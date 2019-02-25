@@ -9,7 +9,7 @@ import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
 import { OperatorService } from '@core/hydra/service/operator.service';
 import { Operator } from '@core/hydra/entity/operator';
-import { Operation, ComponentLoggedOn } from '@core/hydra/entity/operation';
+import { Operation, ComponentLoggedOn, ToolStatus, ComponentStatus } from '@core/hydra/entity/operation';
 import { DOCUMENT } from '@angular/common';
 import { Machine } from '@core/hydra/entity/machine';
 import { MaterialBatch } from '@core/hydra/entity/batch';
@@ -36,6 +36,7 @@ export abstract class BaseExtendForm {
   @ViewChild(MaskComponent) mask: MaskComponent;
 
   @ViewChild(`componentStatus`) componentStatusPopup: PopupComponent;
+  @ViewChild(`toolStatus`) toolStatusPopup: PopupComponent;
   @ViewChild(`operationList`) operationListPopup: PopupComponent;
 
   //#endregion
@@ -137,6 +138,10 @@ export abstract class BaseExtendForm {
 
   protected get machineData(): Machine {
     return this.form.value.machineData as Machine;
+  }
+
+  protected get toolData(): Machine {
+    return this.form.value.toolData as Machine;
   }
 
   protected get operationData(): Operation {
@@ -262,6 +267,18 @@ export abstract class BaseExtendForm {
     }
   }
 
+  showToolStatus(focusId = ``) {
+    if (this.toolStatusPopup) {
+      this.toolStatusPopup.show().subscribe(() => {
+        if (!focusId) return;
+        const element = this.document.getElementById(focusId);
+        if (element) {
+          element.focus();
+        }
+      });
+    }
+  }
+
   showOperationList(focusId = ``) {
     if (this.operationListPopup) {
       this.operationListPopup.show().subscribe(() => {
@@ -274,8 +291,30 @@ export abstract class BaseExtendForm {
     }
   }
 
-  getOperationComponentStatusDisplay(componentStatus: any[]) {
-    if (this.form.value.operationData) {
+  getOperationToolStatusDisplay(toolStatus: ToolStatus[]) {
+    if (this.operationData) {
+      let ready = 0;
+      let missed = 0;
+      toolStatus.map(status => {
+        if (status.isReady) {
+          ready++;
+        } else {
+          missed++;
+        }
+      });
+
+      return {
+        total: ready + missed,
+        ready: ready,
+        missed: missed
+      };
+    }
+
+    return null;
+  }
+
+  getOperationComponentStatusDisplay(componentStatus: ComponentStatus[]) {
+    if (this.operationData) {
       let ready = 0;
       let missed = 0;
       componentStatus.map(status => {

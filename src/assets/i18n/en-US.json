@@ -236,6 +236,7 @@
   "app.mobile.material.adjustQty.newQty": "New Qty",
   "app.mobile.material.adjustQty.newQty.placeholder": "Pls input New Qty.",
   "app.mobile.material.adjustQty.action": "Adjust Qty",
+
   "app.mobile.material.logon": "LogOn Batch",
   "app.mobile.material.logon.machine": "Machine",
   "app.mobile.material.logon.machine.placeholder": "Pls input Machine Nr.",
@@ -244,6 +245,19 @@
   "app.mobile.material.logon.batch": "Batch Nr.",
   "app.mobile.material.logon.batch.placeholder": "Pls input Batch Nr.",
   "app.mobile.material.logon.action": "LogOn Batch",
+
+  "app.mobile.tool.logon": "LogOn Tool",
+  "app.mobile.tool.logon.machine": "Machine",
+  "app.mobile.tool.logon.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.tool.logon.toolMachine": "Tool Machine",
+  "app.mobile.tool.logon.toolMachine.placeholder": "Pls input Tool Machine Nr.",
+  "app.mobile.tool.logon.operation": "Operation",
+  "app.mobile.tool.logon.operation.placeholder": "Pls input Operation",
+  "app.mobile.tool.logon.tool": "Tool Nr.",
+  "app.mobile.tool.logon.tool.placeholder": "Pls input Tool Nr.",
+  "app.mobile.tool.logon.batch": "Batch Nr.",
+  "app.mobile.tool.logon.batch.placeholder": "Pls input Batch Nr.",
+  "app.mobile.tool.logon.action": "LogOn Tool",
 
   "app.mobile.material.logoff": "LogOff Batch",
   "app.mobile.material.logoff.machine": "Machine",

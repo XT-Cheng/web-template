@@ -16,6 +16,7 @@ import { MPLBapiService } from './hydra/bapi/mpl/bapi.service';
 import { BDEBapiService } from './hydra/bapi/bde/bapi.service';
 import { MasterBapiService } from './hydra/bapi/master/bapi.service';
 import { MPLMasterBapiService } from './hydra/bapi/mpl/master/bapi.service';
+import { ToolService } from './hydra/service/toolService';
 
 @NgModule({
   providers: [
@@ -24,6 +25,7 @@ import { MPLMasterBapiService } from './hydra/bapi/mpl/master/bapi.service';
     FetchService,
     BapiService,
     MachineService,
+    ToolService,
     OperationService,
     BatchService,
     OperatorService,

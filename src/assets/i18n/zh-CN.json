@@ -234,6 +234,7 @@
   "app.mobile.material.adjustQty.newQty": "新数量",
   "app.mobile.material.adjustQty.newQty.placeholder": "请输入新数量",
   "app.mobile.material.adjustQty.action": "调整数量",
+
   "app.mobile.material.logon": "物料登录",
   "app.mobile.material.logon.machine": "设备",
   "app.mobile.material.logon.machine.placeholder": "请输入设备",
@@ -242,6 +243,19 @@
   "app.mobile.material.logon.batch": "批号",
   "app.mobile.material.logon.batch.placeholder": "请输入批号",
   "app.mobile.material.logon.action": "登录物料",
+
+  "app.mobile.tool.logon": "模具登录",
+  "app.mobile.tool.logon.machine": "设备",
+  "app.mobile.tool.logon.machine.placeholder": "请输入设备",
+  "app.mobile.tool.logon.toolMachine": "端子机",
+  "app.mobile.tool.logon.toolMachine.placeholder": "请输入端子机",
+  "app.mobile.tool.logon.operation": "工单",
+  "app.mobile.tool.logon.operation.placeholder": "请输入工单",
+  "app.mobile.tool.logon.tool": "模具号",
+  "app.mobile.tool.logon.tool.placeholder": "请输入模具号",
+  "app.mobile.tool.logon.batch": "批号",
+  "app.mobile.tool.logon.batch.placeholder": "请输入批号",
+  "app.mobile.tool.logon.action": "模具登录",
 
   "app.mobile.material.logoff": "物料登出",
   "app.mobile.material.logoff.machine": "设备",
