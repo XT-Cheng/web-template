@@ -15,6 +15,7 @@ import { WebAPIService } from '@core/hydra/service/webapi.service';
 import { CopyBatch } from './copy.batch';
 import { GenerateBatchConnection } from './generate.batchConnection';
 import { LogoffInputBatch } from './logoff.inputBatch';
+import { MergeBatch } from './merge.batch';
 
 @Injectable()
 export class MPLBapiService {
@@ -29,7 +30,7 @@ export class MPLBapiService {
   //#endregion
 
   //#region Public methods
-  logonInputBatch(operation: Operation, machine: Machine, operator: Operator,
+  logonInputBatch(operation: Operation | { name: string }, machine: Machine, operator: Operator,
     batch: MaterialBatch | { name: string, material: string }, pos: number): Observable<IActionResult> {
     return new LogonInputBatch(operation.name, machine.machineName, operator.badge, batch.name, batch.material, pos)
       .execute(this._http).pipe(
@@ -91,6 +92,7 @@ export class MPLBapiService {
       if (currentIndex === numberOfChildren) {
         return next$.pipe(
           switchMap((childrenBatchNames: [string]) => {
+            // 2. Adjust Batch Quantity
             return new GoodsMovementBatch(batch.name, batch.quantity,
               batch.materialType, batch.status, batch.class, operator.badge)
               .execute(this._http).pipe(
@@ -107,6 +109,7 @@ export class MPLBapiService {
           }));
       } else {
         return next$.pipe(
+          // 1. Create new Batch
           switchMap((childrenBatchNames: [string]) => {
             return this._webAPIService.getNextLicenseTag().pipe(
               map((newBatchName) => {
@@ -132,5 +135,14 @@ export class MPLBapiService {
     }, of([]));
   }
 
+  mergeBatch(batch: MaterialBatch | { name: string }, toBeMerged: string[], operator: Operator) {
+    return new MergeBatch(batch.name, toBeMerged, operator.badge).execute(this._http).pipe(
+      map((ret: IActionResult) => {
+        return Object.assign(ret, {
+          description: `Batch ${toBeMerged} Merged to ${batch.name}!`
+        });
+      })
+    );
+  }
   //#endregion
 }

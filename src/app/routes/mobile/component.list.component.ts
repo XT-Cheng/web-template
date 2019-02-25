@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ComponentLoggedOn } from '@core/hydra/entity/operation';
-import { ComponentToBeLoggedOff } from '@core/hydra/utils/operationHelper';
+import { ComponentToBeLoggedOff, ComponentToBeReplenish } from '@core/hydra/utils/operationHelper';
 
 @Component({
   selector: 'fw-mobile-component-list',
@@ -10,11 +10,11 @@ import { ComponentToBeLoggedOff } from '@core/hydra/utils/operationHelper';
 })
 export class MobileComponentListComponent {
   @Input()
-  componentItems$: Observable<ComponentLoggedOn[] | ComponentToBeLoggedOff[]>;
+  componentItems$: Observable<ComponentLoggedOn[] | ComponentToBeLoggedOff[] | ComponentToBeReplenish[]>;
   @Output()
-  itemClicked: EventEmitter<ComponentLoggedOn | ComponentToBeLoggedOff> = new EventEmitter();
+  itemClicked: EventEmitter<ComponentLoggedOn | ComponentToBeLoggedOff | ComponentToBeReplenish> = new EventEmitter();
 
-  click(componentLoggedOn: ComponentLoggedOn | ComponentToBeLoggedOff) {
-    this.itemClicked.next(componentLoggedOn);
+  click(componentClicked: ComponentLoggedOn | ComponentToBeLoggedOff | ComponentToBeReplenish) {
+    this.itemClicked.next(componentClicked);
   }
 }

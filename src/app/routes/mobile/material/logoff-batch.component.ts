@@ -1,18 +1,12 @@
 import { Component, Injector } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
-import { MaterialBatch } from '@core/hydra/entity/batch';
-import { DOCUMENT } from '@angular/common';
 import { IActionResult } from '@core/utils/helpers';
-import { requestBatchData } from './request.common';
 import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
-import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
-import { Operation, ComponentStatus, ComponentLoggedOn } from '@core/hydra/entity/operation';
-import { OperationService } from '@core/hydra/service/operation.service';
 import { map, switchMap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
-import { getComponentStatus, ComponentToBeLoggedOff, getComponentToBeLoggedOff } from '@core/hydra/utils/operationHelper';
+import { ComponentToBeLoggedOff, getComponentToBeLoggedOff } from '@core/hydra/utils/operationHelper';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { toNumber } from 'ng-zorro-antd';
 import { PrintService } from '@core/hydra/service/print.service';
@@ -61,7 +55,6 @@ export class LogoffBatchComponent extends BaseExtendForm {
       newQty: [null, [Validators.required], 'newQtyData'],
       componentToBeLoggedOffData: [null, [Validators.required]],
     });
-    injector.get(DOCUMENT);
   }
 
   //#endregion
@@ -153,6 +146,8 @@ export class LogoffBatchComponent extends BaseExtendForm {
   logoffBatchSuccess = () => {
     this.form.controls.newQty.setValue(null);
     this.form.controls.componentToBeLoggedOffData.setValue(null);
+
+    this.componentsToBeLoggedOff$.next([]);
 
     this.request(this.requestMachineData, this.requestMachineDataSuccess, this.requestMachineDataFailed)
       (null, null, `machine`);

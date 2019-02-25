@@ -31,6 +31,7 @@ import { BatchTraceabilityComponent } from './report/batch/batch.trace.component
 import { LogonOperationComponent } from './mobile/operation/logon-operation.component';
 import { GenerateOutputBatchComponent } from './mobile/operation/generateOutputBatch-operation.component';
 import { LogoffBatchComponent } from './mobile/material/logoff-batch.component';
+import { ReplenishBatchComponent } from './mobile/material/replenish-batch.component';
 
 const routes: Routes = [
   {
@@ -52,6 +53,7 @@ const routes: Routes = [
       { path: 'material/adjustQty', component: AdjustBatchQuantityComponent },
       { path: 'material/logon', component: LogonBatchComponent },
       { path: 'material/logoff', component: LogoffBatchComponent },
+      { path: 'material/replenish', component: ReplenishBatchComponent },
       { path: 'operation/logon', component: LogonOperationComponent },
       { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },
       { path: 'material/find', component: FindBatchComponent },

@@ -43,6 +43,7 @@ import { MobileOperationListComponent } from './mobile/operation.list.component'
 import { GenerateOutputBatchComponent } from './mobile/operation/generateOutputBatch-operation.component';
 import { LogoffBatchComponent } from './mobile/material/logoff-batch.component';
 import { MobileComponentListComponent } from './mobile/component.list.component';
+import { ReplenishBatchComponent } from './mobile/material/replenish-batch.component';
 
 const BAPI = [
   BAPITestComponent
@@ -93,6 +94,7 @@ const COMPONENTS = [
   AdjustBatchQuantityComponent,
   LogonBatchComponent,
   LogoffBatchComponent,
+  ReplenishBatchComponent,
   // Opeartion
   LogonOperationComponent,
   GenerateOutputBatchComponent,

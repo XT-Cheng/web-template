@@ -252,6 +252,13 @@
   "app.mobile.material.logoff.newQty.placeholder": "Pls input Qty.",
   "app.mobile.material.logoff.action": "LogOff Batch",
 
+  "app.mobile.material.replenish": "Replenish Batch",
+  "app.mobile.material.replenish.machine": "Machine",
+  "app.mobile.material.replenish.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.material.replenish.batch": "Batch Nr.",
+  "app.mobile.material.replenish.batch.placeholder": "Pls input Batch Nr.",
+  "app.mobile.material.replenish.action": "Replenish Batch",
+
   "app.mobile.material.find": "Find Batch",
   "app.mobile.material.find.material": "Material",
   "app.mobile.material.find.material.placeholder": "Pls input Mat",

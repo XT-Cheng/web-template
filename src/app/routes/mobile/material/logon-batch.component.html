@@ -41,19 +41,19 @@
         </span>
       </label>
     </ng-container>
-    <div [ngStyle]="{'flex': 1}">
-      <ng-container *ngIf='getOperationComponentStatusDisplay((componentStatus$ | async)) as display'>
-        <div class="weui-cell weui-cell_board weui-cell_access" (click)="showComponentStatus('batch')">
-          <div class="weui-cell__bd">
-            <span>{{'app.common.component.require' | translate}}: {{display.total}}, {{'app.common.miss' |
-              translate}}: <span [ngStyle]="{'color': 'red'}">{{display.missed}}</span></span>
-          </div>
-          <div class="weui-cell__ft"></div>
+    <ng-container *ngIf='getOperationComponentStatusDisplay((componentStatus$ | async)) as display'>
+      <div class="weui-cell weui-cell_board weui-cell_access" (click)="showComponentStatus('batch')">
+        <div class="weui-cell__bd">
+          <span>{{'app.common.component.require' | translate}}: {{display.total}}, {{'app.common.miss' |
+            translate}}: <span [ngStyle]="{'color': 'red'}">{{display.missed}}</span></span>
         </div>
-      </ng-container>
+        <div class="weui-cell__ft"></div>
+      </div>
+    </ng-container>
+    <div class="mobile-fill">
+      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(logonBatch, logonBatchSuccess, logonBatchFailed)'>{{'app.mobile.material.logon.action'
+        | translate}}</button>
     </div>
-    <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(logonBatch, logonBatchSuccess, logonBatchFailed)'>{{'app.mobile.material.logon.action'
-      | translate}}</button>
     <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
       [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
   </div>

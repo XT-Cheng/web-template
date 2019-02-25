@@ -2,8 +2,6 @@ import { Component, Injector } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { MaterialBatch } from '@core/hydra/entity/batch';
-import { DOCUMENT } from '@angular/common';
-import { IActionResult } from '@core/utils/helpers';
 import { requestBatchData } from './request.common';
 import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
@@ -56,13 +54,11 @@ export class LogonBatchComponent extends BaseExtendForm {
   ) {
     super(injector, false);
     this.addControls({
-      barCode: [null, [Validators.required]],
       operation: [null, [Validators.required], 'operationData'],
       machine: [null, [Validators.required], 'machineData'],
       batch: [null, [Validators.required], 'batchData'],
       actionData: [null, [Validators.required]],
     });
-    injector.get(DOCUMENT);
   }
 
   //#endregion
@@ -96,7 +92,6 @@ export class LogonBatchComponent extends BaseExtendForm {
   //#region Batch Reqeust
   requestBatchDataSuccess = (batch) => {
     this.form.controls.batch.setValue(batch.name);
-    this.form.controls.barCode.setValue(batch.barCode);
     this.form.controls.batchData.setValue(batch);
 
     if (!this.isDisable()) {
@@ -166,25 +161,17 @@ export class LogonBatchComponent extends BaseExtendForm {
 
   //#region Exeuction
   logonBatchSuccess = () => {
-    const changed = this.form.value.actionData;
-    const batch = this.form.value.batchData;
-
-    this.componentStatus$.next(this.form.value.componentStatus.map((status) => {
-      if (status.material === changed.material) {
-        return Object.assign({}, status, {
-          isReady: true,
-          batchName: batch.name,
-          quantity: batch.quantity,
-        });
-      } else {
-        return status;
-      }
-    }));
     this.form.controls.batch.setValue(null);
-    this.form.controls.barCode.setValue(``);
+    this.form.controls.operation.setValue(``);
     this.form.controls.batchData.setValue(null);
+    this.form.controls.operationData.setValue(null);
+    this.form.controls.actionData.setValue(null);
 
-    this.document.getElementById(`batch`).focus();
+    this.componentStatus$.next([]);
+    this.operations$.next([]);
+
+    this.request(this.requestMachineData, this.requestMachineDataSuccess, this.requestMachineDataFailed)
+      (null, null, `machine`);
   }
 
   logonBatchFailed = () => {

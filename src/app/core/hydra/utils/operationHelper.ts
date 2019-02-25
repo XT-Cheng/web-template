@@ -9,6 +9,30 @@ export interface ComponentToBeLoggedOff {
   operations: { name: string, pos: number }[];
 }
 
+export type ComponentToBeReplenish = ComponentToBeLoggedOff;
+
+export function getComponentToBeReplenish(machine: Machine): ComponentToBeLoggedOff[] {
+  const componentToBeLoggedOff: ComponentToBeLoggedOff[] = [];
+  machine.componentsLoggedOn.forEach(item => {
+    const find = componentToBeLoggedOff.find(c => c.batchName === item.batchName);
+    if (find) {
+      find.operations.push({ name: item.operation, pos: item.pos });
+      if (!item.allowLogoff) {
+        find.allowLogoff = false;
+      }
+    } else {
+      componentToBeLoggedOff.push({
+        batchName: item.batchName,
+        allowLogoff: item.allowLogoff,
+        material: item.material,
+        batchQty: item.batchQty,
+        operations: [{ name: item.operation, pos: item.pos }]
+      });
+    }
+  });
+  return componentToBeLoggedOff;
+}
+
 export function getComponentToBeLoggedOff(machine: Machine): ComponentToBeLoggedOff[] {
   const componentToBeLoggedOff: ComponentToBeLoggedOff[] = [];
   machine.componentsLoggedOn.forEach(item => {
