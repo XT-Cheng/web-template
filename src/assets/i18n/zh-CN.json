@@ -194,9 +194,15 @@
   "app.report.batch.SAPBatch": "SAP批号",
   "app.report.batch.dateCode": "Date Code",
   "app.report.batch.lastChanged": "最后更改于",
+
   "app.mobile.common.setupOperator": "设定用户",
   "app.mobile.common.badge.placeholder": "请输入工牌",
   "app.mobile.common.reset": "重置",
+
+  "app.mobile.dialog.title": "请确认",
+  "app.mobile.dialog.no": "否",
+  "app.mobile.dialog.yes": "是",
+
   "app.mobile.material.create": "物料批次创建",
   "app.mobile.material.create.batch": "批号",
   "app.mobile.material.create.batch.placeholder": "请输入批号",

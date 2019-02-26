@@ -1,11 +1,11 @@
 import { Component, Injector } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, of } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation, ToolStatus } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { getToolStatus } from '@core/hydra/utils/operationHelper';
 import { ToolService } from '@core/hydra/service/toolService';
@@ -118,9 +118,9 @@ export class LogonToolComponent extends BaseExtendForm {
           throw Error(`Tool Machine ${this.form.value.toolMachine} invalid!`);
         }
 
-        if (toolMachine.toolsLoggedOn.length > 0) {
-          throw Error(`Tool Machine ${this.form.value.toolMachine} already has tool logged on!`);
-        }
+        // if (toolMachine.toolsLoggedOn.length > 0) {
+        //   throw Error(`Tool Machine ${this.form.value.toolMachine} already has tool logged on!`);
+        // }
 
         return toolMachine;
       })
@@ -215,6 +215,18 @@ export class LogonToolComponent extends BaseExtendForm {
   //#endregion
 
   //#region Exeuction
+  executeLogOnTool() {
+    if (this.form.value.toolMachineData.toolsLoggedOn.length > 0) {
+      this.showDialog(`Tool already logged on, Would you like to log it off first?`).subscribe(ok => {
+        if (ok) {
+          this.doAction(this.logonTool, this.logonToolSuccess, this.logonToolFailed);
+        }
+      });
+    } else {
+      this.doAction(this.logonTool, this.logonToolSuccess, this.logonToolFailed);
+    }
+  }
+
   logonToolSuccess = () => {
     const machineName = this.form.value.machine;
     const operationName = this.form.value.operation;
@@ -240,10 +252,24 @@ export class LogonToolComponent extends BaseExtendForm {
   }
 
   logonTool = () => {
+    let logonTool$ = of(null);
+    if (this.form.value.toolMachineData.toolsLoggedOn.length > 0) {
+      // Log off first
+      logonTool$ = logonTool$.pipe(
+        switchMap(_ => {
+          return this._bapiService.logoffTool({ name: this.form.value.toolMachineData.toolsLoggedOn[0].loggedOnOperation },
+            { machineName: this.form.value.toolMachine }, { toolId: this.form.value.toolMachineData.toolsLoggedOn[0].toolId },
+            this.operatorData);
+        }));
+    }
+
     // LogOn Tool
-    return this._bapiService.logonTool({ name: this.machineData.toolLogonOrder },
-      { machineName: this.form.value.toolMachine }, this.toolData,
-      this.operatorData);
+    return logonTool$.pipe(
+      switchMap(_ => {
+        return this._bapiService.logonTool({ name: this.machineData.toolLogonOrder },
+          { machineName: this.form.value.toolMachine }, this.toolData,
+          this.operatorData);
+      }));
   }
 
   //#endregion

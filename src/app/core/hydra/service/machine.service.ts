@@ -553,7 +553,7 @@ export class MachineService {
                   return forkJoin(op$).pipe(
                     map((operations: Operation[]) => {
                       operations.forEach(op => {
-                        op.toolsLoggedOn = machineRet.toolsLoggedOn;
+                        op.toolsLoggedOn = deepCopy(machineRet.toolsLoggedOn);
                         machineRet.currentOperations.push(op);
                         machineRet.componentsLoggedOn.forEach((comp) => {
                           if (comp.operation === op.name) {

@@ -199,6 +199,10 @@
   "app.mobile.common.badge.placeholder": "Pls input Badge",
   "app.mobile.common.reset": "Reset",
 
+  "app.mobile.dialog.title": "Please confirm",
+  "app.mobile.dialog.no": "No",
+  "app.mobile.dialog.yes": "Yes",
+
   "app.mobile.material.create": "Create Batch",
   "app.mobile.material.create.batch": "Batch Nr.",
   "app.mobile.material.create.batch.placeholder": "Pls input Batch Nr.",

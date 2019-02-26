@@ -4,11 +4,11 @@ import { IActionResult } from '@core/utils/helpers';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
-import { Operation, ComponentStatus } from '@core/hydra/entity/operation';
+import { Operation, ComponentStatus, ToolStatus } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
 import { map } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
-import { getComponentStatus } from '@core/hydra/utils/operationHelper';
+import { getComponentStatus, getToolStatus } from '@core/hydra/utils/operationHelper';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 
 @Component({
@@ -31,6 +31,7 @@ export class LogonOperationComponent extends BaseExtendForm {
   //#region Public member
 
   componentStatus$: BehaviorSubject<ComponentStatus[]> = new BehaviorSubject<[]>([]);
+  toolStatus$: BehaviorSubject<ToolStatus[]> = new BehaviorSubject<[]>([]);
   operations$: BehaviorSubject<Operation[]> = new BehaviorSubject<[]>([]);
 
   //#endregion
@@ -92,7 +93,8 @@ export class LogonOperationComponent extends BaseExtendForm {
   requestOperationData = (): Observable<any> => {
     return this._operationService.getOperation(this.form.value.operation).pipe(
       map(operation => {
-        this.componentStatus$.next(getComponentStatus(operation, this.form.value.machineData));
+        this.componentStatus$.next(getComponentStatus(operation, this.machineData));
+        this.toolStatus$.next(getToolStatus(operation, this.machineData));
         return operation;
       }));
   }
@@ -139,10 +141,12 @@ export class LogonOperationComponent extends BaseExtendForm {
     this.document.getElementById(`machine`).focus();
 
     this.componentStatus$.next([]);
+    this.toolStatus$.next([]);
   }
 
   protected isValid() {
     return this.componentStatus$.value.every((status: ComponentStatus) => status.isReady)
+      && this.toolStatus$.value.every((status: ToolStatus) => status.isReady)
       && this.form.value.machineData.currentOperations.length < this.form.value.machineData.numberOfOperationAllowed;
   }
 

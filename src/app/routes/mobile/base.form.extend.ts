@@ -1,10 +1,10 @@
 import { ViewChild, Injector } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter, tap } from 'rxjs/operators';
+import { filter, tap, map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { TitleService, SettingsService } from '@delon/theme';
-import { MaskComponent, ToastService, ToptipsService, PopupComponent } from 'ngx-weui';
+import { MaskComponent, ToastService, ToptipsService, PopupComponent, DialogComponent, DialogConfig } from 'ngx-weui';
 import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
 import { OperatorService } from '@core/hydra/service/operator.service';
@@ -15,6 +15,7 @@ import { Machine } from '@core/hydra/entity/machine';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { Tool } from '@core/hydra/entity/tool';
 import { toNumber } from '@delon/util';
+
 
 interface ITranError {
   context: any;
@@ -27,6 +28,11 @@ interface ITranSuccess {
 
 export abstract class BaseExtendForm {
   static SETUP_OPERATOR: string;
+  static DIALOG_CONFIG = <DialogConfig>{
+    title: '弹窗标题',
+    cancel: '辅助操作',
+    confirm: '主操作',
+  };
 
   //#region Abstract member
   protected abstract key: string;
@@ -40,6 +46,7 @@ export abstract class BaseExtendForm {
   @ViewChild(`componentStatus`) componentStatusPopup: PopupComponent;
   @ViewChild(`toolStatus`) toolStatusPopup: PopupComponent;
   @ViewChild(`operationList`) operationListPopup: PopupComponent;
+  @ViewChild('dialog') dialog: DialogComponent;
 
   //#endregion
 
@@ -60,6 +67,12 @@ export abstract class BaseExtendForm {
   protected errors: ITranError[] = [];
   protected success: ITranSuccess[] = [];
   protected executionContext: any;
+
+  //#endregion
+
+  //#region Private member
+
+  private dialogConfig: DialogConfig = new DialogConfig();
 
   //#endregion
 
@@ -90,6 +103,12 @@ export abstract class BaseExtendForm {
     this.i18n = this.injector.get(I18NService);
     this.operatorService = this.injector.get(OperatorService);
     this.document = this.injector.get(DOCUMENT);
+
+    // Setup Dialog Config
+    this.dialogConfig.title = this.i18n.fanyi(`app.mobile.dialog.title`);
+    this.dialogConfig.cancel = this.i18n.fanyi(`app.mobile.dialog.no`);
+    this.dialogConfig.confirm = this.i18n.fanyi(`app.mobile.dialog.yes`);
+    this.dialogConfig.skin = 'auto';
 
     BaseExtendForm.SETUP_OPERATOR = this.i18n.fanyi(`app.mobile.common.setupOperator`);
     this.badgeButtonText = BaseExtendForm.SETUP_OPERATOR;
@@ -293,8 +312,18 @@ export abstract class BaseExtendForm {
     }
   }
 
+  showDialog(content: string): Observable<boolean> {
+    this.dialog.config = Object.assign({}, this.dialogConfig, {
+      content: content
+    });
+    return this.dialog.show().pipe(
+      map(ret => {
+        return ret.value;
+      }));
+  }
+
   getOperationToolStatusDisplay(toolStatus: ToolStatus[]) {
-    if (this.operationData) {
+    if (this.operationData && toolStatus.length > 0) {
       let ready = 0;
       let missed = 0;
       toolStatus.map(status => {
@@ -316,7 +345,7 @@ export abstract class BaseExtendForm {
   }
 
   getOperationComponentStatusDisplay(componentStatus: ComponentStatus[]) {
-    if (this.operationData) {
+    if (this.operationData && componentStatus.length > 0) {
       let ready = 0;
       let missed = 0;
       componentStatus.map(status => {
@@ -338,7 +367,7 @@ export abstract class BaseExtendForm {
   }
 
   getCurrentOperationDisplay() {
-    if (this.form.value.operationData) {
+    if (this.operationData) {
       const operation = this.form.value.operationData as Operation;
       return {
         title: operation.leadOrder,
@@ -456,7 +485,9 @@ export abstract class BaseExtendForm {
   }
 
   private end(err: any = null) {
-    if (err) {
+    if (err && err.message) {
+      this.showError(err.message);
+    } else if (err) {
       this.showError(err);
     }
 
