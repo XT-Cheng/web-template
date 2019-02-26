@@ -6,11 +6,12 @@ import { FetchService } from './fetch.service';
 import { VBoardService } from './vBoard.service';
 import { map, switchMap } from 'rxjs/operators';
 import { Operation } from '../entity/operation';
-import { toNumber } from '@delon/util';
+import { toNumber, deepCopy } from '@delon/util';
 import { CheckList, CheckListItem, ProcessType, CheckListResult } from '../entity/checkList';
 import { format } from 'date-fns';
 import { replaceAll, dateFormatOracle, dateFormat } from '@core/utils/helpers';
 import { OperationService } from './operation.service';
+import { ToolMachine } from '../entity/toolMachine';
 
 @Injectable()
 export class MachineService {
@@ -89,14 +90,14 @@ export class MachineService {
      WHERE KEY_TYPE = 'C' AND TYP = 'E' AND SUBKEY1 = '${MachineService.machineNameTBR}' AND SUBKEY3 = LOSNR`;
 
   static associatedToolLoggonMachine =
-    `SELECT DISTINCT(GROUPASSIGNMENT.RES_NR) AS TOOLMACHINE FROM HY_GRUPPEN_ZUORD GROUPASSIGNMENT
+    `SELECT GROUPASSIGNMENT.GRUPPE AS GROUPNAME, GROUPASSIGNMENT.RES_NR AS TOOLMACHINE FROM HY_GRUPPEN_ZUORD GROUPASSIGNMENT
      WHERE GROUPASSIGNMENT.RES_NR <> '${MachineService.machineNameTBR}' AND GROUPASSIGNMENT.GRUPPE IN (
      SELECT MACHINEGROUP.GRUPPE FROM HY_GRUPPEN  MACHINEGROUP, HY_GRUPPEN_ZUORD   GROUPASSIGNMENT
      WHERE GROUPASSIGNMENT.RES_NR = '${MachineService.machineNameTBR}'
      AND GROUPASSIGNMENT.GRUPPE = MACHINEGROUP.GRUPPE  AND MACHINEGROUP.AUSW_GRUPPE = 'J')`;
 
   static loggedOnToolSql =
-    `SELECT SUBKEY1 AS MACHINE, SUBKEY6 AS RESOURCEID,RES_NR AS TOOLNAME
+    `SELECT SUBKEY1 AS MACHINE, SUBKEY2 AS OPERATION, SUBKEY6 AS RESOURCEID,RES_NR AS TOOLNAME
     FROM HYBUCH, RES_BESTAND
     WHERE KEY_TYPE = 'O' AND SUBKEY1 IN (${MachineService.toolMachinesTBR})
     AND RES_ID = SUBKEY6`;
@@ -288,6 +289,47 @@ export class MachineService {
     return this.getMachineInternal(machineName, true);
   }
 
+  getToolMachine(toolMachineName: string): Observable<ToolMachine> {
+    let machineRet: ToolMachine;
+    return forkJoin(
+      this._fetchService.query(replaceAll(MachineService.machineSql, [MachineService.machineNameTBR], [toolMachineName])),
+      this._fetchService.query(replaceAll(MachineService.loggedOnToolSql
+        , [MachineService.toolMachinesTBR]
+        , [`'${toolMachineName}'`]))).pipe(
+          map((array: Array<Array<any>>) => {
+            const [
+              machine,
+              loggedOnTools,
+            ] = array;
+
+            if (machine.length === 0) {
+              return null;
+            }
+
+            //#region Initialize Machine
+            machineRet = Object.assign(new ToolMachine(), {
+              machineName: machine[0].MACHINE,
+              description: machine[0].DESCRIPTION,
+            });
+            //#endregion
+
+            //#region Setup Logged On Tools
+            loggedOnTools.forEach(tool => {
+              machineRet.toolsLoggedOn.push({
+                requiredMaterial: ``,
+                loggedOnOperation: tool.OPERATION,
+                loggedOnMachine: tool.MACHINE,
+                toolName: tool.TOOLNAME,
+                toolId: tool.RESOURCEID,
+              });
+            });
+            //#endregion
+
+            return machineRet;
+          })
+        );
+  }
+
   //#region Private methods
   private getMachineInternal(machineName: string, withStatistics: boolean = false): Observable<Machine> {
     let machineRet: Machine;
@@ -369,7 +411,14 @@ export class MachineService {
 
           //#region Setup Tool Machines associated
 
-          associateToolMachines.map(toolMachine => machineRet.toolMachines.push(toolMachine.TOOLMACHINE));
+          if (associateToolMachines.length > 0) {
+            machineRet.toolLogonOrder = associateToolMachines[0].GROUPNAME;
+          }
+
+          associateToolMachines.map((toolMachine) => {
+            if (!machineRet.toolMachines.includes(toolMachine))
+              machineRet.toolMachines.push(toolMachine.TOOLMACHINE);
+          });
 
           //#endregion
 
@@ -481,8 +530,10 @@ export class MachineService {
                 loggedOnTools.forEach(tool => {
                   machineRet.toolsLoggedOn.push({
                     requiredMaterial: ``,
+                    loggedOnOperation: tool.OPERATION,
                     loggedOnMachine: tool.MACHINE,
                     toolName: tool.TOOLNAME,
+                    toolId: tool.RESOURCEID,
                   });
                 });
               })

@@ -239,7 +239,7 @@ export class BatchService {
     );
   }
 
-  getBatchInfoFrom2DBarCode(barCodeOf2D: string): Observable<MaterialBatch> {
+  getBatchInfoFrom2DBarCode(barCodeOf2D: string, requireFullData: boolean = false): Observable<MaterialBatch> {
 
     const batchInfo: MaterialBatch = new MaterialBatch();
 
@@ -254,7 +254,7 @@ export class BatchService {
       batchInfo.dateCode = ret[4];
       batchInfo.SAPBatch = ret[1];
       batchInfo.quantity = batchInfo.startQty = parseInt(ret[2], 10);
-    } else if (barCodeOf2D.startsWith(`3S`)) {
+    } else if (barCodeOf2D.startsWith(`3S`) && !requireFullData) {
       // Sample: 3SH53Y22001293
       batchInfo.name = barCodeOf2D;
       batchInfo.barCode = barCodeOf2D;

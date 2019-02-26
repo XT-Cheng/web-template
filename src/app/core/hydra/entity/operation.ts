@@ -72,7 +72,7 @@ export class Operation {
   //#region Display
 
   get display(): string {
-    return `${this.name}, ${this.article}, ${this.targetQty}, ${this.totalYield}`;
+    return `${this.article}, ${this.targetQty}, ${this.totalYield}`;
   }
 
   //#endregion
@@ -165,8 +165,10 @@ export class ToolItem {
 export class ToolLoggedOn {
   requiredMaterial = '';
 
+  loggedOnOperation = '';
   loggedOnMachine = '';
   toolName = '';
+  toolId = '';
 }
 
 export interface ToolStatus {

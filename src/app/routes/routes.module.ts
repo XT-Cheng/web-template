@@ -46,6 +46,7 @@ import { MobileComponentListComponent } from './mobile/component.list.component'
 import { ReplenishBatchComponent } from './mobile/material/replenish-batch.component';
 import { LogonToolComponent } from './mobile/tool/logon-tool.component';
 import { MobileToolStatusComponent } from './mobile/tool.status.component';
+import { LogoffToolComponent } from './mobile/tool/logoff-tool.component';
 
 const BAPI = [
   BAPITestComponent
@@ -103,6 +104,7 @@ const COMPONENTS = [
   GenerateOutputBatchComponent,
   // Tool
   LogonToolComponent,
+  LogoffToolComponent,
 ];
 const COMPONENTS_NOROUNT = [];
 

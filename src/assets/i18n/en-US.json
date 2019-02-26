@@ -259,6 +259,11 @@
   "app.mobile.tool.logon.batch.placeholder": "Pls input Batch Nr.",
   "app.mobile.tool.logon.action": "LogOn Tool",
 
+  "app.mobile.tool.logoff": "LogOff Tool",
+  "app.mobile.tool.logoff.toolMachine": "Tool Machine",
+  "app.mobile.tool.logoff.toolMachine.placeholder": "Pls input Tool Machine Nr.",
+  "app.mobile.tool.logoff.action": "LogOff Tool",
+
   "app.mobile.material.logoff": "LogOff Batch",
   "app.mobile.material.logoff.machine": "Machine",
   "app.mobile.material.logoff.machine.placeholder": "Pls input Machine Nr.",

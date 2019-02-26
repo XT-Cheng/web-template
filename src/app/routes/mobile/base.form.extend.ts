@@ -13,6 +13,8 @@ import { Operation, ComponentLoggedOn, ToolStatus, ComponentStatus } from '@core
 import { DOCUMENT } from '@angular/common';
 import { Machine } from '@core/hydra/entity/machine';
 import { MaterialBatch } from '@core/hydra/entity/batch';
+import { Tool } from '@core/hydra/entity/tool';
+import { toNumber } from '@delon/util';
 
 interface ITranError {
   context: any;
@@ -140,8 +142,8 @@ export abstract class BaseExtendForm {
     return this.form.value.machineData as Machine;
   }
 
-  protected get toolData(): Machine {
-    return this.form.value.toolData as Machine;
+  protected get toolData(): Tool {
+    return this.form.value.toolData as Tool;
   }
 
   protected get operationData(): Operation {
@@ -347,12 +349,21 @@ export abstract class BaseExtendForm {
     return null;
   }
 
+  getStyle(value) {
+    const missed = toNumber(value, 0);
+    return missed === 0 ? { 'color': 'green' } : { 'color': 'red' };
+  }
+
   hasMachineData() {
     return (!!this.form.value.machineData);
   }
 
   hasOperationData() {
     return (!!this.form.value.operationData);
+  }
+
+  hasBatchData() {
+    return (!!this.form.value.batchData);
   }
 
   //#region Badge related

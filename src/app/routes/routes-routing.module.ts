@@ -33,6 +33,7 @@ import { GenerateOutputBatchComponent } from './mobile/operation/generateOutputB
 import { LogoffBatchComponent } from './mobile/material/logoff-batch.component';
 import { ReplenishBatchComponent } from './mobile/material/replenish-batch.component';
 import { LogonToolComponent } from './mobile/tool/logon-tool.component';
+import { LogoffToolComponent } from './mobile/tool/logoff-tool.component';
 
 const routes: Routes = [
   {
@@ -56,6 +57,7 @@ const routes: Routes = [
       { path: 'material/logoff', component: LogoffBatchComponent },
       { path: 'material/replenish', component: ReplenishBatchComponent },
       { path: 'tool/logon', component: LogonToolComponent },
+      { path: 'tool/logoff', component: LogoffToolComponent },
       { path: 'operation/logon', component: LogonOperationComponent },
       { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },
       { path: 'material/find', component: FindBatchComponent },

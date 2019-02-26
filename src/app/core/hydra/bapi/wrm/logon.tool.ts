@@ -3,7 +3,7 @@ import { DialogBase } from '@core/hydra/bapi/dialog.base';
 
 export class LogonTool extends DialogBase {
   constructor(private operation: string, private machineName: string, private badgeName: string,
-    private toolId: string) {
+    private toolId: number) {
     super(DialogTypeEnum.LOGON_TOOL);
   }
 

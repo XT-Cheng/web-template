@@ -166,7 +166,7 @@ export class OperationService {
               operationRet.toolItems.set(item.REQUIRED_MATERIAL, {
                 requiredMaterial: item.REQUIRED_MATERIAL,
                 requiredQty: item.QUANTITY,
-                availableTools: []
+                availableTools: [item.TOOLNAME]
               });
             }
           });

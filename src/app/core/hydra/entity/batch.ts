@@ -16,9 +16,9 @@ export class MaterialBatch {
   barCode: string;
   get display(): string {
     if (this.bufferDescription) {
-      return `${this.name}, ${this.material}, ${this.quantity}, ${this.bufferDescription}`;
+      return `${this.material}, ${this.quantity}, ${this.bufferDescription}`;
     } else {
-      return `${this.name}, ${this.material}, ${this.quantity}`;
+      return `${this.material}, ${this.quantity}`;
     }
   }
 }

@@ -15,6 +15,7 @@ export class ToolService {
   static toolSQL =
     `SELECT RES.RES_ID AS ID, RES.RES_NR AS NAME, RES.BEZEICHNUNG AS DESCRIPTION,
  MAINTENNACE.N_SOLLTAKTE AS NEXTCYCLES, MAINTENNACE.I_TAKTE AS CURRENTCYCLES,
+ RESSTATUS.AKTIV AS ACTIVE, RESSTATUS.MASCH_NR AS LOGGEDONTO,
  STATUSTEXT.STATUSTEXT AS CURRENTSTATUS, RESSTATUS.STATUS AS CURRENTSTATUSNR
  FROM RES_BESTAND RES, RES_WARTUNGEN MAINTENNACE, RES_STATUS RESSTATUS, RES_STATUS_ZUORD STATUSTEXT
  WHERE RES.RES_NR = '${ToolService.toolNameTBR}' AND RES.RES_TYP = 'VOR'
@@ -61,6 +62,14 @@ export class ToolService {
 
           if (tool[0].NEXTCYCLES) {
             toolRet.nextMaintennaceCycles = toNumber(tool[0].NEXTCYCLES, -1);
+          }
+
+          if (tool[0].ACTIVE === 'J') {
+            toolRet.occupied = true;
+            toolRet.loggedOnMachine = tool[0].LOGGEDONTO;
+          } else {
+            toolRet.occupied = false;
+            toolRet.loggedOnMachine = '';
           }
 
           return toolRet;

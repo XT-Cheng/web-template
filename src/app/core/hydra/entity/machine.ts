@@ -28,6 +28,7 @@ export class Machine {
 
   // Tool Machine belong to this Line
   toolMachines: string[] = [];
+  toolLogonOrder: string;
 
   // Operators Logged On
   operatorsLoggedOn: OperatorLoggedOn[] = [];
@@ -114,9 +115,9 @@ export class Machine {
 
   get display(): string {
     if (this.currentOperation) {
-      return `${this.machineName}, ${this.currentOperation.leadOrder} / ${this.currentOperation.order}`;
+      return `${this.currentOperation.leadOrder} / ${this.currentOperation.order}`;
     } else {
-      return `${this.machineName}, No Order Logon`;
+      return `No Order Logon`;
     }
   }
 

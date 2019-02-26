@@ -79,7 +79,7 @@ export class CreateBatchComponent extends BaseExtendForm {
   requestBatchData = () => {
     let batch: MaterialBatch;
 
-    return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch).pipe(
+    return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch, true).pipe(
       switchMap((barCodeData: MaterialBatch) => {
         batch = barCodeData;
         return this._batchService.isBatchNameExist(barCodeData.name);

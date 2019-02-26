@@ -35,11 +35,6 @@
             [placeholder]="'app.mobile.tool.logon.toolMachine.placeholder' | translate">
         </div>
       </div>
-      <label for="weuiAgree" class="weui-agree">
-        <span class="weui-agree__text">
-          {{getAssociateDataDisplay('toolMachine')}}
-        </span>
-      </label>
       <div class="weui-cell">
         <div class="weui-cell__hd">
           <label class="weui-label">{{'app.mobile.tool.logon.batch' | translate}}</label>
@@ -54,26 +49,28 @@
           {{getAssociateDataDisplay('batch')}}
         </span>
       </label>
-      <div class="weui-cell">
-        <div class="weui-cell__hd">
-          <label class="weui-label">{{'app.mobile.tool.logon.tool' | translate}}</label>
+      <ng-container *ngIf='hasBatchData()'>
+        <div class="weui-cell">
+          <div class="weui-cell__hd">
+            <label class="weui-label">{{'app.mobile.tool.logon.tool' | translate}}</label>
+          </div>
+          <div class="weui-cell__bd">
+            <input class="weui-input" id='tool' formControlName="tool" [fwShareKeyHandler]='{controlName: "tool", inputing: Inputing, nextInputId: "badge", req: request(requestToolData, requestToolDataSuccess, requestToolDataFailed)}'
+              [placeholder]="'app.mobile.tool.logon.tool.placeholder' | translate">
+          </div>
         </div>
-        <div class="weui-cell__bd">
-          <input class="weui-input" id='tool' formControlName="tool" [fwShareKeyHandler]='{controlName: "tool", inputing: Inputing, nextInputId: "badge", req: request(requestToolData, requestToolDataSuccess, requestToolDataFailed)}'
-            [placeholder]="'app.mobile.tool.logon.tool.placeholder' | translate">
-        </div>
-      </div>
-      <label for="weuiAgree" class="weui-agree">
-        <span class="weui-agree__text">
-          {{getAssociateDataDisplay('tool')}}
-        </span>
-      </label>
+        <label for="weuiAgree" class="weui-agree">
+          <span class="weui-agree__text">
+            {{getAssociateDataDisplay('tool')}}
+          </span>
+        </label>
+      </ng-container>
     </ng-container>
     <ng-container *ngIf='getOperationToolStatusDisplay((toolStatus$ | async)) as display'>
       <div class="weui-cell weui-cell_board weui-cell_access" (click)="showToolStatus('toolMachine')">
         <div class="weui-cell__bd">
           <span>{{'app.common.tool.require' | translate}}: {{display.total}}, {{'app.common.miss' |
-            translate}}: <span [ngStyle]="{'color': 'red'}">{{display.missed}}</span></span>
+            translate}}: <span [ngStyle]="getStyle(display.missed)">{{display.missed}}</span></span>
         </div>
         <div class="weui-cell__ft"></div>
       </div>

@@ -257,6 +257,11 @@
   "app.mobile.tool.logon.batch.placeholder": "请输入批号",
   "app.mobile.tool.logon.action": "模具登录",
 
+  "app.mobile.tool.logoff": "模具卸载",
+  "app.mobile.tool.logoff.toolMachine": "端子机",
+  "app.mobile.tool.logoff.toolMachine.placeholder": "请输入端子机",
+  "app.mobile.tool.logoff.action": "模具卸载",
+
   "app.mobile.material.logoff": "物料登出",
   "app.mobile.material.logoff.machine": "设备",
   "app.mobile.material.logoff.machine.placeholder": "请输入设备",

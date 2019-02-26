@@ -7,6 +7,8 @@ export class Tool {
   currentStatus = '';
   currentStatusNr = -1;
 
+  loggedOnMachine = '';
+  occupied = false;
   currentCycles = -1;
   nextMaintennaceCycles = -1;
 
@@ -18,4 +20,8 @@ export class Tool {
   }
 
   //#endregion
+
+  get display(): string {
+    return this.description;
+  }
 }
