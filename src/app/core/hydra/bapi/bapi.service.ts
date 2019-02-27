@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { DialogTypeEnum } from '@core/hydra/bapi/constants';
-import { TestBapi } from '../bapi/test.bapi';
+import { TestBapi } from './test.bapi';
 
 @Injectable()
 export class BapiService {

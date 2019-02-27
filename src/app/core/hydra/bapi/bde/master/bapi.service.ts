@@ -4,7 +4,7 @@ import { CreatePerson } from './create.person';
 import { DeletePerson } from './delete.person';
 
 @Injectable()
-export class MasterBapiService {
+export class BDEMasterBapiService {
   //#region Private members
 
   //#endregion

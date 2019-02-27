@@ -71,8 +71,8 @@ export class OperationService {
      WHERE KEY_TYPE = 'O' AND SUBKEY2 = '${OperationService.operationNameTBR}' AND RES_ID = SUBKEY6 AND RES_NR_T(+) = RES_NR`;
 
   static loggedOnOperationSql =
-    `SELECT PROBLEM_PRI AS PROBLEM , GUT_PRI AS YIELD, AUS_PRI AS SCRAP
-     FROM HYBUCH WHERE KEY_TYPE = 'A' AND SUBKEY2 = '${OperationService.operationNameTBR}'`;
+    `SELECT SUBKEY3 AS CURRENTBATCH, PROBLEM_PRI AS PROBLEM , GUT_PRI AS YIELD, AUS_PRI AS SCRAP
+     FROM HYBUCH WHERE KEY_TYPE = 'C' AND TYP = 'A' AND SUBKEY2 = '${OperationService.operationNameTBR}'`;
   //#endregion
 
   //#region Private members
@@ -178,7 +178,7 @@ export class OperationService {
             operationRet.operatorsLoggedOn.set(operator.PERSON, {
               personNumber: operator.PERSON,
               name: operator.NAME,
-              badgeId: operator.BADGE,
+              badge: operator.BADGE,
             });
           });
 
@@ -200,6 +200,7 @@ export class OperationService {
 
           //#region Setup not confirmed quantity
           loggedOnOperation.map(operation => {
+            operationRet.currentOutputBatch = operation.CURRENTBATCH;
             operationRet.pendingProblemQty = toNumber(operation.PROBLEM);
             operationRet.pendingYieldQty = toNumber(operation.YIELD);
             operationRet.pendingScrapQty = toNumber(operation.SCRAP);

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FetchService } from './fetch.service';
 import { Observable, forkJoin } from 'rxjs';
-import { Tool } from '../entity/tool';
+import { Tool, MaintenanceStatusEnum } from '../entity/tool';
 import { map } from 'rxjs/operators';
 import { replaceAll } from '@core/utils/helpers';
 import { toNumber } from '@delon/util';
@@ -14,6 +14,7 @@ export class ToolService {
 
   static toolSQL =
     `SELECT RES.RES_ID AS ID, RES.RES_NR AS NAME, RES.BEZEICHNUNG AS DESCRIPTION,
+ MAINTENNACE.WART_ID AS MAIN_ID, MAINTENNACE.ZUSTAND AS MAIN_STATUS, MAINTENNACE.S_SOLLTAKTE AS INTERVALCYCLES,
  MAINTENNACE.N_SOLLTAKTE AS NEXTCYCLES, MAINTENNACE.I_TAKTE AS CURRENTCYCLES,
  RESSTATUS.AKTIV AS ACTIVE, RESSTATUS.MASCH_NR AS LOGGEDONTO,
  STATUSTEXT.STATUSTEXT AS CURRENTSTATUS, RESSTATUS.STATUS AS CURRENTSTATUSNR
@@ -22,6 +23,7 @@ export class ToolService {
  AND RESSTATUS.RES_ID = RES.RES_ID AND STATUSTEXT.STATUS = RESSTATUS.STATUS AND STATUSTEXT.RES_TYP = 'VOR'
  AND RES.RES_ID = MAINTENNACE.RES_ID(+)`;
 
+  static toolMaintenanceSQL = ``;
   //#endregion
 
   //#region Private members
@@ -40,11 +42,10 @@ export class ToolService {
     return forkJoin(
       this._fetchService.query(replaceAll(ToolService.toolSQL, [ToolService.toolNameTBR], [toolName]))).pipe(
         map((array: Array<Array<any>>) => {
-          const [
-            tool] = array;
+          const [tool] = array;
 
           if (tool.length === 0) {
-            return;
+            return null;
           }
 
           //#region Initialize Tool
@@ -56,12 +57,14 @@ export class ToolService {
             currentStatusNr: tool[0].CURRENTSTATUSNR,
           });
 
-          if (tool[0].CURRENTCYCLES) {
-            toolRet.currentCycles = toNumber(tool[0].CURRENTCYCLES, -1);
-          }
+          if (tool[0].MAIN_ID) {
+            const typedString = tool[0].MAIN_STATUS as keyof typeof MaintenanceStatusEnum;
 
-          if (tool[0].NEXTCYCLES) {
             toolRet.nextMaintennaceCycles = toNumber(tool[0].NEXTCYCLES, -1);
+            toolRet.currentCycles = toNumber(tool[0].CURRENTCYCLES, -1);
+            toolRet.intervalCycles = toNumber(tool[0].INTERVALCYCLES, -1);
+            toolRet.maintenanceId = toNumber(tool[0].MAIN_ID, -1);
+            toolRet.maintenanceStatus = MaintenanceStatusEnum[typedString];
           }
 
           if (tool[0].ACTIVE === 'J') {

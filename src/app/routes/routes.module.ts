@@ -47,6 +47,12 @@ import { ReplenishBatchComponent } from './mobile/material/replenish-batch.compo
 import { LogonToolComponent } from './mobile/tool/logon-tool.component';
 import { MobileToolStatusComponent } from './mobile/tool.status.component';
 import { LogoffToolComponent } from './mobile/tool/logoff-tool.component';
+import { InterruptOperationComponent } from './mobile/operation/interrupt-operation.component';
+import { LogoffOperationComponent } from './mobile/operation/logoff-operation.component';
+import { ResetToolMaintenanceComponent } from './mobile/tool/reset-tool-maintenance.component';
+import { MobileOperatorListComponent } from './mobile/operator.list.component';
+import { LogonOperatorComponent } from './mobile/operator/logon-operator.component';
+import { LogoffOperatorComponent } from './mobile/operator/logoff-operator.component';
 
 const BAPI = [
   BAPITestComponent
@@ -88,6 +94,7 @@ const COMPONENTS = [
   MobileOperationListComponent,
   MobileComponentListComponent,
   MobileToolStatusComponent,
+  MobileOperatorListComponent,
   // Material
   CreateBatchComponent,
   FindBatchComponent,
@@ -102,9 +109,15 @@ const COMPONENTS = [
   // Opeartion
   LogonOperationComponent,
   GenerateOutputBatchComponent,
+  InterruptOperationComponent,
+  LogoffOperationComponent,
   // Tool
   LogonToolComponent,
   LogoffToolComponent,
+  ResetToolMaintenanceComponent,
+  // Operator
+  LogonOperatorComponent,
+  LogoffOperatorComponent,
 ];
 const COMPONENTS_NOROUNT = [];
 

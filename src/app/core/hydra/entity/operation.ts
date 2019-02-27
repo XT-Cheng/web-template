@@ -33,6 +33,8 @@ export class Operation {
   totalScrap = -1;
   targetCycleTime = -1;
 
+  currentOutputBatch = '';
+
   //#region Date fields
 
   earliestStart: Date = null;
@@ -48,7 +50,7 @@ export class Operation {
 
   //#endregion
 
-  //#region Not confirmed quantity
+  //#region Partial confirmed quantity
 
   pendingProblemQty = 0;
   pendingYieldQty = 0;
@@ -183,5 +185,5 @@ export class OperatorLoggedOn {
   personNumber = 1;
 
   name = '';
-  badgeId = '';
+  badge = '';
 }

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { BapiService } from '@core/hydra/service/bapi.service';
+import { BapiService } from '@core/hydra/bapi/bapi.service';
 import { finalize } from 'rxjs/operators';
 import { VBoardService } from '@core/hydra/service/vBoard.service';
 import { HttpClient } from '@angular/common/http';

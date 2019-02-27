@@ -137,12 +137,28 @@ export abstract class BaseExtendForm {
           operator.lastName = this.storedData.badgeData.lastName;
         }
 
-        this.form.setValue(Object.assign(this.form.value, {
+        this.form.patchValue(Object.assign(this.form.value, {
           badge: operator ? operator.badge : ``,
           badgeData: operator,
         }));
 
         this.badgeButtonText = operator ? operator.display : BaseExtendForm.SETUP_OPERATOR;
+
+        // if (this.componentStatusPopup) {
+        //   this.componentStatusPopup.DEF.cancel = this.i18n.fanyi(`app.common.cancel`);
+        //   this.componentStatusPopup.config.confirm = this.i18n.fanyi(`app.common.confirm`);
+        // }
+
+        // if (this.operationListPopup) {
+        //   this.operationListPopup.config.cancel = this.i18n.fanyi(`app.common.cancel`);
+        //   this.operationListPopup.config.confirm = this.i18n.fanyi(`app.common.confirm`);
+        // }
+
+        // if (this.toolStatusPopup) {
+        //   this.toolStatusPopup.config.cancel = this.i18n.fanyi(`app.common.cancel`);
+        //   this.toolStatusPopup.config.confirm = this.i18n.fanyi(`app.common.confirm`);
+        // }
+        this.init();
       });
   }
 
@@ -151,6 +167,10 @@ export abstract class BaseExtendForm {
     this.settingService.setApp(Object.assign(this.settingService.app, {
       [this.key]: data
     }));
+  }
+
+  protected get title(): string {
+    return this.i18n.fanyi(this.key);
   }
 
   protected get storedData(): any {
@@ -184,15 +204,15 @@ export abstract class BaseExtendForm {
   //#endregion
 
   //#region Protected methods
-  protected get title(): string {
-    return this.i18n.fanyi(this.key);
-  }
 
   protected afterReset() {
   }
 
   protected isValid() {
     return true;
+  }
+
+  protected init() {
   }
   //#endregion
 
@@ -269,7 +289,7 @@ export abstract class BaseExtendForm {
       operator.lastName = this.storedData.badgeData.lastName;
     }
 
-    this.form.setValue(Object.assign(this.form.value, {
+    this.form.patchValue(Object.assign(this.form.value, {
       badge: operator ? operator.badge : ``,
       badgeData: operator,
     }));

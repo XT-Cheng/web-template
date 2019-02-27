@@ -9,6 +9,7 @@ import { Operation } from '@core/hydra/entity/operation';
 import { Machine } from '@core/hydra/entity/machine';
 import { Tool } from '@core/hydra/entity/tool';
 import { LogoffTool } from './logoff.tool';
+import { ResetTool } from './reset.tool';
 
 @Injectable()
 export class WRMBapiService {
@@ -41,6 +42,16 @@ export class WRMBapiService {
       map((ret: IActionResult) => {
         return Object.assign(ret, {
           description: `Tool ${tool.toolId} Logged Off!`
+        });
+      })
+    );
+  }
+
+  resetTool(tool: Tool, operator: Operator): Observable<IActionResult> {
+    return new ResetTool(tool.toolId, tool.maintenanceId, operator.badge).execute(this._http).pipe(
+      map((ret: IActionResult) => {
+        return Object.assign(ret, {
+          description: `Tool ${tool.toolId} Reset!`
         });
       })
     );

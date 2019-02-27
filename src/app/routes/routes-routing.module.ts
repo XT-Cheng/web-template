@@ -34,6 +34,11 @@ import { LogoffBatchComponent } from './mobile/material/logoff-batch.component';
 import { ReplenishBatchComponent } from './mobile/material/replenish-batch.component';
 import { LogonToolComponent } from './mobile/tool/logon-tool.component';
 import { LogoffToolComponent } from './mobile/tool/logoff-tool.component';
+import { InterruptOperationComponent } from './mobile/operation/interrupt-operation.component';
+import { LogoffOperationComponent } from './mobile/operation/logoff-operation.component';
+import { ResetToolMaintenanceComponent } from './mobile/tool/reset-tool-maintenance.component';
+import { LogonOperatorComponent } from './mobile/operator/logon-operator.component';
+import { LogoffOperatorComponent } from './mobile/operator/logoff-operator.component';
 
 const routes: Routes = [
   {
@@ -58,7 +63,12 @@ const routes: Routes = [
       { path: 'material/replenish', component: ReplenishBatchComponent },
       { path: 'tool/logon', component: LogonToolComponent },
       { path: 'tool/logoff', component: LogoffToolComponent },
+      { path: 'tool/reset', component: ResetToolMaintenanceComponent },
       { path: 'operation/logon', component: LogonOperationComponent },
+      { path: 'operator/logon', component: LogonOperatorComponent },
+      { path: 'operator/logoff', component: LogoffOperatorComponent },
+      { path: 'operation/interrupt', component: InterruptOperationComponent },
+      { path: 'operation/logoff', component: LogoffOperationComponent },
       { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },
       { path: 'material/find', component: FindBatchComponent },
       // 业务子模块

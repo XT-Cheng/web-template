@@ -30,7 +30,7 @@ export class MPLBapiService {
   //#endregion
 
   //#region Public methods
-  logonInputBatch(operation: Operation | { name: string }, machine: Machine, operator: Operator,
+  logonInputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string }, operator: Operator,
     batch: MaterialBatch | { name: string, material: string }, pos: number): Observable<IActionResult> {
     return new LogonInputBatch(operation.name, machine.machineName, operator.badge, batch.name, batch.material, pos)
       .execute(this._http).pipe(

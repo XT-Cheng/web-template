@@ -14,29 +14,29 @@
         {{getAssociateDataDisplay('machine')}}
       </span>
     </label>
-    <div [ngStyle]="{'flex': 1}">
-      <ng-container *ngIf='getCurrentOperationDisplay() as display'>
-        <div class="weui-cell weui-cell_access">
-          <div class="weui-panel__bd">
-            <div class="weui-media-box weui-media-box_text">
-              <h4 class="weui-media-box__title">{{display.title}}</h4>
-              <p class="weui-media-box__desc">{{display.description}}</p>
-            </div>
+    <ng-container *ngIf='getCurrentOperationDisplay() as display'>
+      <div class="weui-cell">
+        <div class="weui-panel__bd">
+          <div class="weui-media-box weui-media-box_text">
+            <h4 class="weui-media-box__title">{{display.title}}</h4>
+            <p class="weui-media-box__desc">{{display.description}}</p>
           </div>
         </div>
-        <div class="weui-cell">
-          <div class="weui-cell__hd">
-            <label class="weui-label">{{'app.mobile.operation.generateOutputBatch.quantity' | translate}}</label>
-          </div>
-          <div class="weui-cell__bd">
-            <input class="weui-input" id='quantity' formControlName="quantity" [fwShareKeyHandler]='{controlName: "quantity", inputing: Inputing, req: request(requestQuantityData, requestQuantityDataSuccess, requestQuantityDataFailed)}'
-              [placeholder]="'app.mobile.operation.generateOutputBatch.quantity.placeholder' | translate">
-          </div>
+      </div>
+      <div class="weui-cell">
+        <div class="weui-cell__hd">
+          <label class="weui-label">{{'app.mobile.operation.generateOutputBatch.quantity' | translate}}</label>
         </div>
-      </ng-container>
+        <div class="weui-cell__bd">
+          <input class="weui-input" id='quantity' formControlName="quantity" [fwShareKeyHandler]='{controlName: "quantity", inputing: Inputing, req: request(requestQuantityData, requestQuantityDataSuccess, requestQuantityDataFailed)}'
+            [placeholder]="'app.mobile.operation.generateOutputBatch.quantity.placeholder' | translate">
+        </div>
+      </div>
+    </ng-container>
+    <div class="mobile-fill">
+      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(generateOutputBatch, generateOutputBatchSuccess, generateOutputBatchFailed)'>{{'app.mobile.operation.generateOutputBatch.action'
+        | translate}}</button>
     </div>
-    <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(generateOutputBatch, generateOutputBatchSuccess, generateOutputBatchFailed)'>{{'app.mobile.operation.generateOutputBatch.action'
-      | translate}}</button>
     <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
       [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
   </div>

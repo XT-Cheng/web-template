@@ -4,7 +4,7 @@ import { throwIfAlreadyLoaded } from './module-import-guard';
 import { I18NService } from './i18n/i18n.service';
 import { AuthService } from './auth/providers/auth.service';
 import { FetchService } from './hydra/service/fetch.service';
-import { BapiService } from './hydra/service/bapi.service';
+import { BapiService } from './hydra/bapi/bapi.service';
 import { VBoardService } from './hydra/service/vBoard.service';
 import { BatchService } from './hydra/service/batch.service';
 import { MachineService } from './hydra/service/machine.service';
@@ -14,10 +14,11 @@ import { PrintService } from './hydra/service/print.service';
 import { OperationService } from './hydra/service/operation.service';
 import { MPLBapiService } from './hydra/bapi/mpl/bapi.service';
 import { BDEBapiService } from './hydra/bapi/bde/bapi.service';
-import { MasterBapiService } from './hydra/bapi/master/bapi.service';
 import { MPLMasterBapiService } from './hydra/bapi/mpl/master/bapi.service';
-import { ToolService } from './hydra/service/toolService';
+import { ToolService } from './hydra/service/tool.service';
 import { WRMBapiService } from './hydra/bapi/wrm/bapi.service';
+import { BDEMasterBapiService } from './hydra/bapi/bde/master/bapi.service';
+import { MasterService } from './hydra/service/master.service';
 
 @NgModule({
   providers: [
@@ -33,8 +34,8 @@ import { WRMBapiService } from './hydra/bapi/wrm/bapi.service';
     VBoardService,
     WebAPIService,
     PrintService,
-
-    MasterBapiService,
+    MasterService,
+    BDEMasterBapiService,
     MPLBapiService,
     MPLMasterBapiService,
     BDEBapiService,

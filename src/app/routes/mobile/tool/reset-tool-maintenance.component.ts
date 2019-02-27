@@ -15,21 +15,21 @@ import { MaterialBatch } from '@core/hydra/entity/batch';
 import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
 
 @Component({
-  selector: 'fw-tool-logoff',
-  templateUrl: 'logoff-tool.component.html',
-  styleUrls: ['./logoff-tool.component.scss'],
+  selector: 'fw-tool-reset-maintenance',
+  templateUrl: 'reset-tool-maintenance.component.html',
+  styleUrls: ['./reset-tool-maintenance.component.scss'],
   host: {
     '[class.mobile-layout]': 'true',
   },
 })
-export class LogoffToolComponent extends BaseExtendForm {
+export class ResetToolMaintenanceComponent extends BaseExtendForm {
   //#region View Children
 
   //#endregion
 
   //#region Protected member
 
-  protected key = `app.mobile.tool.logoff`;
+  protected key = `app.mobile.tool.reset`;
 
   //#endregion
 
@@ -45,12 +45,15 @@ export class LogoffToolComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _machineService: MachineService,
+    private _toolService: ToolService,
     private _bapiService: WRMBapiService,
   ) {
     super(injector);
     this.addControls({
-      toolMachine: [null, [Validators.required], 'toolMachineData'],
+      tool: [null, [Validators.required], 'toolData'],
+      current: [null],
+      next: [null],
+      interval: [null],
     });
   }
 
@@ -62,26 +65,33 @@ export class LogoffToolComponent extends BaseExtendForm {
 
   //#region Data Request
 
-  //#region Tool Machine Reqeust
+  //#region Tool Reqeust
 
-  requestToolMachineDataSuccess = () => {
+  requestToolDataSuccess = () => {
+    this.form.controls.current.setValue(this.form.value.toolData.currentCycles);
+    this.form.controls.next.setValue(this.form.value.toolData.nextMaintennaceCycles);
+    this.form.controls.interval.setValue(this.form.value.toolData.intervalCycles);
+
+    this.form.controls.current.disable();
+    this.form.controls.next.disable();
+    this.form.controls.interval.disable();
   }
 
-  requestToolMachineDataFailed = () => {
+  requestToolDataFailed = () => {
   }
 
-  requestToolMachineData = () => {
-    return this._machineService.getToolMachine(this.form.value.toolMachine).pipe(
-      map(toolMachine => {
-        if (toolMachine === null) {
-          throw Error(`Tool Machine ${this.form.value.toolMachine} invalid!`);
+  requestToolData = () => {
+    return this._toolService.getTool(this.form.value.tool).pipe(
+      map(tool => {
+        if (tool === null) {
+          throw Error(`Tool ${this.form.value.tool} invalid!`);
         }
 
-        if (toolMachine.toolsLoggedOn.length === 0) {
-          throw Error(`Tool Machine ${this.form.value.toolMachine} has no tool logged on!`);
+        if (tool.maintenanceId === -1) {
+          throw Error(`Tool ${this.form.value.tool} has no maintenance setup!`);
         }
 
-        return toolMachine;
+        return tool;
       })
     );
   }
@@ -91,7 +101,11 @@ export class LogoffToolComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
-
+  protected init() {
+    this.form.controls.current.disable();
+    this.form.controls.next.disable();
+    this.form.controls.interval.disable();
+  }
   //#endregion
 
   //#region Event Handler
@@ -99,17 +113,15 @@ export class LogoffToolComponent extends BaseExtendForm {
   //#endregion
 
   //#region Exeuction
-  logoffToolSuccess = () => {
+  resetToolSuccess = () => {
   }
 
-  logoffToolFailed = () => {
+  resetToolFailed = () => {
   }
 
-  logoffTool = () => {
-    // LogOff Tool
-    return this._bapiService.logoffTool({ name: this.form.value.toolMachineData.toolsLoggedOn[0].loggedOnOperation },
-      { machineName: this.form.value.toolMachine }, { toolId: this.form.value.toolMachineData.toolsLoggedOn[0].toolId },
-      this.operatorData);
+  resetTool = () => {
+    // Reset Tool
+    return this._bapiService.resetTool(this.form.value.toolData, this.operatorData);
   }
 
   //#endregion
@@ -117,7 +129,7 @@ export class LogoffToolComponent extends BaseExtendForm {
   //#region Override methods
 
   protected afterReset() {
-    this.document.getElementById(`toolMachine`).focus();
+    this.document.getElementById(`tool`).focus();
   }
 
   //#endregion

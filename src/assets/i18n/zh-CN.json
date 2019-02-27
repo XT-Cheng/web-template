@@ -115,7 +115,10 @@
   "app.monitor.resource-surplus": "资源剩余",
   "app.monitor.fund-surplus": "补贴资金剩余",
 
+  "app.common.total": "总计",
+  "app.common.loggedOn": "已登录",
   "app.common.cancel": "取消",
+  "app.common.confirm": "确定",
   "app.common.childQty": "子批数量",
   "app.common.component.require": "物料需求",
   "app.common.tool.require": "模具需求",
@@ -203,6 +206,20 @@
   "app.mobile.dialog.no": "否",
   "app.mobile.dialog.yes": "是",
 
+  "app.mobile.operator.logon": "人员登录",
+  "app.mobile.operator.logon.machine": "设备",
+  "app.mobile.operator.logon.machine.placeholder": "请输入设备",
+  "app.mobile.operator.logon.operator": "工牌",
+  "app.mobile.operator.logon.operator.placeholder": "请输入工牌",
+  "app.mobile.operator.logon.action": "人员登录",
+
+  "app.mobile.operator.logoff": "人员登出",
+  "app.mobile.operator.logoff.machine": "设备",
+  "app.mobile.operator.logoff.machine.placeholder": "请输入设备",
+  "app.mobile.operator.logoff.operator": "工牌",
+  "app.mobile.operator.logoff.operator.placeholder": "请输入工牌",
+  "app.mobile.operator.logoff.action": "人员登出",
+
   "app.mobile.material.create": "物料批次创建",
   "app.mobile.material.create.batch": "批号",
   "app.mobile.material.create.batch.placeholder": "请输入批号",
@@ -263,6 +280,15 @@
   "app.mobile.tool.logon.batch.placeholder": "请输入批号",
   "app.mobile.tool.logon.action": "模具登录",
 
+  "app.mobile.tool.reset": "重置模具",
+  "app.mobile.tool.reset.tool": "模具号",
+  "app.mobile.tool.reset.tool.placeholder": "请输入模具号",
+  "app.mobile.tool.reset.current": "当前次数",
+  "app.mobile.tool.reset.next": "需维护次数",
+  "app.mobile.tool.reset.interval": "间隔",
+  "app.mobile.tool.reset.status": "状态",
+  "app.mobile.tool.reset.action": "重置模具",
+
   "app.mobile.tool.logoff": "模具卸载",
   "app.mobile.tool.logoff.toolMachine": "端子机",
   "app.mobile.tool.logoff.toolMachine.placeholder": "请输入端子机",
@@ -299,6 +325,16 @@
   "app.mobile.operation.logon.operation": "工单",
   "app.mobile.operation.logon.operation.placeholder": "请输入工单",
   "app.mobile.operation.logon.action": "登录工单",
+
+  "app.mobile.operation.interrupt": "中断工单",
+  "app.mobile.operation.interrupt.machine": "设备",
+  "app.mobile.operation.interrupt.machine.placeholder": "请输入设备",
+  "app.mobile.operation.interrupt.action": "中断工单",
+
+  "app.mobile.operation.logoff": "结束工单",
+  "app.mobile.operation.logoff.machine": "设备",
+  "app.mobile.operation.logoff.machine.placeholder": "请输入设备",
+  "app.mobile.operation.logoff.action": "结束工单",
 
   "app.mobile.operation.generateOutputBatch": "生成输出批次",
   "app.mobile.operation.generateOutputBatch.machine": "设备",

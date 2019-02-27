@@ -389,7 +389,7 @@ export class MachineService {
             machineRet.operatorsLoggedOn.push({
               personNumber: operator.PERSON,
               name: operator.NAME,
-              badgeId: operator.BADGE,
+              badge: operator.BADGE,
             });
           });
 

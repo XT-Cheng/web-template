@@ -1,9 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { XlsxService, STColumn } from '@delon/abc';
-import { HttpClient } from '@angular/common/http';
 import { ImportHandleBase } from '@shared/components/import.handle.base';
-import { BapiService } from '@core/hydra/service/bapi.service';
-import { MasterBapiService } from '@core/hydra/bapi/master/bapi.service';
+import { BDEMasterBapiService } from '@core/hydra/bapi/bde/master/bapi.service';
 
 @Component({
   selector: 'app-import-person',
@@ -19,7 +17,7 @@ export class ImportPersonComponent extends ImportHandleBase {
 
   //#region Constructor
 
-  constructor(_xlsx: XlsxService, private _bapiService: MasterBapiService) {
+  constructor(_xlsx: XlsxService, private _bapiService: BDEMasterBapiService) {
     super(_xlsx);
   }
 
@@ -35,7 +33,7 @@ export class ImportPersonComponent extends ImportHandleBase {
   }
 
   import() {
-    this.execute((records) => {
+    this.execute(() => {
 
       return this._bapiService.createHRPerson();
     });
@@ -48,7 +46,7 @@ export class ImportPersonComponent extends ImportHandleBase {
   }
 
   deleteData() {
-    this.execute((records) => {
+    this.execute(() => {
 
       return this._bapiService.deleteHRPerson();
     });

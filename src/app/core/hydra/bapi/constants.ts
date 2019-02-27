@@ -1,6 +1,6 @@
 export enum DialogTypeEnum {
-  LOGON_USER = 'P_AN',
-  LOGOFF_USER = 'P_AB',
+  LOGON_OPERATOR = 'P_AN',
+  LOGOFF_OPERRATOR = 'P_AB',
   CREATE_BATCH = 'C_GEN',
   MOVE_BATCH = 'C_UMB',
   SPLIT_BATCH = 'CNR.SPLITCREATE',
@@ -29,6 +29,7 @@ export enum DialogTypeEnum {
 
   SET_ORDER_STATUS = 'ANR.SETSTATUS',
 
+  RESET_MAINTENNANCE = 'RES_WART',
   CREATE_NETWORK = 'ANETZ.INSERT',
   //#region MPL Master
 

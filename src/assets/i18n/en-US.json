@@ -115,7 +115,10 @@
   "app.monitor.resource-surplus": "Resource Surplus",
   "app.monitor.fund-surplus": "Fund Surplus",
 
+  "app.common.total": "Total",
+  "app.common.loggedOn": "Logged On",
   "app.common.cancel": "Cancel",
+  "app.common.confirm": "OK",
   "app.common.childQty": "childQty",
   "app.common.component.require": "Mat. Require",
   "app.common.tool.require": "Tool Require",
@@ -203,6 +206,20 @@
   "app.mobile.dialog.no": "No",
   "app.mobile.dialog.yes": "Yes",
 
+  "app.mobile.operator.logon": "Operator Logon",
+  "app.mobile.operator.logon.machine": "Machine",
+  "app.mobile.operator.logon.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.operator.logon.operator": "Badge",
+  "app.mobile.operator.logon.operator.placeholder": "Pls input Badge",
+  "app.mobile.operator.logon.action": "Operator Logon",
+
+  "app.mobile.operator.logoff": "Operator Logoff",
+  "app.mobile.operator.logoff.machine": "Machine",
+  "app.mobile.operator.logoff.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.operator.logoff.operator": "Badge",
+  "app.mobile.operator.logoff.operator.placeholder": "Pls input Badge",
+  "app.mobile.operator.logoff.action": "Operator Logoff",
+
   "app.mobile.material.create": "Create Batch",
   "app.mobile.material.create.batch": "Batch Nr.",
   "app.mobile.material.create.batch.placeholder": "Pls input Batch Nr.",
@@ -263,6 +280,15 @@
   "app.mobile.tool.logon.batch.placeholder": "Pls input Batch Nr.",
   "app.mobile.tool.logon.action": "LogOn Tool",
 
+  "app.mobile.tool.reset": "Reset Tool",
+  "app.mobile.tool.reset.tool": "Tool Nr.",
+  "app.mobile.tool.reset.tool.placeholder": "Pls input Tool Nr.",
+  "app.mobile.tool.reset.current": "Current Cycles",
+  "app.mobile.tool.reset.next": "Maintenance Cycles",
+  "app.mobile.tool.reset.interval": "Interval",
+  "app.mobile.tool.reset.status": "Status",
+  "app.mobile.tool.reset.action": "Reset Tool",
+
   "app.mobile.tool.logoff": "LogOff Tool",
   "app.mobile.tool.logoff.toolMachine": "Tool Machine",
   "app.mobile.tool.logoff.toolMachine.placeholder": "Pls input Tool Machine Nr.",
@@ -299,6 +325,16 @@
   "app.mobile.operation.logon.operation": "Operation",
   "app.mobile.operation.logon.operation.placeholder": "Pls input Operation",
   "app.mobile.operation.logon.action": "LogOn Operatoin",
+
+  "app.mobile.operation.interrupt": "Interrupt Operation",
+  "app.mobile.operation.interrupt.machine": "Machine",
+  "app.mobile.operation.interrupt.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.operation.interrupt.action": "Interrupt Operation",
+
+  "app.mobile.operation.logoff": "Logoff Operation",
+  "app.mobile.operation.logoff.machine": "Machine",
+  "app.mobile.operation.logoff.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.operation.logoff.action": "Logoff Operation",
 
   "app.mobile.operation.generateOutputBatch": "Generate Output Batch",
   "app.mobile.operation.generateOutputBatch.machine": "Machine",

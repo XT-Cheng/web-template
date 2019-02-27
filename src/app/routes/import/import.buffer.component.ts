@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { XlsxService, STColumn } from '@delon/abc';
 import { ImportHandleBase } from '@shared/components/import.handle.base';
-import { BapiService } from '@core/hydra/service/bapi.service';
+import { BapiService } from '@core/hydra/bapi/bapi.service';
 import { MPLMasterBapiService } from '@core/hydra/bapi/mpl/master/bapi.service';
 
 @Component({
