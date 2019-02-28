@@ -70,6 +70,10 @@ export class LogoffOperatorComponent extends BaseExtendForm {
 
   showOperatorList(focusId = ``) {
     if (this.operatorListPopup) {
+      this.operatorListPopup.config = Object.assign({}, this.operatorListPopup.config, {
+        cancel: this.i18n.fanyi(`app.common.cancel`),
+        confirm: this.i18n.fanyi(`app.common.confirm`),
+      });
       this.operatorListPopup.show().subscribe(() => {
         if (!focusId) return;
         const element = this.document.getElementById(focusId);
@@ -104,6 +108,9 @@ export class LogoffOperatorComponent extends BaseExtendForm {
 
   //#region Operator Reqeust
   requestOperatorDataSuccess = (_) => {
+    if (!this.isDisable()) {
+      this.doAction(this.logoffOperator, this.logoffOperatorSuccess, this.logoffOperatorFailed);
+    }
   }
 
   requestOperatorDataFailed = () => {
@@ -129,12 +136,7 @@ export class LogoffOperatorComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
-  protected init() {
-    // if (this.operatorListPopup) {
-    //   this.operatorListPopup.config.cancel = this.i18n.fanyi(`app.common.cancel`);
-    //   this.componentStatusPopup.config.confirm = this.i18n.fanyi(`app.common.confirm`);
-    // }
-  }
+
   //#endregion
 
   //#region Event Handler
@@ -158,8 +160,8 @@ export class LogoffOperatorComponent extends BaseExtendForm {
     return this._bapiService.logoffOperator(this.machineData, this.form.value.operatorData).pipe(
       map((ret: IActionResult) => {
         return Object.assign(ret, {
-          description: `logged off` // `Operator ${this.form.value.operatorData.firstName} ${this.form.value.operatorData.lastName} ` +
-          //  `LoggedOn to ${this.machineData.machineName}`
+          description: `Operator ${this.form.value.operatorData.firstName} ${this.form.value.operatorData.lastName} ` +
+            `LoggedOn to ${this.machineData.machineName}`
         });
       })
     );

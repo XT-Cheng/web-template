@@ -250,16 +250,16 @@ export abstract class BaseExtendForm {
         this.genSuccess();
         this.beforeActionSuccess(ret);
         success(ret);
-        this.afterActionSuccess();
+        this.afterActionSuccess(ret);
         if (this.resetFormAfterSuccessExecution) {
           this.resetForm();
         }
       }, (err) => {
         this.end(err);
         this.genErrors(err);
-        this.beforeActionFailed();
+        this.beforeActionFailed(err);
         failed(err);
-        this.afterActionFailed();
+        this.afterActionFailed(err);
       });
   }
 
@@ -298,6 +298,10 @@ export abstract class BaseExtendForm {
 
   showComponentStatus(focusId = ``) {
     if (this.componentStatusPopup) {
+      this.componentStatusPopup.config = Object.assign({}, this.componentStatusPopup.config, {
+        cancel: this.i18n.fanyi(`app.common.cancel`),
+        confirm: this.i18n.fanyi(`app.common.confirm`),
+      });
       this.componentStatusPopup.show().subscribe(() => {
         if (!focusId) return;
         const element = this.document.getElementById(focusId);
@@ -310,6 +314,10 @@ export abstract class BaseExtendForm {
 
   showToolStatus(focusId = ``) {
     if (this.toolStatusPopup) {
+      this.toolStatusPopup.config = Object.assign({}, this.toolStatusPopup.config, {
+        cancel: this.i18n.fanyi(`app.common.cancel`),
+        confirm: this.i18n.fanyi(`app.common.confirm`),
+      });
       this.toolStatusPopup.show().subscribe(() => {
         if (!focusId) return;
         const element = this.document.getElementById(focusId);
@@ -322,6 +330,10 @@ export abstract class BaseExtendForm {
 
   showOperationList(focusId = ``) {
     if (this.operationListPopup) {
+      this.operationListPopup.config = Object.assign({}, this.operationListPopup.config, {
+        cancel: this.i18n.fanyi(`app.common.cancel`),
+        confirm: this.i18n.fanyi(`app.common.confirm`),
+      });
       this.operationListPopup.show().subscribe(() => {
         if (!focusId) return;
         const element = this.document.getElementById(focusId);
@@ -333,13 +345,17 @@ export abstract class BaseExtendForm {
   }
 
   showDialog(content: string): Observable<boolean> {
-    this.dialog.config = Object.assign({}, this.dialogConfig, {
-      content: content
-    });
-    return this.dialog.show().pipe(
-      map(ret => {
-        return ret.value;
-      }));
+    if (this.dialog) {
+      this.dialog.config = Object.assign({}, this.dialogConfig, {
+        content: content
+      });
+      return this.dialog.show().pipe(
+        map(ret => {
+          return ret.value;
+        }));
+    }
+
+    return of(false);
   }
 
   getOperationToolStatusDisplay(toolStatus: ToolStatus[]) {
@@ -554,18 +570,18 @@ export abstract class BaseExtendForm {
   }
 
   private beforeActionSuccess(result: IActionResult) {
-    if (result.description) {
-      this.showSuccess(result.description);
+  }
+
+  private afterActionSuccess(ret: IActionResult) {
+    if (ret.description) {
+      this.showSuccess(ret.description);
     }
   }
 
-  private afterActionSuccess() {
+  private beforeActionFailed(err) {
   }
 
-  private beforeActionFailed() {
-  }
-
-  private afterActionFailed() {
+  private afterActionFailed(err) {
   }
 
   private genSuccess() {

@@ -107,6 +107,9 @@ export class LogonOperatorComponent extends BaseExtendForm {
 
   //#region Operator Reqeust
   requestOperatorDataSuccess = (_) => {
+    if (!this.isDisable()) {
+      this.doAction(this.logonOperator, this.logonOperatorSuccess, this.logonOperatorFailed);
+    }
   }
 
   requestOperatorDataFailed = () => {
@@ -155,8 +158,8 @@ export class LogonOperatorComponent extends BaseExtendForm {
     return this._bapiService.logonOperator(this.machineData, this.form.value.operatorData).pipe(
       map((ret: IActionResult) => {
         return Object.assign(ret, {
-          description: `logged on` // `Operator ${this.form.value.operatorData.firstName} ${this.form.value.operatorData.lastName} ` +
-          //  `LoggedOn to ${this.machineData.machineName}`
+          description: `Operator ${this.form.value.operatorData.firstName} ${this.form.value.operatorData.lastName} ` +
+            `LoggedOn to ${this.machineData.machineName}`
         });
       })
     );
