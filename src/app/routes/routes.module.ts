@@ -53,6 +53,8 @@ import { ResetToolMaintenanceComponent } from './mobile/tool/reset-tool-maintena
 import { MobileOperatorListComponent } from './mobile/operator.list.component';
 import { LogonOperatorComponent } from './mobile/operator/logon-operator.component';
 import { LogoffOperatorComponent } from './mobile/operator/logoff-operator.component';
+import { ChangeMachineStatusComponent } from './mobile/machine/change-machine-status.component';
+import { CombineBatchComponent } from './mobile/material/combine-batch.component';
 
 const BAPI = [
   BAPITestComponent
@@ -106,6 +108,7 @@ const COMPONENTS = [
   LogonBatchComponent,
   LogoffBatchComponent,
   ReplenishBatchComponent,
+  CombineBatchComponent,
   // Opeartion
   LogonOperationComponent,
   GenerateOutputBatchComponent,
@@ -118,6 +121,8 @@ const COMPONENTS = [
   // Operator
   LogonOperatorComponent,
   LogoffOperatorComponent,
+  // Machine
+  ChangeMachineStatusComponent,
 ];
 const COMPONENTS_NOROUNT = [];
 

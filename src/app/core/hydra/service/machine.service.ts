@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
+import { Observable, forkJoin, of } from 'rxjs';
 import { Machine, MachineAlarmSetting, MachineOutput, MachineOEE } from '../entity/machine';
 import { HttpClient } from '@angular/common/http';
 import { FetchService } from './fetch.service';
@@ -26,6 +26,11 @@ export class MachineService {
   static toolMachinesTBR = '$toolMachines';
 
   //#region SQLs
+  static availableStatusToChangeSql = `SELECT MACHINE.MASCH_NR AS MACHINE,STATUSASSIGN.STOERNR AS STATUS, TEXT.STOER_TEXT AS TEXT
+  FROM STOER_TABELLE STATUSASSIGN, STOERTEXTE TEXT, MASCHINEN MACHINE
+  WHERE STATUSASSIGN.MASCH_NR = MACHINE.MASCH_NR AND STATUSASSIGN.MANUELL = 'J' AND STATUSASSIGN.STOERTXT_NR = TEXT.STOERTXT_NR
+  AND MACHINE.MASCH_NR = '${MachineService.machineNameTBR}'`;
+
   static machineAlarmSql =
     `SELECT OEE_LOWER, OEE_UPPER, SCRAP_LOWER, SCRAP_UPPER
      FROM U_TE_MRA_SETTINGS
@@ -280,6 +285,20 @@ export class MachineService {
   //#endregion
 
   //#region Public methods
+
+  getAvailableStatusToChange(machineName: string): Observable<{ status: number, text: string }[]> {
+    return this._fetchService.query(replaceAll(MachineService.availableStatusToChangeSql,
+      [MachineService.machineNameTBR], [machineName])).pipe(
+        map(rows => {
+          return rows.map(row => {
+            return {
+              status: row.STATUS,
+              text: row.TEXT,
+            };
+          });
+        })
+      );
+  }
 
   getMachine(machineName: string): Observable<Machine> {
     return this.getMachineInternal(machineName, false);

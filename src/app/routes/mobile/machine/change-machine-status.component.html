@@ -1,0 +1,37 @@
+<form [formGroup]="form">
+  <div class="weui-cells">
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.machine.changeStatus.machine' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='machine' formControlName="machine" fwShareAutoFocus [fwShareKeyHandler]='{controlName: "machine", inputing: Inputing, req: request(requestMachineData, requestMachineDataSuccess, requestMachineDataFailed)}'
+          [placeholder]="'app.mobile.machine.changeStatus.machine.placeholder' | translate">
+      </div>
+    </div>
+    <label for="weuiAgree" class="weui-agree">
+      <span class="weui-agree__text">
+        {{getAssociateDataDisplay('machine', 'currentStatus')}}
+      </span>
+    </label>
+    <div class="weui-grids">
+      <div class="weui-grid" *ngFor='let status of (availableStatus$ | async)'>
+        <a href="javascript:;" style='margin: 1px' (click)='statusClicked(status)'>
+          <p class="weui-grid__label" style='margin-bottom: 0px'>{{status.text}}</p>
+        </a>
+      </div>
+      <!-- <div class="weui-grid" *ngFor='let status of (availableStatus$ | async)'>
+        <button weui-mini="mini" weui-button>{{status.status}}</button>
+      </div> -->
+    </div>
+    <div class="mobile-fill">
+      <!-- <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(changeStatus, changeStatusSuccess, changeStatusFailed)'>{{'app.mobile.machine.changeStatus.action'
+        | translate}}</button> -->
+
+      <fw-mobile-bottom style="width: 100%" [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText'
+        [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
+        [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
+    </div>
+  </div>
+</form>
+<weui-mask #mask [backdrop]="false"></weui-mask>

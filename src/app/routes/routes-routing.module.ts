@@ -39,6 +39,8 @@ import { LogoffOperationComponent } from './mobile/operation/logoff-operation.co
 import { ResetToolMaintenanceComponent } from './mobile/tool/reset-tool-maintenance.component';
 import { LogonOperatorComponent } from './mobile/operator/logon-operator.component';
 import { LogoffOperatorComponent } from './mobile/operator/logoff-operator.component';
+import { ChangeMachineStatusComponent } from './mobile/machine/change-machine-status.component';
+import { CombineBatchComponent } from './mobile/material/combine-batch.component';
 
 const routes: Routes = [
   {
@@ -60,6 +62,7 @@ const routes: Routes = [
       { path: 'material/adjustQty', component: AdjustBatchQuantityComponent },
       { path: 'material/logon', component: LogonBatchComponent },
       { path: 'material/logoff', component: LogoffBatchComponent },
+      { path: 'material/combine', component: CombineBatchComponent },
       { path: 'material/replenish', component: ReplenishBatchComponent },
       { path: 'tool/logon', component: LogonToolComponent },
       { path: 'tool/logoff', component: LogoffToolComponent },
@@ -71,6 +74,7 @@ const routes: Routes = [
       { path: 'operation/logoff', component: LogoffOperationComponent },
       { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },
       { path: 'material/find', component: FindBatchComponent },
+      { path: 'machine/changeStatus', component: ChangeMachineStatusComponent },
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }
     ]

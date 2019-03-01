@@ -19,6 +19,7 @@ import { ToolService } from './hydra/service/tool.service';
 import { WRMBapiService } from './hydra/bapi/wrm/bapi.service';
 import { BDEMasterBapiService } from './hydra/bapi/bde/master/bapi.service';
 import { MasterService } from './hydra/service/master.service';
+import { MDEBapiService } from './hydra/bapi/mde/bapi.service';
 
 @NgModule({
   providers: [
@@ -37,6 +38,7 @@ import { MasterService } from './hydra/service/master.service';
     MasterService,
     BDEMasterBapiService,
     MPLBapiService,
+    MDEBapiService,
     MPLMasterBapiService,
     BDEBapiService,
     WRMBapiService,

@@ -39,10 +39,6 @@ export class LogonBatchComponent extends BaseExtendForm {
 
   //#endregion
 
-  //#region Public member
-
-  //#endregion
-
   //#region Constructor
 
   constructor(
