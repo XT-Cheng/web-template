@@ -285,6 +285,14 @@ export class LogonToolComponent extends BaseExtendForm {
 
   //#endregion
 
+  //#region Override properties
+
+  get upperLevel(): string {
+    return `/tool/list`;
+  }
+
+  //#endregion
+
   //#region Private methods
 
   //#endregion

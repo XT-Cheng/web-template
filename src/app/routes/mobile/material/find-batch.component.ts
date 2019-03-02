@@ -129,6 +129,14 @@ export class FindBatchComponent extends BaseExtendForm implements OnInit {
 
   //#endregion
 
+  //#region Override properties
+
+  get upperLevel(): string {
+    return `/material/list`;
+  }
+
+  //#endregion
+
   //#region Portected methods
 
   protected afterReset() {

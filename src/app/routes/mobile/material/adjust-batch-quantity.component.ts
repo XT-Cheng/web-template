@@ -139,6 +139,13 @@ export class AdjustBatchQuantityComponent extends BaseExtendForm {
 
   //#endregion
 
+  //#region Override properties
+
+  get upperLevel(): string {
+    return `/material/list`;
+  }
+
+  //#endregion
 
   //#region Private methods
 

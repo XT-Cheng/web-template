@@ -198,7 +198,7 @@ export class ReplenishBatchComponent extends BaseExtendForm {
     return replenishBatch$.pipe(
       map((ret: IActionResult) => {
         return Object.assign(ret, {
-          description: `Batch ${componentToBeReplenish.batchName} Logged Off!`
+          description: `Batch ${componentToBeReplenish.batchName} Replenished!`
         });
       }
       ));
@@ -212,6 +212,14 @@ export class ReplenishBatchComponent extends BaseExtendForm {
     this.document.getElementById(`machine`).focus();
 
     this.componentsToBeReplenish$.next([]);
+  }
+
+  //#endregion
+
+  //#region Override properties
+
+  get upperLevel(): string {
+    return `/operation/list`;
   }
 
   //#endregion

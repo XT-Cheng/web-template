@@ -1,5 +1,6 @@
 import { Menu } from '@delon/theme';
 import { MockRequest } from '@delon/mock';
+import { toBoolean } from '@delon/util';
 
 const menuInfo: Menu[] = [{
   text: '主导航',
@@ -118,8 +119,49 @@ const menuInfo: Menu[] = [{
   }]
 }];
 
+const mobileMenuInfo: Menu[] = [{
+  text: '主导航',
+  group: true,
+  /** 图标 */
+  icon: `anticon anticon-rocket`,
+  children: [{
+    text: '物料相关',
+    group: false,
+    icon: `anticon anticon-area-chart`,
+    link: `/material/list`,
+  },
+  {
+    text: '工单相关',
+    group: false,
+    icon: `anticon anticon-area-chart`,
+    link: `/operation/list`,
+  },
+  {
+    text: '设备相关',
+    group: false,
+    icon: `anticon anticon-area-chart`,
+    link: `/machine/list`,
+  },
+  {
+    text: '工夹具相关',
+    group: false,
+    icon: `anticon anticon-area-chart`,
+    link: `/tool/list`,
+  },
+  {
+    text: '人员相关',
+    group: false,
+    icon: `anticon anticon-area-chart`,
+    link: `/operator/list`,
+  }]
+}];
+
 function getMenuInfo(params: any) {
-  return menuInfo;
+  if (toBoolean(params.isMobile)) {
+    return mobileMenuInfo;
+  } else {
+    return menuInfo;
+  }
 }
 
 export const MENUINFO = {

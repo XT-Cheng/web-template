@@ -6,10 +6,11 @@ import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation, ComponentStatus, ToolStatus } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { getComponentStatus, getToolStatus } from '@core/hydra/utils/operationHelper';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
+import { MACHINE_STATUS_NOORDER, MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
 
 @Component({
   selector: 'fw-operation-logon',
@@ -78,7 +79,13 @@ export class LogonOperationComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine);
+    return this._machineService.getMachine(this.form.value.machine).pipe(
+      tap(machine => {
+        if (machine.currentStatusNr !== MACHINE_STATUS_NOORDER && machine.currentStatusNr !== MACHINE_STATUS_PRODUCTION) {
+          throw Error(`Machine Status not valid!`);
+        }
+      })
+    );
   }
 
   //#endregion
@@ -148,6 +155,14 @@ export class LogonOperationComponent extends BaseExtendForm {
     return this.componentStatus$.value.every((status: ComponentStatus) => status.isReady)
       && this.toolStatus$.value.every((status: ToolStatus) => status.isReady)
       && this.form.value.machineData.currentOperations.length < this.form.value.machineData.numberOfOperationAllowed;
+  }
+
+  //#endregion
+
+  //#region Override properties
+
+  get upperLevel(): string {
+    return `/operation/list`;
   }
 
   //#endregion

@@ -47,8 +47,8 @@
       <header-icon></header-icon>
     </li> -->
     <!-- Settings -->
-    <li class="hidden-mobile">
-      <nz-dropdown nzTrigger="click" nzPlacement="bottomRight">
+    <li>
+      <nz-dropdown *ngIf="!isMobile()" nzTrigger="click" nzPlacement="bottomRight">
         <div class="alain-default__nav-item" nz-dropdown>
           <i nz-icon type="setting"></i>
         </div>
@@ -64,9 +64,9 @@
           </div>
         </div>
       </nz-dropdown>
+      <div *ngIf="isUpLevelVisible()" style="margin-right: -16px" class="alain-default__nav-item" (click)="upLevel()">
+        <i nz-icon type="menu-{{settings.layout.collapsed ? 'unfold' : 'fold'}}"></i>
+      </div>
     </li>
-    <!-- <li class="hidden-mobile">
-      <header-user></header-user>
-    </li> -->
   </ul>
 </div>

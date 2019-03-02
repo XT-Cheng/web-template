@@ -50,6 +50,7 @@ import { ReuseTabComponent } from '@shared/components/reuse-tab/reuse-tab.compon
 import { CountDownComponent } from '@delon/abc';
 import { StartupService } from '@core/startup/startup.service';
 import { isMobile } from '@core/utils/helpers';
+import { UtilityService } from '@core/utils/utility.service';
 
 const ICONS = [
   MenuFoldOutline,
@@ -102,6 +103,7 @@ export class LayoutDefaultComponent
   routeOutletElem: ElementRef;
   constructor(
     iconSrv: NzIconService,
+    private _utility: UtilityService,
     router: Router,
     scroll: ScrollService,
     _message: NzMessageService,
@@ -165,6 +167,14 @@ export class LayoutDefaultComponent
 
   ngOnDestroy() {
     this.notify$.unsubscribe();
+  }
+
+  onActivate(compInstance: any) {
+    this._utility.activeComponent = compInstance;
+  }
+
+  onDeactivate() {
+    this._utility.activeComponent = null;
   }
 
   changeSlideMode() {

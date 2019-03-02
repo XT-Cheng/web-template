@@ -322,6 +322,11 @@
   "app.mobile.material.logoff.newQty.placeholder": "Pls input Qty.",
   "app.mobile.material.logoff.action": "LogOff Batch",
 
+  "app.mobile.material.reprint": "Reprint Batch",
+  "app.mobile.material.reprint.batch": "Batch",
+  "app.mobile.material.reprint.batch.placeholder": "Pls input Batch Nr.",
+  "app.mobile.material.reprint.action": "Reprint Batch",
+
   "app.mobile.material.replenish": "Replenish Batch",
   "app.mobile.material.replenish.machine": "Machine",
   "app.mobile.material.replenish.machine.placeholder": "Pls input Machine Nr.",
@@ -362,5 +367,11 @@
   "app.mobile.operation.generateOutputBatch.machine.placeholder": "Pls input Machine Nr.",
   "app.mobile.operation.generateOutputBatch.quantity": "Quantity",
   "app.mobile.operation.generateOutputBatch.quantity.placeholder": "Pls input quantity",
-  "app.mobile.operation.generateOutputBatch.action": "Generate Output Batch"
+  "app.mobile.operation.generateOutputBatch.action": "Generate Output Batch",
+
+  "app.mobile.material.functions": "Material Functions",
+  "app.mobile.tool.functions": "Tool Functions",
+  "app.mobile.machine.functions": "Machine Functions",
+  "app.mobile.operation.functions": "Operation Functions",
+  "app.mobile.operator.functions": "Operator Functions"
 }

@@ -248,6 +248,14 @@ export class CombineBatchComponent extends BaseExtendForm {
 
   //#endregion
 
+  //#region Override properties
+
+  get upperLevel(): string {
+    return `/operation/list`;
+  }
+
+  //#endregion
+
   //#region Private methods
 
   //#endregion

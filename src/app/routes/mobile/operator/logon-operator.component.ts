@@ -175,6 +175,14 @@ export class LogonOperatorComponent extends BaseExtendForm {
 
   //#endregion
 
+  //#region Override properties
+
+  get upperLevel(): string {
+    return `/operator/list`;
+  }
+
+  //#endregion
+
   //#region Private methods
 
   //#endregion

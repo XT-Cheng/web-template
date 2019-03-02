@@ -1,8 +1,8 @@
-import { ViewChild, Injector } from '@angular/core';
+import { ViewChild, Injector, OnDestroy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, tap, map } from 'rxjs/operators';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 import { TitleService, SettingsService } from '@delon/theme';
 import { MaskComponent, ToastService, ToptipsService, PopupComponent, DialogComponent, DialogConfig } from 'ngx-weui';
 import { I18NService } from '@core/i18n/i18n.service';
@@ -26,7 +26,7 @@ interface ITranSuccess {
   context: any;
 }
 
-export abstract class BaseExtendForm {
+export abstract class BaseExtendForm implements OnDestroy {
   static SETUP_OPERATOR: string;
   static DIALOG_CONFIG = <DialogConfig>{
     title: '弹窗标题',
@@ -72,11 +72,12 @@ export abstract class BaseExtendForm {
 
   //#region Private member
 
-  private dialogConfig: DialogConfig = new DialogConfig();
+  private routerSubcription: Subscription;
 
   //#endregion
 
   //#region Public members
+  dialogConfig: DialogConfig = new DialogConfig();
   showBadgeButton = true;
   badgeButtonText: string;
 
@@ -124,7 +125,7 @@ export abstract class BaseExtendForm {
       });
     }
     this.associatedControl.set(`badge`, `badgeData`);
-    this.routeService.events
+    this.routerSubcription = this.routeService.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.titleService.setTitle(this.title);
@@ -144,23 +145,17 @@ export abstract class BaseExtendForm {
 
         this.badgeButtonText = operator ? operator.display : BaseExtendForm.SETUP_OPERATOR;
 
-        // if (this.componentStatusPopup) {
-        //   this.componentStatusPopup.DEF.cancel = this.i18n.fanyi(`app.common.cancel`);
-        //   this.componentStatusPopup.config.confirm = this.i18n.fanyi(`app.common.confirm`);
-        // }
-
-        // if (this.operationListPopup) {
-        //   this.operationListPopup.config.cancel = this.i18n.fanyi(`app.common.cancel`);
-        //   this.operationListPopup.config.confirm = this.i18n.fanyi(`app.common.confirm`);
-        // }
-
-        // if (this.toolStatusPopup) {
-        //   this.toolStatusPopup.config.cancel = this.i18n.fanyi(`app.common.cancel`);
-        //   this.toolStatusPopup.config.confirm = this.i18n.fanyi(`app.common.confirm`);
-        // }
         this.init();
       });
   }
+
+  //#region Public properties
+
+  get upperLevel(): string {
+    return ``;
+  }
+
+  //#endregion
 
   //#region Protected properties
   protected set storedData(data: any) {
@@ -214,6 +209,7 @@ export abstract class BaseExtendForm {
 
   protected init() {
   }
+
   //#endregion
 
   //#region Public methods
@@ -523,7 +519,7 @@ export abstract class BaseExtendForm {
   private end(err: any = null) {
     if (err && err.message) {
       this.showError(err.message);
-    } else if (err) {
+    } else if (typeof (err) === 'string') {
       this.showError(err);
     }
 
@@ -603,6 +599,14 @@ export abstract class BaseExtendForm {
       context: this.form.value,
       error: err
     });
+  }
+
+  //#endregion
+
+  //#region Implemented Interface
+
+  ngOnDestroy(): void {
+    this.routerSubcription.unsubscribe();
   }
 
   //#endregion

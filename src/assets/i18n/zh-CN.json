@@ -322,6 +322,11 @@
   "app.mobile.material.logoff.newQty.placeholder": "请输入新数量",
   "app.mobile.material.logoff.action": "物料登出",
 
+  "app.mobile.material.reprint": "批次标签重打印",
+  "app.mobile.material.reprint.batch": "批号",
+  "app.mobile.material.reprint.batch.placeholder": "请输入批号",
+  "app.mobile.material.reprint.action": "重打印",
+
   "app.mobile.material.replenish": "物料补充",
   "app.mobile.material.replenish.machine": "设备",
   "app.mobile.material.replenish.machine.placeholder": "请输入设备",
@@ -362,5 +367,11 @@
   "app.mobile.operation.generateOutputBatch.machine.placeholder": "请输入设备",
   "app.mobile.operation.generateOutputBatch.quantity": "数量",
   "app.mobile.operation.generateOutputBatch.quantity.placeholder": "请输入数量",
-  "app.mobile.operation.generateOutputBatch.action": "生成输出批次"
+  "app.mobile.operation.generateOutputBatch.action": "生成输出批次",
+
+  "app.mobile.material.functions": "物料相关功能",
+  "app.mobile.tool.functions": "工夹具相关功能",
+  "app.mobile.machine.functions": "设备相关功能",
+  "app.mobile.operation.functions": "工单相关功能",
+  "app.mobile.operator.functions": "人员相关功能"
 }

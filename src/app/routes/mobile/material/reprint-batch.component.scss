@@ -1,0 +1,11 @@
+form {
+  padding-top: 1px;
+}
+
+:host {
+  ::ng-deep {
+    .weui-search-bar {
+      padding: 0px;
+    }
+  }
+}

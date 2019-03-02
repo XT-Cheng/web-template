@@ -4,7 +4,7 @@ import { Validators } from '@angular/forms';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { MDEBapiService } from '@core/hydra/bapi/mde/bapi.service';
 import { BehaviorSubject } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { filter, map, tap } from 'rxjs/operators';
 
 
 
@@ -73,7 +73,13 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine);
+    return this._machineService.getMachine(this.form.value.machine).pipe(
+      tap(machine => {
+        if (!machine) {
+          throw Error('Machine invalide');
+        }
+      })
+    );
   }
 
   //#endregion
@@ -105,11 +111,27 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
   //#endregion
 
   //#region Override methods
+  protected init() {
+    if (this.storedData && this.storedData.machineData) {
+      this.form.controls.machine.setValue(this.storedData.machineData.machineName);
+
+      this.request(this.requestMachineData, this.requestMachineDataSuccess, this.requestMachineDataFailed)
+        (null, null, `machine`);
+    }
+  }
 
   protected afterReset() {
     this.document.getElementById(`machine`).focus();
 
     this.availableStatus$.next([]);
+  }
+
+  //#endregion
+
+  //#region Override properties
+
+  get upperLevel(): string {
+    return `/machine/list`;
   }
 
   //#endregion

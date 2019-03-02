@@ -50,3 +50,8 @@ export enum DialogTypeEnum {
 }
 
 export const DIALOG_USER = 2500;
+
+export const MACHINE_STATUS_CHANGOVER_SETUP = 161;
+export const MACHINE_STATUS_CHANGSHIT_SETUP = 160;
+export const MACHINE_STATUS_PRODUCTION = 200;
+export const MACHINE_STATUS_NOORDER = 399;

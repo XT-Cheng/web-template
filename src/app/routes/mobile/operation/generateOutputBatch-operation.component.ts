@@ -7,10 +7,11 @@ import { MachineService } from '@core/hydra/service/machine.service';
 import { OperationService } from '@core/hydra/service/operation.service';
 import { BaseExtendForm } from '../base.form.extend';
 import { toNumber } from '@delon/util';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap, map, tap } from 'rxjs/operators';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 import { MasterService } from '@core/hydra/service/master.service';
 import { IActionResult } from '@core/utils/helpers';
+import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
 
 @Component({
   selector: 'fw-operation-generate-output-batch',
@@ -81,7 +82,13 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine);
+    return this._machineService.getMachine(this.form.value.machine).pipe(
+      tap(machine => {
+        if (machine.currentStatusNr !== MACHINE_STATUS_PRODUCTION) {
+          throw Error(`Machine Status is not Production!`);
+        }
+      })
+    );
   }
 
   //#endregion
@@ -205,6 +212,14 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Private methods
+
+  //#endregion
+
+  //#region Override properties
+
+  get upperLevel(): string {
+    return `/operation/list`;
+  }
 
   //#endregion
 

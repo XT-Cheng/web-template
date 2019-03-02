@@ -41,6 +41,12 @@ import { LogonOperatorComponent } from './mobile/operator/logon-operator.compone
 import { LogoffOperatorComponent } from './mobile/operator/logoff-operator.component';
 import { ChangeMachineStatusComponent } from './mobile/machine/change-machine-status.component';
 import { CombineBatchComponent } from './mobile/material/combine-batch.component';
+import { MaterialFunctionsComponent } from './mobile/material/material-functions.component';
+import { OperationFunctionsComponent } from './mobile/operation/operation-functions.component';
+import { OperatorFunctionsComponent } from './mobile/operator/operator-functions.component';
+import { MachineFunctionsComponent } from './mobile/machine/machine-functions.component';
+import { ToolFunctionsComponent } from './mobile/tool/tool-functions.component';
+import { ReprintBatchComponent } from './mobile/material/reprint-batch.component';
 
 const routes: Routes = [
   {
@@ -64,17 +70,23 @@ const routes: Routes = [
       { path: 'material/logoff', component: LogoffBatchComponent },
       { path: 'material/combine', component: CombineBatchComponent },
       { path: 'material/replenish', component: ReplenishBatchComponent },
+      { path: 'material/reprint', component: ReprintBatchComponent },
+      { path: 'material/list', component: MaterialFunctionsComponent },
       { path: 'tool/logon', component: LogonToolComponent },
       { path: 'tool/logoff', component: LogoffToolComponent },
       { path: 'tool/reset', component: ResetToolMaintenanceComponent },
+      { path: 'tool/list', component: ToolFunctionsComponent },
       { path: 'operation/logon', component: LogonOperationComponent },
       { path: 'operator/logon', component: LogonOperatorComponent },
       { path: 'operator/logoff', component: LogoffOperatorComponent },
+      { path: 'operator/list', component: OperatorFunctionsComponent },
       { path: 'operation/interrupt', component: InterruptOperationComponent },
       { path: 'operation/logoff', component: LogoffOperationComponent },
+      { path: 'operation/list', component: OperationFunctionsComponent },
       { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },
       { path: 'material/find', component: FindBatchComponent },
       { path: 'machine/changeStatus', component: ChangeMachineStatusComponent },
+      { path: 'machine/list', component: MachineFunctionsComponent },
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }
     ]

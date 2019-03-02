@@ -78,7 +78,7 @@ export function getComponentStatus(operation: Operation, machine: Machine): Comp
       });
     }
   });
-  return componentStatus.sort((a, b) => a.isReady ? 1 : -1);
+  return componentStatus.sort((a) => a.isReady ? 1 : -1);
 }
 
 export function getToolStatus(operation: Operation, machine: Machine): ToolStatus[] {
@@ -111,4 +111,3 @@ export function getToolStatus(operation: Operation, machine: Machine): ToolStatu
 
   return toolStatus;
 }
-

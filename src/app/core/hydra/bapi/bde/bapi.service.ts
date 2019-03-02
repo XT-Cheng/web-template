@@ -17,6 +17,8 @@ import { PartialConfirmOperation } from './partialConfirm.operation';
 import { ChangeOutputBatch } from './change.outputBatch';
 import { LogonOperator } from './logon.operator';
 import { LogoffOperator } from './logoff.operator';
+import { MDEBapiService } from '../mde/bapi.service';
+import { MACHINE_STATUS_CHANGOVER_SETUP, MACHINE_STATUS_PRODUCTION, MACHINE_STATUS_NOORDER } from '../constants';
 
 @Injectable()
 export class BDEBapiService {
@@ -27,12 +29,12 @@ export class BDEBapiService {
   //#region Constructor
 
   constructor(protected _http: HttpClient, private _bapiMPL: MPLBapiService, private _webAPIService: WebAPIService,
-    private _batchService: BatchService, private _printService: PrintService) {
+    private _bapiMDE: MDEBapiService, private _batchService: BatchService, private _printService: PrintService) {
   }
   //#endregion
 
   //#region Public methods
-  logonOperation(operation: Operation | { name: string }, machine: Machine | { machineName: string },
+  logonOperation(operation: Operation, machine: Machine,
     componentStatus: ComponentStatus[], operator: Operator)
     : Observable<IActionResult> {
 
@@ -51,7 +53,7 @@ export class BDEBapiService {
     });
 
     // LogOn Operation
-    return batchLogon$.pipe(
+    batchLogon$ = batchLogon$.pipe(
       switchMap(() => {
         return this._batchService.getNextBatchName().pipe(
           switchMap((name) => {
@@ -64,6 +66,25 @@ export class BDEBapiService {
         });
       })
     );
+
+    // Change Machine Status if required
+    if (machine.lastArticle !== operation.article && machine.currentOperations.length === 0) {
+      batchLogon$ = batchLogon$.pipe(
+        switchMap(() => {
+          // Change it to MACHINE_STATUS_CHANGOVER_SETUP
+          return this._bapiMDE.changeMachineStatus(machine, MACHINE_STATUS_CHANGOVER_SETUP, operator);
+        })
+      );
+    } else if (machine.currentStatusNr === MACHINE_STATUS_NOORDER) {
+      batchLogon$ = batchLogon$.pipe(
+        switchMap(() => {
+          // Change it to MACHINE_STATUS_PRODUCTION
+          return this._bapiMDE.changeMachineStatus(machine, MACHINE_STATUS_PRODUCTION, operator);
+        })
+      );
+    }
+
+    return batchLogon$;
   }
 
   interruptOperation(operation: Operation | { name: string }, machine: Machine | { machineName: string },

@@ -12,6 +12,8 @@ import { BUFFER_SAP, BUFFER_PLANT } from 'app/routes/mobile/material/constants';
 
 @Injectable()
 export class BatchService {
+  static MAX_RECENTLY_CREATED_COUNT = 51;
+  static INPUT_BATCH_MAT_TYPE = 'Comp';
 
   static materialNameTBR = '$materialName';
   static lastChangedTBR = '$lastChanged';
@@ -105,7 +107,19 @@ export class BatchService {
      FROM LOS_ZUORDNUNG START WITH EL_NR = '${BatchService.batchNameTBR}'
      CONNECT BY PRIOR AL_NR = EL_NR ORDER BY LEVEL DESC`;
 
+  static batchInputRecentlyUpdatedSql = `SELECT BATCHNAME,DESCRIPTION, MATTYPE,UNIT, STATUS, CLASS, LASTCHANGED, BUFFERNAME,
+   PARENT_BUFFERNAME, MATERIAL, QUANTITY, SAPBATCH,DATECODE
+   FROM (SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
+   BATCH.KLASSE AS CLASS, (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
+   BATCH.MAT_PUF AS BUFFERNAME,
+   BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
+   LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
+   WHERE STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND HZ_TYP = '${BatchService.INPUT_BATCH_MAT_TYPE}'
+   AND PUFFER_TYP IN ('F','H') AND SUBSTR(KFG_KZ01,1,1) = 'N' ORDER BY (STAT_UPD_DAT + STAT_UPD_ZEIT / 24 / 3600) DESC)
+   WHERE ROWNUM < ${BatchService.MAX_RECENTLY_CREATED_COUNT}`;
+
   //#endregion
+
   //#region Private members
 
   private buffers: MaterialBuffer[];
@@ -284,6 +298,32 @@ export class BatchService {
         return batches.length > 0 ? true : false;
       })
     );
+  }
+
+  getRecentlyCreatedMaterialBatch(): Observable<MaterialBatch[]> {
+    return this._fetchService.query(BatchService.batchInputRecentlyUpdatedSql).pipe(
+      map((batches) => {
+        const ret: MaterialBatch[] = [];
+        batches.forEach(rec => {
+          const batch = new MaterialBatch();
+          batch.name = rec.BATCHNAME;
+          batch.bufferName = rec.BUFFERNAME;
+          batch.lastChanged = new Date(rec.LASTCHANGED);
+          batch.bufferDescription = rec.DESCRIPTION;
+          batch.parentBuffer = rec.PARENT_BUFFERNAME;
+          batch.quantity = rec.QUANTITY;
+          batch.material = rec.MATERIAL;
+          batch.status = rec.STATUS;
+          batch.class = rec.CLASS;
+          batch.SAPBatch = rec.SAPBATCH;
+          batch.dateCode = rec.DATECODE;
+          batch.materialType = rec.MATTYPE;
+          batch.unit = rec.UNIT;
+          ret.push(batch);
+        });
+
+        return ret;
+      }));
   }
 
   getBatchesByNames(batchNames: string[]): Observable<MaterialBatch[]> {

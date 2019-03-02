@@ -90,4 +90,4 @@
 <weui-popup #operationList>
   <fw-mobile-operation-list [operations$]='operations$' (itemClicked)='operationSelected($event)'></fw-mobile-operation-list>
 </weui-popup>
-<weui-dialog #dialog></weui-dialog>
+<weui-dialog [config]="dialogConfig" #dialog></weui-dialog>
