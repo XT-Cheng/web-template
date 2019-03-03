@@ -206,6 +206,13 @@
   "app.mobile.dialog.no": "否",
   "app.mobile.dialog.yes": "是",
 
+  "app.mobile.packing": "包装",
+  "app.mobile.packing.machine": "设备",
+  "app.mobile.packing.machine.placeholder": "请输入设备",
+  "app.mobile.packing.yield": "包装数量",
+  "app.mobile.packing.yield.placeholder": "请输入包装数量",
+  "app.mobile.packing.action": "包装",
+
   "app.mobile.operator.logon": "人员登录",
   "app.mobile.operator.logon.machine": "设备",
   "app.mobile.operator.logon.machine.placeholder": "请输入设备",

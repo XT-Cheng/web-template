@@ -111,14 +111,14 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
   //#endregion
 
   //#region Override methods
-  protected init() {
-    if (this.storedData && this.storedData.machineData) {
-      this.form.controls.machine.setValue(this.storedData.machineData.machineName);
+  // protected init() {
+  //   if (this.storedData && this.storedData.machineData) {
+  //     this.form.controls.machine.setValue(this.storedData.machineData.machineName);
 
-      this.request(this.requestMachineData, this.requestMachineDataSuccess, this.requestMachineDataFailed)
-        (null, null, `machine`);
-    }
-  }
+  //     this.request(this.requestMachineData, this.requestMachineDataSuccess, this.requestMachineDataFailed)
+  //       (null, null, `machine`);
+  //   }
+  // }
 
   protected afterReset() {
     this.document.getElementById(`machine`).focus();

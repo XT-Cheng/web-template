@@ -74,7 +74,7 @@ export class Operation {
   //#region Display
 
   get display(): string {
-    return `${this.article}, ${this.targetQty}, ${this.totalYield}`;
+    return `${this.article} ${this.totalYield} ${this.targetQty}`;
   }
 
   //#endregion

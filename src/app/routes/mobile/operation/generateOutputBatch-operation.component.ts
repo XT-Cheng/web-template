@@ -121,7 +121,7 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
 
   //#endregion
 
-  //#region Number of Splits Reqeust
+  //#region Number of Quantity Reqeust
   requestQuantityDataSuccess = () => {
   }
 

@@ -47,6 +47,7 @@ import { OperatorFunctionsComponent } from './mobile/operator/operator-functions
 import { MachineFunctionsComponent } from './mobile/machine/machine-functions.component';
 import { ToolFunctionsComponent } from './mobile/tool/tool-functions.component';
 import { ReprintBatchComponent } from './mobile/material/reprint-batch.component';
+import { PackingComponent } from './mobile/operation/packing.component';
 
 const routes: Routes = [
   {
@@ -82,6 +83,7 @@ const routes: Routes = [
       { path: 'operator/list', component: OperatorFunctionsComponent },
       { path: 'operation/interrupt', component: InterruptOperationComponent },
       { path: 'operation/logoff', component: LogoffOperationComponent },
+      { path: 'operation/packing', component: PackingComponent },
       { path: 'operation/list', component: OperationFunctionsComponent },
       { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },
       { path: 'material/find', component: FindBatchComponent },

@@ -62,6 +62,7 @@ import { MachineFunctionsComponent } from './mobile/machine/machine-functions.co
 import { ToolFunctionsComponent } from './mobile/tool/tool-functions.component';
 import { ReprintBatchComponent } from './mobile/material/reprint-batch.component';
 import { MobileBatchListComponent } from './mobile/batch.list.component';
+import { PackingComponent } from './mobile/operation/packing.component';
 
 const BAPI = [
   BAPITestComponent
@@ -125,6 +126,7 @@ const COMPONENTS = [
   InterruptOperationComponent,
   LogoffOperationComponent,
   OperationFunctionsComponent,
+  PackingComponent,
   // Tool
   LogonToolComponent,
   LogoffToolComponent,

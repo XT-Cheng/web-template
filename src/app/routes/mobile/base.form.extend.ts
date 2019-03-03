@@ -51,7 +51,7 @@ export abstract class BaseExtendForm implements OnDestroy {
   //#endregion
 
   //#region Protected member
-  protected form: FormGroup;
+
   protected associatedControl: Map<string, string> = new Map<string, string>();
 
   protected fb: FormBuilder;
@@ -77,6 +77,7 @@ export abstract class BaseExtendForm implements OnDestroy {
   //#endregion
 
   //#region Public members
+  form: FormGroup;
   dialogConfig: DialogConfig = new DialogConfig();
   showBadgeButton = true;
   badgeButtonText: string;
@@ -145,6 +146,18 @@ export abstract class BaseExtendForm implements OnDestroy {
 
         this.badgeButtonText = operator ? operator.display : BaseExtendForm.SETUP_OPERATOR;
 
+        if (this.rememberMachine && this.form.controls.machine) {
+          if (this.storedData
+            && this.storedData.machineData
+            && this['requestMachineData']
+            && this['requestMachineDataSuccess']
+            && this['requestMachineDataFailed']) {
+            this.form.controls.machine.setValue(this.storedData.machineData.machineName);
+            this.request(this['requestMachineData'], this['requestMachineDataSuccess'], this['requestMachineDataFailed'])
+              (null, null, `machine`);
+          }
+        }
+
         this.init();
       });
   }
@@ -190,6 +203,10 @@ export abstract class BaseExtendForm implements OnDestroy {
 
   protected get operatorData(): Operator {
     return this.form.value.badgeData as Operator;
+  }
+
+  protected get rememberMachine(): boolean {
+    return true;
   }
 
   //#endregion
@@ -402,8 +419,8 @@ export abstract class BaseExtendForm implements OnDestroy {
     if (this.operationData) {
       const operation = this.form.value.operationData as Operation;
       return {
-        title: operation.leadOrder,
-        description: `${operation.order} ${operation.article} ${operation.targetQty}`
+        title: operation.leadOrder || operation.order,
+        description: `${operation.order} ${operation.article} ${operation.totalYield} ${operation.targetQty}`
       };
     }
 

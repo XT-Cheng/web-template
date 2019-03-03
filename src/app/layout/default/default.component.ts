@@ -45,9 +45,9 @@ import {
   // Optional
   GithubOutline,
   AppstoreOutline,
+  UpSquareOutline,
 } from '@ant-design/icons-angular/icons';
 import { ReuseTabComponent } from '@shared/components/reuse-tab/reuse-tab.component';
-import { CountDownComponent } from '@delon/abc';
 import { StartupService } from '@core/startup/startup.service';
 import { isMobile } from '@core/utils/helpers';
 import { UtilityService } from '@core/utils/utility.service';
@@ -55,6 +55,7 @@ import { UtilityService } from '@core/utils/utility.service';
 const ICONS = [
   MenuFoldOutline,
   MenuUnfoldOutline,
+  UpSquareOutline,
   SearchOutline,
   SettingOutline,
   FullscreenOutline,
@@ -173,7 +174,7 @@ export class LayoutDefaultComponent
     this._utility.activeComponent = compInstance;
   }
 
-  onDeactivate() {
+  onDeactivate($event) {
     this._utility.activeComponent = null;
   }
 

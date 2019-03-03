@@ -206,6 +206,13 @@
   "app.mobile.dialog.no": "No",
   "app.mobile.dialog.yes": "Yes",
 
+  "app.mobile.packing": "Packing",
+  "app.mobile.packing.machine": "Machine",
+  "app.mobile.packing.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.packing.yield": "Yield",
+  "app.mobile.packing.yield.placeholder": "Pls input yield",
+  "app.mobile.packing.action": "Packing",
+
   "app.mobile.operator.logon": "Operator Logon",
   "app.mobile.operator.logon.machine": "Machine",
   "app.mobile.operator.logon.machine.placeholder": "Pls input Machine Nr.",
