@@ -4,6 +4,9 @@
 
 export const environment = {
   SERVER_URL: `http://localhost:3000`,
+  PRINTER_SERVICE_URL: `http://cne35db03:8952/api/Print/Print3SLabelV2`,
+  CREATE_LT_URL: `http://cne35db03:8092/api/BatchSplit/CreateBatch`,
+  GET_LT_URL: `http://cne35db03:8092/api/BatchSplit/CreateSerialNumber`,
   production: false,
   useHash: true,
   hmr: false,

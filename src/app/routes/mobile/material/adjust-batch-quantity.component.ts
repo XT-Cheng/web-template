@@ -118,7 +118,7 @@ export class AdjustBatchQuantityComponent extends BaseExtendForm {
     const newQty = toNumber(this.form.value.newQty, 0);
     return this._bapiService.changeBatchQuantity(this.batchData, newQty, this.operatorData).pipe(
       switchMap(_ => {
-        return this._printService.printMaterialBatchLabel(this.form.value.batchData.name, `Machine`, 9999);
+        return this._printService.printMaterialBatchLabel(this.form.value.batchData.name);
       }),
       map((_) => {
         return {

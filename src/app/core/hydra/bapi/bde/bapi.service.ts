@@ -142,7 +142,7 @@ export class BDEBapiService {
         return of(null);
       }),
       switchMap(_ => {
-        return this._printService.printMaterialBatchLabel(newBatchName, machine.machineName, 999);
+        return this._printService.printOutputBatchLabel(newBatchName, machine.machineName);
       }),
       map((ret: IActionResult) => {
         return Object.assign(ret, {

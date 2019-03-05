@@ -224,8 +224,8 @@ export class CombineBatchComponent extends BaseExtendForm {
     ).pipe(
       switchMap(ret => {
         const print$: Observable<IActionResult>[] = [];
-        print$.push(this._printService.printMaterialBatchLabel(ret[0].context[0], `Machine`, 9999));
-        print$.push(this._printService.printMaterialBatchLabel(ret[1].context[0], `Machine`, 9999));
+        print$.push(this._printService.printMaterialBatchLabel(ret[0].context[0]));
+        print$.push(this._printService.printMaterialBatchLabel(ret[1].context[0]));
         return forkJoin(print$).pipe(
           map((_) => {
             return {

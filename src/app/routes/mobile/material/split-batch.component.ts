@@ -135,7 +135,7 @@ export class SplitBatchComponent extends BaseExtendForm {
         switchMap(ret => {
           const print$: Observable<IActionResult>[] = [];
           ret.context.forEach((childBatch) => {
-            print$.push(this._printService.printMaterialBatchLabel(childBatch, `Machine`, 9999));
+            print$.push(this._printService.printMaterialBatchLabel(childBatch));
           });
           return forkJoin(print$).pipe(
             map((_) => {

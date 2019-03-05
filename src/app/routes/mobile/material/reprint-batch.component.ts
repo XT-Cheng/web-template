@@ -129,8 +129,7 @@ export class ReprintBatchComponent extends BaseExtendForm {
 
   reprintBatch = () => {
     // Reprint Batch
-    return this._printService.printMaterialBatchLabel(this.batchData.name,
-      `machine`, 2500);
+    return this._printService.printMaterialBatchLabel(this.batchData.name);
   }
 
   //#endregion

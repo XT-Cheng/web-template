@@ -177,7 +177,7 @@ export class LogoffBatchComponent extends BaseExtendForm {
         return this._bapiService.changeBatchQuantity(batch, newQty, this.operatorData);
       }),
       switchMap(_ => {
-        return this._printService.printMaterialBatchLabel(componentToBeLoggedOff.batchName, `Machine`, 9999);
+        return this._printService.printMaterialBatchLabel(componentToBeLoggedOff.batchName);
       }),
       map((ret: IActionResult) => {
         return Object.assign(ret, {

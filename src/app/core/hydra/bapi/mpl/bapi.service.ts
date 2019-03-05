@@ -7,7 +7,7 @@ import { Machine } from '@core/hydra/entity/machine';
 import { Operator } from '@core/hydra/entity/operator';
 import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
 import { LogonInputBatch } from './logon.inputBatch';
-import { Observable, of } from 'rxjs';
+import { Observable, of, forkJoin } from 'rxjs';
 import { GoodsMovementBatch } from './goodsMovement.batch';
 import { MoveBatch } from './move.batch';
 import { CreateBatch } from './create.batch';
@@ -56,14 +56,19 @@ export class MPLBapiService {
   createBatch(batchName: string, materialNumber: string, matType: string, unit: string, batchQty: number,
     materialBuffer: MaterialBuffer | { name: string }, operator: Operator,
     batchSAP: string = '', dateCode: string = ''): Observable<IActionResult> {
-    return new CreateBatch(batchName, materialNumber, matType, unit, batchQty, materialBuffer.name, operator.badge, batchSAP, dateCode)
-      .execute(this._http).pipe(
-        map((ret: IActionResult) => {
-          return Object.assign(ret, {
-            description: `Batch ${batchName} Created!`
-          });
-        })
-      );
+    return forkJoin(
+      new CreateBatch(batchName, materialNumber, matType, unit, batchQty, materialBuffer.name, operator.badge, batchSAP, dateCode)
+        .execute(this._http),
+      this._webAPIService.createLicenseTagInfo(batchName, materialNumber, batchQty)
+    ).pipe(
+      map(_ => {
+        return {
+          isSuccess: true,
+          error: ``,
+          content: ``,
+          description: `Batch ${batchName} Created!`,
+        };
+      }));
   }
 
   changeBatchQuantity(batch: MaterialBatch, newQuantity: number, operator: Operator): Observable<IActionResult> {
@@ -118,10 +123,13 @@ export class MPLBapiService {
               }));
           }),
           switchMap((childrenBatchNames: [string]) => {
-            return new CopyBatch(batch.name, childrenBatchNames[childrenBatchNames.length - 1],
-              childQty, operator.badge).execute(this._http).pipe(
-                map(_ => childrenBatchNames)
-              );
+            return forkJoin(
+              new CopyBatch(batch.name, childrenBatchNames[childrenBatchNames.length - 1],
+                childQty, operator.badge).execute(this._http),
+              this._webAPIService.createLicenseTagInfo(childrenBatchNames[childrenBatchNames.length - 1], batch.material, childQty)
+            ).pipe(
+              map(_ => childrenBatchNames)
+            );
           }),
           switchMap((childrenBatchNames: [string]) => {
             batch.quantity -= childQty;
