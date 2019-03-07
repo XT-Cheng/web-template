@@ -16,6 +16,8 @@ import { CopyBatch } from './copy.batch';
 import { GenerateBatchConnection } from './generate.batchConnection';
 import { LogoffInputBatch } from './logoff.inputBatch';
 import { MergeBatch } from './merge.batch';
+import { BatchService } from '@core/hydra/service/batch.service';
+import { FetchService } from '@core/hydra/service/fetch.service';
 
 @Injectable()
 export class MPLBapiService {
@@ -25,7 +27,8 @@ export class MPLBapiService {
 
   //#region Constructor
 
-  constructor(protected _http: HttpClient, private _webAPIService: WebAPIService) {
+  constructor(protected _http: HttpClient, private _fetchService: FetchService,
+    private _batchService: BatchService, private _webAPIService: WebAPIService) {
   }
   //#endregion
 
@@ -71,15 +74,43 @@ export class MPLBapiService {
       }));
   }
 
+  modifyOutputBatch(batch: MaterialBatch, newQuantity: number, operator: Operator): Observable<IActionResult> {
+    return this._fetchService.query(`SELECT TO_CHAR(SYSDATE,'yywwD') AS DATECODE FROM DUAL`).pipe(
+      switchMap(rec => {
+        const dateCode = rec[0].DATECODE;
+        return forkJoin(
+          new GoodsMovementBatch(batch.name, newQuantity,
+            batch.materialType, batch.status, batch.class, operator.badge, `${dateCode}D`, dateCode).execute(this._http),
+          this._webAPIService.createLicenseTagInfo(batch.name, batch.material, newQuantity)
+        ).pipe(
+          map(_ => {
+            return {
+              isSuccess: true,
+              error: ``,
+              content: ``,
+              description: `Batch ${batch.name} Quantity Changed!`,
+            };
+          })
+        );
+      })
+    );
+  }
+
   changeBatchQuantity(batch: MaterialBatch, newQuantity: number, operator: Operator): Observable<IActionResult> {
-    return new GoodsMovementBatch(batch.name, newQuantity,
-      batch.materialType, batch.status, batch.class, operator.badge).execute(this._http).pipe(
-        map((ret: IActionResult) => {
-          return Object.assign(ret, {
-            description: `Batch ${batch.name} Quantity Changed!`
-          });
-        })
-      );
+    return forkJoin(
+      new GoodsMovementBatch(batch.name, newQuantity,
+        batch.materialType, batch.status, batch.class, operator.badge).execute(this._http),
+      this._webAPIService.createLicenseTagInfo(batch.name, batch.material, newQuantity)
+    ).pipe(
+      map(_ => {
+        return {
+          isSuccess: true,
+          error: ``,
+          content: ``,
+          description: `Batch ${batch.name} Quantity Changed!`,
+        };
+      })
+    );
   }
 
   moveBatch(batch: MaterialBatch, destination: MaterialBuffer | { name: string }, operator: Operator): Observable<IActionResult> {
@@ -98,25 +129,27 @@ export class MPLBapiService {
         return next$.pipe(
           switchMap((childrenBatchNames: [string]) => {
             // 2. Adjust Batch Quantity
-            return new GoodsMovementBatch(batch.name, batch.quantity,
-              batch.materialType, batch.status, batch.class, operator.badge)
-              .execute(this._http).pipe(
-                map(_ => {
-                  return {
-                    isSuccess: true,
-                    error: ``,
-                    content: ``,
-                    description: `Batch ${batch.name} Split to ${childrenBatchNames.join(`,`)}!`,
-                    context: childrenBatchNames
-                  };
-                }
-                ));
+            return forkJoin(
+              new GoodsMovementBatch(batch.name, batch.quantity,
+                batch.materialType, batch.status, batch.class, operator.badge).execute(this._http),
+              this._webAPIService.createLicenseTagInfo(batch.name, batch.material, batch.quantity)
+            ).pipe(
+              map(_ => {
+                return {
+                  isSuccess: true,
+                  error: ``,
+                  content: ``,
+                  description: `Batch ${batch.name} Split to ${childrenBatchNames.join(`,`)}!`,
+                  context: childrenBatchNames
+                };
+              }
+              ));
           }));
       } else {
         return next$.pipe(
           // 1. Create new Batch
           switchMap((childrenBatchNames: [string]) => {
-            return this._webAPIService.getNextLicenseTag().pipe(
+            return this._webAPIService.getNextLicenseTag(batch.material).pipe(
               map((newBatchName) => {
                 childrenBatchNames.push(newBatchName);
                 return childrenBatchNames;
@@ -128,6 +161,10 @@ export class MPLBapiService {
                 childQty, operator.badge).execute(this._http),
               this._webAPIService.createLicenseTagInfo(childrenBatchNames[childrenBatchNames.length - 1], batch.material, childQty)
             ).pipe(
+              switchMap(_ => {
+                return new GoodsMovementBatch(childrenBatchNames[childrenBatchNames.length - 1], childQty,
+                  batch.materialType, batch.status, batch.class, operator.badge).execute(this._http);
+              }),
               map(_ => childrenBatchNames)
             );
           }),
@@ -145,6 +182,12 @@ export class MPLBapiService {
 
   mergeBatch(batch: MaterialBatch | { name: string }, toBeMerged: string[], operator: Operator) {
     return new MergeBatch(batch.name, toBeMerged, operator.badge).execute(this._http).pipe(
+      switchMap(_ => {
+        return this._batchService.getBatchInformation(batch.name);
+      }),
+      switchMap(updated => {
+        return this._webAPIService.createLicenseTagInfo(updated.name, updated.material, updated.quantity);
+      }),
       map((ret: IActionResult) => {
         return Object.assign(ret, {
           description: `Batch ${toBeMerged} Merged to ${batch.name}!`

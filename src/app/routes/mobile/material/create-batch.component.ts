@@ -231,19 +231,19 @@ export class CreateBatchComponent extends BaseExtendForm {
       switchMap(ret => {
         const children = toNumber(this.form.value.numberOfSplitsData, 1);
         if (children > 1) {
-          return this._bapiService.splitBatch(this.batchData,
-            children, this.batchData.quantity / children,
-            this.operatorData);
+          return this._batchService.getBatchInformation(this.batchData.name).pipe(
+            switchMap(batch => {
+              return this._bapiService.splitBatch(batch,
+                children, this.batchData.quantity / children,
+                this.operatorData);
+            })
+          );
         }
         return of(ret);
       }),
       switchMap(ret => {
         if (ret.context) {
-          const print$: Observable<IActionResult>[] = [];
-          ret.context.forEach((childBatch) => {
-            print$.push(this._printService.printMaterialBatchLabel(childBatch));
-          });
-          return forkJoin(print$).pipe(
+          return this._printService.printMaterialBatchLabel(ret.context).pipe(
             map((_) => {
               return {
                 isSuccess: true,

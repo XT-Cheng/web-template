@@ -10,6 +10,7 @@ import { ComponentToBeLoggedOff, getComponentToBeLoggedOff } from '@core/hydra/u
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { toNumber } from 'ng-zorro-antd';
 import { PrintService } from '@core/hydra/service/print.service';
+import { MaterialBatch } from '@core/hydra/entity/batch';
 
 @Component({
   selector: 'fw-batch-logoff',
@@ -169,15 +170,17 @@ export class LogoffBatchComponent extends BaseExtendForm {
         })
       );
     });
+    let batchData: MaterialBatch;
     return logoffBatch$.pipe(
       switchMap(_ => {
         return this._batchService.getBatchInformation(componentToBeLoggedOff.batchName);
       }),
       switchMap(batch => {
+        batchData = batch;
         return this._bapiService.changeBatchQuantity(batch, newQty, this.operatorData);
       }),
       switchMap(_ => {
-        return this._printService.printMaterialBatchLabel(componentToBeLoggedOff.batchName);
+        return this._printService.printMaterialBatchLabel([componentToBeLoggedOff.batchName]);
       }),
       map((ret: IActionResult) => {
         return Object.assign(ret, {

@@ -18,6 +18,6 @@ export class MobileBatchListComponent {
   }
 
   getDisplay(batch: MaterialBatch) {
-    return `${batch.name}`;
+    return `${batch.name},${batch.material},${batch.quantity}`;
   }
 }

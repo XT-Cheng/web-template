@@ -133,11 +133,7 @@ export class SplitBatchComponent extends BaseExtendForm {
     return this._bapiService.splitBatch(this.batchData, children,
       this.batchData.quantity / children, this.operatorData).pipe(
         switchMap(ret => {
-          const print$: Observable<IActionResult>[] = [];
-          ret.context.forEach((childBatch) => {
-            print$.push(this._printService.printMaterialBatchLabel(childBatch));
-          });
-          return forkJoin(print$).pipe(
+          return this._printService.printMaterialBatchLabel(ret.context).pipe(
             map((_) => {
               return {
                 isSuccess: true,

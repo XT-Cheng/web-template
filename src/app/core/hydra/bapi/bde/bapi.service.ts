@@ -55,7 +55,7 @@ export class BDEBapiService {
     // LogOn Operation
     batchLogon$ = batchLogon$.pipe(
       switchMap(() => {
-        return this._batchService.getNextBatchName().pipe(
+        return this._webAPIService.getNextLicenseTag(operation.article, operation.name).pipe(
           switchMap((name) => {
             return new LogonOperation(operation.name, machine.machineName, operator.badge, name).execute(this._http);
           }));
@@ -123,11 +123,11 @@ export class BDEBapiService {
       );
   }
 
-  changeOutputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string },
+  changeOutputBatch(operation: Operation | { name: string, article: string }, machine: Machine | { machineName: string },
     currentBatch: string, qty: number,
     operator: Operator): Observable<IActionResult> {
-    let newBatchName;
-    return this._webAPIService.getNextLicenseTag().pipe(
+    let newBatchName: string;
+    return this._webAPIService.getNextLicenseTag(operation.article, operation.name).pipe(
       switchMap(batchName => {
         newBatchName = batchName;
         return new ChangeOutputBatch(operation.name, machine.machineName, operator.badge, batchName, 0).execute(this._http);
@@ -137,12 +137,12 @@ export class BDEBapiService {
       }),
       switchMap(materialBatch => {
         if (materialBatch.quantity !== qty) {
-          return this._bapiMPL.changeBatchQuantity(materialBatch, qty, operator);
+          return this._bapiMPL.modifyOutputBatch(materialBatch, qty, operator);
         }
         return of(null);
       }),
       switchMap(_ => {
-        return this._printService.printOutputBatchLabel(newBatchName, machine.machineName);
+        return this._printService.printOutputBatchLabel([newBatchName], machine.machineName);
       }),
       map((ret: IActionResult) => {
         return Object.assign(ret, {

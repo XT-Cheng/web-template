@@ -151,6 +151,9 @@ export class BatchTraceabilityComponent {
         }
         return true;
       }));
+      this._isChartActive = true;
+      this._isConditionActive = false;
+      this._isTableActive = true;
     });
   }
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FetchService } from './fetch.service';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, filter } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 import {
   MaterialBatch, MaterialBuffer, BatchConnection,
@@ -221,6 +221,15 @@ export class BatchService {
         });
 
         return ret;
+      }),
+      map(batches => {
+        return batches.filter(batch => {
+          if (batch.status === 'F' && batch.quantity > 0) {
+            return true;
+          } else {
+            return false;
+          }
+        });
       }));
   }
 
@@ -323,6 +332,15 @@ export class BatchService {
         });
 
         return ret;
+      }),
+      map(batches => {
+        return batches.filter(batch => {
+          if (batch.status === 'F' && batch.quantity > 0) {
+            return true;
+          } else {
+            return false;
+          }
+        });
       }));
   }
 
@@ -380,6 +398,13 @@ export class BatchService {
         });
 
         return ret;
+      }),
+      map(batch => {
+        if (batch !== null && batch.status === 'F' && batch.quantity > 0) {
+          return batch;
+        } else {
+          return null;
+        }
       }));
   }
 
@@ -408,6 +433,13 @@ export class BatchService {
         });
 
         return ret;
+      }),
+      map(batch => {
+        if (batch !== null && batch.status === 'F' && batch.quantity > 0) {
+          return batch;
+        } else {
+          return null;
+        }
       }));
   }
 
@@ -456,15 +488,6 @@ export class BatchService {
     let sql = BatchService.batchConnectionForwardSql;
     sql = sql.replace(BatchService.batchNameTBR, batchName);
     return this.getBatchConnection(batchName, sql);
-  }
-
-  getNextBatchName(): Observable<string> {
-    const sql = 'SELECT S_MPL_NEXT_LT.NEXTVAL FROM DUAL';
-    return this._fetchService.query(sql).pipe(
-      map(res => {
-        return `3SCXTOUT` + leftPad(res[0].NEXTVAL, 6);
-      })
-    );
   }
 
   //#endregion

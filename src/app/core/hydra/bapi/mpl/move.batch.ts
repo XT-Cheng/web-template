@@ -12,6 +12,7 @@ export class MoveBatch extends DialogBase {
       `ZLO=${this.destination}|` +
       `HZTYP=${this.newMatType}|` +
       `KNR=${this.badge}|` +
-      `KLASSE=G|`;
+      `KLASSE=G|` +
+      `STA=F`;
   }
 }

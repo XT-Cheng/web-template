@@ -1,14 +1,23 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { FetchService } from './fetch.service';
-import { IActionResult } from '@core/utils/helpers';
+import { IActionResult, replaceAll } from '@core/utils/helpers';
 import { environment } from '@env/environment';
 import { switchMap } from 'rxjs/operators';
+import { MaterialBatch } from '../entity/batch';
+import { BatchService } from './batch.service';
+import { FetchService } from './fetch.service';
 
 @Injectable()
 export class PrintService {
   //#region Private members
+  static SAPBatchTBR = '$SAPBatchTBR';
+  static dateCodeTBR = '$dateCodeTBR';
+  static ltNumbersTBR = '$ltNumbersTBR';
+
+  static updateBartenderLabelTable = `UPDATE U_TE_MMLP_BARTENDER_LABEL
+   SET BATCH_NUMBER = '${PrintService.SAPBatchTBR}', PRINT_DATE_CODE = '${PrintService.dateCodeTBR}'
+   WHERE LICENSE_TAG_NUMBER IN (${PrintService.ltNumbersTBR})`;
 
   private materialBatchPrintMachine = 'LPZMAT';
 
@@ -19,35 +28,82 @@ export class PrintService {
 
   //#region Constructor
 
-  constructor(protected _http: HttpClient, protected _fetchService: FetchService) { }
+  constructor(protected _http: HttpClient, protected _batchService: BatchService, protected _fetchService: FetchService) { }
 
   //#endregion
 
   //#region Public methods
-  printMaterialBatchLabel(batchName: string, machineName?: string): Observable<IActionResult> {
-    return this.printBatchLabel(batchName, machineName ? machineName : this.materialBatchPrintMachine, this.materialBatchLabelFile);
+  printMaterialBatchLabel(batchNames: string[], machineName?: string): Observable<IActionResult> {
+    if (batchNames.length === 0) {
+      return of({
+        isSuccess: true,
+        error: ``,
+        content: ``,
+        description: `Empty batchNames`,
+      });
+    }
+
+    return this._batchService.getBatchInformation(batchNames[0]).pipe(
+      switchMap(batch => {
+        return this.printBatchLabel(batchNames, batch.SAPBatch, batch.dateCode,
+          machineName ? machineName : this.materialBatchPrintMachine, this.materialBatchLabelFile);
+      })
+    );
   }
 
-  printOutputBatchLabel(batchName: string, machineName: string): Observable<IActionResult> {
-    return this.printBatchLabel(batchName, machineName, this.outputBatchLabelFile);
+  printOutputBatchLabel(batchNames: string[], machineName: string): Observable<IActionResult> {
+    if (batchNames.length === 0) {
+      return of({
+        isSuccess: true,
+        error: ``,
+        content: ``,
+        description: `Empty batchNames`,
+      });
+    }
+
+    return this._batchService.getBatchInformation(batchNames[0]).pipe(
+      switchMap(batch => {
+        return this.printBatchLabel(batchNames, batch.SAPBatch, batch.dateCode,
+          machineName, this.outputBatchLabelFile);
+      })
+    );
   }
 
   //#endregion
 
   //#region Private methods
-  private printBatchLabel(batchName: string, machineName: string, tagTypeName: string): Observable<IActionResult> {
+  private updateBardtenderLabelTable(batchNames: string[], SAPBatch: string, dateCode: string): Observable<IActionResult> {
+    const joined = [];
+    batchNames.map((name) => joined.push(`'` + name + `'`));
+
+    return this._fetchService.query(replaceAll(PrintService.updateBartenderLabelTable
+      , [PrintService.SAPBatchTBR, PrintService.dateCodeTBR, PrintService.ltNumbersTBR]
+      , [SAPBatch, dateCode, joined.join(',')])).pipe(
+        switchMap(_ => {
+          return of({
+            isSuccess: true,
+            error: ``,
+            content: ``,
+            description: `Bartender Table altered!`,
+          });
+        }));
+  }
+
+  private printBatchLabel(batchNames: string[], SAPBatch: string, dateCode: string,
+    machineName: string, tagTypeName: string): Observable<IActionResult> {
+    const flat = batchNames.join(`;`);
     return this._http.get(environment.PRINTER_SERVICE_URL, {
       params: {
-        data: `{"LicenseTag":"${batchName}","MachineName":"${machineName}","TagTypeName":"${tagTypeName}"}`
+        data: `{"LicenseTag":"${flat}","MachineName":"${machineName}","TagTypeName":"${tagTypeName}",` +
+          `"BatchNo" : "${SAPBatch}", "DateCode" : "${dateCode}"}`
       }
     }).pipe(
-      switchMap(ret => {
-        console.log(`Lable ${batchName} Printed Out from ${machineName}!`);
+      switchMap(_ => {
         return of({
           isSuccess: true,
           error: ``,
           content: ``,
-          description: `Batch ${batchName} Label Printed!`,
+          description: `Batch ${flat} Label Printed!`,
         });
       })
     );
