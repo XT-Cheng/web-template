@@ -95,7 +95,7 @@ export class MaterialPreparationComponent implements OnInit {
 
         ret.push({
           batchName: comp.batchName,
-          batchQty: comp.quantity,
+          batchQty: comp.quantity.toFixed(2),
           material: comp.material,
           percentage: percentage,
           loaded: loaded

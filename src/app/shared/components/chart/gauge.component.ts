@@ -43,9 +43,14 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
 
   @Input()
   set percent(value: any) {
-    this._percent = toNumber(value);
+    this._percent = this._percentText = toNumber(value);
+
+    if (this._percent > 100) {
+      this._percent = 100;
+    }
   }
   private _percent: number;
+  private _percentText: number;
 
   // #endregion
 
@@ -57,7 +62,7 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
   constructor(private zone: NgZone) { }
 
   private createData() {
-    return [{ name: this.title, value: +this._percent }];
+    return [{ name: this.title, value: +this._percent, text: this._percentText }];
   }
 
   private draw() {
@@ -141,7 +146,7 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
         <div style="width: 300px;text-align: center;font-size: 12px!important;">
           <p style="font-size: 14px; color: rgba(0,0,0,0.43);margin: 0;">${this.title}</p>
           <p style="font-size: 24px;color: rgba(0,0,0,0.85);margin: 0;">
-            ${data[0].value}%
+            ${data[0].text}%
           </p>
         </div>`
       });
@@ -151,7 +156,7 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
         html: `
         <div style="width: 300px;text-align: center;font-size: 12px!important;">
           <p style="font-size: 24px;color: rgba(0,0,0,0.85);margin: 0;">
-            ${data[0].value}%
+            ${data[0].text}%
           </p>
         </div>`
       });

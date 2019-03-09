@@ -31,17 +31,17 @@ export class BatchTraceabilityComponent {
   searchForm: FormGroup;
   columns: STColumn[] = [
     { title: 'Name', index: 'name', i18n: 'app.report.batch.name' },
-    { title: 'Buffer', index: 'bufferDescription', i18n: 'app.report.batch.buffer' },
-    {
-      title: 'Qty',
-      index: 'quantity',
-      type: 'number',
-      className: 'text-left',
-      sort: {
-        compare: (a, b) => a.quantity - b.quantity,
-      },
-      i18n: 'app.report.batch.remainQty'
-    },
+    // { title: 'Buffer', index: 'bufferDescription', i18n: 'app.report.batch.buffer' },
+    // {
+    //   title: 'Qty',
+    //   index: 'quantity',
+    //   type: 'number',
+    //   className: 'text-left',
+    //   sort: {
+    //     compare: (a, b) => a.quantity - b.quantity,
+    //   },
+    //   i18n: 'app.report.batch.remainQty'
+    // },
     {
       title: 'Material',
       index: 'material',

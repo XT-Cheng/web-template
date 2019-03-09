@@ -420,7 +420,8 @@ export abstract class BaseExtendForm implements OnDestroy {
       const operation = this.form.value.operationData as Operation;
       return {
         title: operation.leadOrder || operation.order,
-        description: `${operation.order} ${operation.article} ${operation.totalYield} ${operation.targetQty}`
+        description: `${operation.display}`
+        // `${operation.order} ${operation.article} ${operation.totalYield} ${operation.targetQty}`
       };
     }
 

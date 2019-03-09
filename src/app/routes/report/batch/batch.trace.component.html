@@ -34,7 +34,7 @@
 <div nz-row nzType="flex">
   <nz-collapse nz-col nzSpan="6">
     <nz-collapse-panel [nzActive]="isChartActive" [nzHeader]="'app.report.chart' | translate">
-      <nz-card [nzTitle]="'app.report.batch.traceability' | translate">
+      <nz-card style='overflow-x: scroll' [nzTitle]="'app.report.batch.traceability' | translate">
         <nz-tree [nzData]="treeNodes$ | async" nzMultiple="false"></nz-tree>
       </nz-card>
     </nz-collapse-panel>

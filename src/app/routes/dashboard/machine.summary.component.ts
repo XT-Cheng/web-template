@@ -11,6 +11,7 @@ import { finalize } from 'rxjs/operators';
 import { I18NService } from '@core/i18n/i18n.service';
 import { ReuseTabService } from '@shared/components/reuse-tab/reuse-tab.service';
 import { ChartGaugeComponent } from '@shared/components/chart/gauge.component';
+import { ProcessType } from '@core/hydra/entity/checkList';
 
 @Component({
   selector: 'fw-machine-summary',
@@ -56,6 +57,12 @@ export class MachineSummaryComponent implements OnInit {
       this.machineName = param.get('machineName');
       this.reuseTabService.title = `${this.i18n.fanyi('app.route.line-summary')} - ${this.machineName}`;
 
+      setInterval(() => {
+        this.isLoading = true;
+        this.machineService.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
+          this.machine = machine;
+        });
+      }, 30000);
       this.machineService.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
         this.machine = machine;
       });
@@ -73,14 +80,18 @@ export class MachineSummaryComponent implements OnInit {
   //#region Average Yield / Scrap by Hour
 
   get averageHourYield() {
-    if (this.machine.output.size === 0) return 0;
+    // if (this.machine.output.size === 0) return 0;
 
-    let totalYield = 0;
-    this.machine.output.forEach(item => {
-      totalYield += item.yield;
-    });
+    // let totalYield = 0;
+    // this.machine.output.forEach(item => {
+    //   totalYield += item.yield;
+    // });
 
-    return (totalYield / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT);
+    // return (totalYield / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT);
+
+    if (this.machine.currentShiftOEE.operationTime === 0) return `-`;
+
+    return (this.machine.currentShiftOutput.yield / (this.machine.currentShiftOEE.operationTime / 3600)).toFixed(Machine.FRACTION_DIGIT_1);
   }
 
   get averageHourScrap() {
@@ -91,7 +102,7 @@ export class MachineSummaryComponent implements OnInit {
       totalScrap += item.scrap;
     });
 
-    return (totalScrap / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT);
+    return (totalScrap / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT_0);
   }
 
   //#endregion
@@ -212,8 +223,32 @@ export class MachineSummaryComponent implements OnInit {
   //#endregion
 
   //#region Public methods
+  get isMaterailRequired(): boolean {
+    if (!this.machine.currentOperation) return false;
+
+    if (this.machine.currentOperation.bomItems.size === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  get isShiftChangeCheckListVisible(): boolean {
+    if (!this.machine.currentOperation) return false;
+
+    if (!this.machine.checkLists.has(ProcessType.CHANGESHIFT)) {
+      return false;
+    }
+
+    return true;
+  }
+
   get isChangeOverCheckListVisible(): boolean {
     if (!this.machine.currentOperation) return false;
+
+    if (!this.machine.checkLists.has(ProcessType.CHANGEOVER)) {
+      return false;
+    }
 
     if (this.machine.lastArticle === this.machine.currentOperation.article) {
       return false;

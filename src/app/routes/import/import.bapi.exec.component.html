@@ -7,8 +7,7 @@
   </div>
 </nz-card>
 <nz-card nzTitle="Action">
-  <button nz-button nzType="primary" [disabled]="executing || tableRecords.length === 0" (click)="import()">Create</button>
-  <button nz-button nzType="danger" [disabled]="executing || tableRecords.length === 0" (click)="deleteData()">Delete</button>
+  <button nz-button nzType="primary" [disabled]="executing || tableRecords.length === 0" (click)="import()">Execute</button>
   <button nz-button nzType="danger" style='float: right;' [disabled]="!executing" (click)="stop()">Stop</button>
 </nz-card>
 <nz-card nzTitle="Data">

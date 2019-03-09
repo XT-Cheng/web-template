@@ -176,9 +176,9 @@ export class LogonBatchComponent extends BaseExtendForm {
   logonBatch = () => {
     // LogOn Batch
     const actionData = this.form.value.actionData;
-    return this._bapiService.logonInputBatch(this.form.value.operationData.name,
-      this.form.value.machineData.machineName, this.form.value.badge,
-      { name: this.form.value.batchData.name, material: this.form.value.batchData.material }, actionData.pos);
+    return this._bapiService.logonInputBatch(this.operationData,
+      this.machineData, this.operatorData,
+      this.batchData, actionData.pos);
   }
 
   //#endregion

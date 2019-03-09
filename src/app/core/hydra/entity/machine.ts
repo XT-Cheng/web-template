@@ -3,7 +3,8 @@ import { toNumber } from '@delon/util';
 import { CheckList, ProcessType, CheckListResult } from './checkList';
 
 export class Machine {
-  static FRACTION_DIGIT = 0;
+  static FRACTION_DIGIT_0 = 0;
+  static FRACTION_DIGIT_1 = 1;
 
   //#region Fields
 
@@ -64,7 +65,7 @@ export class Machine {
     const interval = 1000 * 60 * 30;
     const beginDay = (new Date(now.getTime() - (now.getTime() % interval))).getTime();
 
-    for (let i = 48; i > 0; i -= 1) {
+    for (let i = 48; i >= 0; i -= 1) {
       this.output.set(new Date(beginDay - interval * i), {
         yield: 0,
         scrap: 0,
@@ -153,6 +154,8 @@ export class MachineScrap {
 export class MachineOEE {
   //#region Fields
 
+  operationTime = 0;
+
   availability = 0;
   performance = 0;
   quality = 0;
@@ -162,7 +165,7 @@ export class MachineOEE {
   //#region Properties
 
   get overAll(): number {
-    return toNumber(((this.availability * this.performance * this.quality) / 10000.0).toFixed(Machine.FRACTION_DIGIT));
+    return toNumber(((this.availability * this.performance * this.quality) / 10000.0).toFixed(Machine.FRACTION_DIGIT_0));
   }
 
   //#endregion

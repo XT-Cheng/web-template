@@ -30,7 +30,7 @@ export class GoodsMovementBatch extends DialogBase {
     }
 
     if (this.SAPBatch !== null && this.SAPBatch !== undefined) {
-      ret += `SAPCNR=${this.SAPBatch}|`;
+      ret += `CNR:SAPCNR=${this.SAPBatch}|`;
     }
 
     if (this.dateCode !== null && this.dateCode !== undefined) {

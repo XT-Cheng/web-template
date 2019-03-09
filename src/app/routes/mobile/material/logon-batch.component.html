@@ -45,7 +45,7 @@
       <div class="weui-cell weui-cell_board weui-cell_access" (click)="showComponentStatus('batch')">
         <div class="weui-cell__bd">
           <span>{{'app.common.component.require' | translate}}: {{display.total}}, {{'app.common.miss' |
-            translate}}: <span [ngStyle]="{'color': 'red'}">{{display.missed}}</span></span>
+            translate}}: <span [ngStyle]="getStyle(display.missed)">{{display.missed}}</span></span>
         </div>
         <div class="weui-cell__ft"></div>
       </div>

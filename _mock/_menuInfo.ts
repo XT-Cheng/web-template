@@ -20,7 +20,7 @@ const menuInfo: Menu[] = [{
         text: '成品线',
         group: false,
         /** 路由 */
-        link: `/dashboard/lineGeneral/FG-00001`,
+        link: `/dashboard/lineGeneral/SG-00001`,
       },
       {
         text: '流量单元',
@@ -41,7 +41,7 @@ const menuInfo: Menu[] = [{
         link: `/dashboard/lineGeneral/CC-00001`,
       },
       {
-        text: '穿缸线-1',
+        text: '穿缸线-2',
         group: false,
         /** 路由 */
         link: `/dashboard/lineGeneral/CC-00002`,
@@ -81,6 +81,12 @@ const menuInfo: Menu[] = [{
         group: false,
         /** 路由 */
         link: `/dashboard/lineGeneral/KM-00004`,
+      },
+      {
+        text: 'KOMAX 5号机',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/KM-00005`,
       },
       {
         text: '套管-1',

@@ -9,7 +9,7 @@
     </div>
     <div nzType="flex" nz-row [nzGutter]="8" style='padding-top: 1px;'>
       <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
-        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.workOrder' | translate" [total]="machine.currentOperation?.name"
+        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.workOrder' | translate" [total]="machine.currentOperation?.leadOrder"
           totalHeight="200px" contentHeight="50px" [footer]="footer1">
           <p class="text-truncate mb0">
             {{'app.machine.summary.targetQty' | translate}} / {{'app.machine.summary.finishedQty' | translate}}:
@@ -73,19 +73,19 @@
   </nz-card>
   <nz-card [nzBordered]="false">
     <nz-tabset>
-      <nz-tab [nzTitle]="'app.machine.summary.hourScrap' | translate">
-        <fw-widget-hour-scrap [machine]='machine'></fw-widget-hour-scrap>
-      </nz-tab>
       <nz-tab [nzTitle]="'app.machine.summary.hourOutput' | translate">
         <fw-widget-hour-output [machine]='machine'></fw-widget-hour-output>
       </nz-tab>
-      <nz-tab [nzTitle]="'app.machine.summary.materialPreparation' | translate">
+      <!-- <nz-tab [nzTitle]="'app.machine.summary.hourScrap' | translate">
+        <fw-widget-hour-scrap [machine]='machine'></fw-widget-hour-scrap>
+      </nz-tab> -->
+      <nz-tab *ngIf='isMaterailRequired' [nzTitle]="'app.machine.summary.materialPreparation' | translate">
         <fw-widget-mat-prep [machine]='machine'></fw-widget-mat-prep>
       </nz-tab>
       <nz-tab [nzTitle]="'app.machine.summary.nextOperations' | translate">
         <fw-widget-next-op [machine]='machine'></fw-widget-next-op>
       </nz-tab>
-      <nz-tab [nzTitle]="'app.machine.summary.checkListOfShiftChange' | translate">
+      <nz-tab *ngIf='isShiftChangeCheckListVisible' [nzTitle]="'app.machine.summary.checkListOfShiftChange' | translate">
         <fw-widget-check-shift [machine]='machine'></fw-widget-check-shift>
       </nz-tab>
       <nz-tab *ngIf='isChangeOverCheckListVisible' [nzTitle]="'app.machine.summary.checkListOfChangeOver' | translate">

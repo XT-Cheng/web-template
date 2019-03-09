@@ -18,6 +18,6 @@ export class MobileOperationListComponent {
   }
 
   getDisplay(operation: Operation) {
-    return `${operation.order} ${operation.article} ${operation.targetQty}`;
+    return `${operation.leadOrder || operation.order} ${operation.article} ${operation.targetQty}`;
   }
 }

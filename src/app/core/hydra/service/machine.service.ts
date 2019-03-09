@@ -300,6 +300,14 @@ export class MachineService {
       );
   }
 
+  hasStatusAssigned(machineName: string, status: number): Observable<boolean> {
+    return this.getAvailableStatusToChange(machineName).pipe(
+      map((arr: any[]) => {
+        return arr.some((item) => item.status === status);
+      })
+    );
+  }
+
   getMachine(machineName: string): Observable<Machine> {
     return this.getMachineInternal(machineName, false);
   }
@@ -455,6 +463,10 @@ export class MachineService {
                 ot.performance += mraItem.PERFORMANCE;
               } else {
                 firstOperationRecord.set(mraItem.ORDERNUMBER, true);
+                const ot = machineRet.output.get(found);
+                ot.yield += mraItem.QUANTITY_GOOD;
+                ot.scrap += mraItem.QUANTITY_SCRAP;
+                ot.performance += mraItem.PERFORMANCE;
               }
             }
           });
@@ -465,9 +477,10 @@ export class MachineService {
           machineRet.currentShiftOEE = new MachineOEE();
           currentShiftOEE.map(oee => {
             machineRet.currentShiftOEE = Object.assign(machineRet.currentShiftOEE, {
-              availability: toNumber(oee.AVAILABILITY_RATE * 100, Machine.FRACTION_DIGIT),
-              performance: toNumber(oee.PERFORMANCE_RATE * 100, Machine.FRACTION_DIGIT),
-              quality: toNumber(oee.QUALITY_RATE * 100, Machine.FRACTION_DIGIT),
+              availability: toNumber(oee.AVAILABILITY_RATE * 100, Machine.FRACTION_DIGIT_0),
+              performance: toNumber(oee.PERFORMANCE_RATE * 100, Machine.FRACTION_DIGIT_0),
+              quality: toNumber(oee.QUALITY_RATE * 100, Machine.FRACTION_DIGIT_0),
+              operationTime: oee.OPERATING_TIME,
             });
           });
 

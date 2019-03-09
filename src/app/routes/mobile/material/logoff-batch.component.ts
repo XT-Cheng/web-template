@@ -137,7 +137,7 @@ export class LogoffBatchComponent extends BaseExtendForm {
 
   componentSelected(componentSelected: ComponentToBeLoggedOff) {
     this.componentStatusPopup.close();
-    this.form.controls.ComponentToBeLoggedOff.setValue(componentSelected);
+    this.form.controls.componentToBeLoggedOff.setValue(componentSelected);
     this.document.getElementById('newQty').focus();
   }
 
