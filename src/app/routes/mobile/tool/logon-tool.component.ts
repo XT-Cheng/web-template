@@ -5,7 +5,7 @@ import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation, ToolStatus } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { getToolStatus } from '@core/hydra/utils/operationHelper';
 import { ToolService } from '@core/hydra/service/tool.service';
@@ -13,6 +13,8 @@ import { requestBatchData } from '../material/request.common';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
+import { FetchService } from '@core/hydra/service/fetch.service';
+import { replaceAll, IActionResult } from '@core/utils/helpers';
 
 @Component({
   selector: 'fw-tool-logon',
@@ -23,6 +25,13 @@ import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
   },
 })
 export class LogonToolComponent extends BaseExtendForm {
+  private machineNameTBR = '$machineNameTBR';
+  private operationNameTBR = '$operationNameTBR';
+  private resIDTBR = '$resIDTBR';
+
+  private updateHYBUCHSql = `UPDATE HYBUCH SET PARAM_STR1 = '${this.operationNameTBR}'
+   WHERE KEY_TYPE = 'O' AND SUBKEY1 = '${this.machineNameTBR}' AND SUBKEY6 = '${this.resIDTBR}'`;
+
   //#region View Children
 
   //#endregion
@@ -53,6 +62,7 @@ export class LogonToolComponent extends BaseExtendForm {
     private _batchService: BatchService,
     private _operationService: OperationService,
     private _bapiService: WRMBapiService,
+    private _fetchService: FetchService
   ) {
     super(injector, false);
     this.addControls({
@@ -144,7 +154,13 @@ export class LogonToolComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine);
+    return this._machineService.getMachine(this.form.value.machine).pipe(
+      tap(machine => {
+        if (!machine.toolLogonOrder) {
+          throw Error(`No Tool Logon Order for ${machine.machineName}`);
+        }
+      })
+    );
   }
 
   //#endregion
@@ -156,9 +172,6 @@ export class LogonToolComponent extends BaseExtendForm {
     setTimeout(() => {
       this.document.getElementById(`tool`).focus();
     }, 0);
-    // if (!this.isDisable()) {
-    //   this.doAction(this.logonTool, this.logonToolSuccess, this.logonToolFailed);
-    // }
   }
 
   requestBatchDataFailed = () => {
@@ -269,6 +282,17 @@ export class LogonToolComponent extends BaseExtendForm {
         return this._bapiService.logonTool({ name: this.machineData.toolLogonOrder },
           { machineName: this.form.value.toolMachine }, this.toolData,
           this.operatorData);
+      }),
+      switchMap(_ => {
+        return this._fetchService.query(replaceAll(this.updateHYBUCHSql,
+          [this.machineNameTBR, this.operationNameTBR, this.resIDTBR],
+          [this.form.value.toolMachine, this.operationData.name, this.toolData.toolId]));
+      }),
+      map(_ => {
+        return {
+          isSuccess: true,
+          description: `Tool ${this.toolData.toolName} Logged On!`
+        };
       }));
   }
 

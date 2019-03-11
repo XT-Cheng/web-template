@@ -479,15 +479,23 @@ export class BatchService {
   }
 
   getBackwardBatchConnection(batchName: string): Observable<BatchConnection> {
-    let sql = BatchService.batchConnectionBackwardSql;
-    sql = sql.replace(BatchService.batchNameTBR, batchName);
-    return this.getBatchConnection(batchName, sql);
+    return this.getBatchInfoFrom2DBarCode(batchName).pipe(
+      switchMap((batch: MaterialBatch) => {
+        let sql = BatchService.batchConnectionBackwardSql;
+        sql = sql.replace(BatchService.batchNameTBR, batch.name);
+        return this.getBatchConnection(batch.name, sql);
+      }
+      ));
   }
 
   getForwardBatchConnection(batchName: string): Observable<BatchConnection> {
-    let sql = BatchService.batchConnectionForwardSql;
-    sql = sql.replace(BatchService.batchNameTBR, batchName);
-    return this.getBatchConnection(batchName, sql);
+    return this.getBatchInfoFrom2DBarCode(batchName).pipe(
+      switchMap((batch: MaterialBatch) => {
+        let sql = BatchService.batchConnectionForwardSql;
+        sql = sql.replace(BatchService.batchNameTBR, batch.name);
+        return this.getBatchConnection(batch.name, sql);
+      }
+      ));
   }
 
   //#endregion

@@ -1,9 +1,10 @@
 import { Component, Injector } from '@angular/core';
 import { Validators } from '@angular/forms';
 import { MachineService } from '@core/hydra/service/machine.service';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
+import { FetchService } from '@core/hydra/service/fetch.service';
 
 @Component({
   selector: 'fw-tool-logoff',
@@ -38,6 +39,7 @@ export class LogoffToolComponent extends BaseExtendForm {
     injector: Injector,
     private _machineService: MachineService,
     private _bapiService: WRMBapiService,
+    private _fetchService: FetchService
   ) {
     super(injector);
     this.addControls({
@@ -73,6 +75,19 @@ export class LogoffToolComponent extends BaseExtendForm {
         }
 
         return toolMachine;
+      }),
+      switchMap(toolMachine => {
+        const toolLoggedOn = toolMachine.toolsLoggedOn[0];
+
+        return this._fetchService.query(`SELECT COUNT(1) AS FOUND FROM HYBUCH WHERE KEY_TYPE = 'A'
+         AND SUBKEY2 = '${toolLoggedOn.targetOperation}'`).pipe(
+          map(rec => {
+            if (rec[0].FOUND > 0) {
+              throw Error(`Tool ${toolLoggedOn.toolName} In Use!`);
+            }
+            return toolMachine;
+          })
+        );
       })
     );
   }

@@ -82,7 +82,7 @@ export function getComponentStatus(operation: Operation, machine: Machine): Comp
 }
 
 export function getToolStatus(operation: Operation, machine: Machine): ToolStatus[] {
-  const toolStatus = [];
+  const toolStatus: ToolStatus[] = [];
 
   operation.toolItems.forEach((toolItem, key) => {
     let loggedOnFound: ToolLoggedOn;

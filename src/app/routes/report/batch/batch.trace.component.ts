@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { NzMessageService, toNumber, NzTreeNode, NzTreeNodeOptions } from 'ng-zorro-antd';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { STColumn } from '@delon/abc';
@@ -6,14 +6,20 @@ import { MaterialBatch, MaterialBuffer, BatchConnection } from '@core/hydra/enti
 import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
 import { format } from 'date-fns';
 import { BehaviorSubject, forkJoin, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-batch-trace',
   templateUrl: './batch.trace.component.html',
   styleUrls: ['./batch.trace.component.less']
 })
-export class BatchTraceabilityComponent {
+export class BatchTraceabilityComponent implements OnInit {
+  //#region View Children
+
+  @ViewChild('batch', { read: ElementRef })
+  batchElem: ElementRef;
+
+  //#endregion
 
   //#region Private fields
 
@@ -107,11 +113,19 @@ export class BatchTraceabilityComponent {
 
   //#region Implemented methods
 
+  ngOnInit(): void {
+    setTimeout(_ => {
+      this.batchElem.nativeElement.focus();
+    }, 0);
+  }
+
   //#endregion
 
   //#region Public methods
 
   submitForm(): void {
+    this.batchDatas$.next([]);
+    this.treeNodes$.next([]);
     const data$ = this.searchForm.value.direction ?
       this._batchService.getForwardBatchConnection(this.searchForm.value.batch) :
       this._batchService.getBackwardBatchConnection(this.searchForm.value.batch);
@@ -126,6 +140,9 @@ export class BatchTraceabilityComponent {
       switchMap((array: any[]) => {
         const [connection, batches] = array;
         return forkJoin(of(connection), of(batches), this._batchService.getBatchesByNames(batches.map(batch => batch.batchName)));
+      }),
+      finalize(() => {
+        this.searchForm.controls.batch.setValue(``);
       })
     ).subscribe(array => {
       const [connection, batchesWithHighest, batches] = array;

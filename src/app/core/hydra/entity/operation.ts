@@ -168,6 +168,7 @@ export class ToolLoggedOn {
   requiredMaterial = '';
 
   loggedOnOperation = '';
+  targetOperation = '';
   loggedOnMachine = '';
   toolName = '';
   toolId = '';
@@ -178,7 +179,7 @@ export interface ToolStatus {
 
   isReady: boolean;
   loggedOnMachine?: string;
-  toolName?: number;
+  toolName?: string;
 }
 
 export class OperatorLoggedOn {

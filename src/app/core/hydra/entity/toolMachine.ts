@@ -25,7 +25,11 @@ export class ToolMachine {
   //#region Display
 
   get display(): string {
-    return `${this.description},${this.toolsLoggedOn.length}`;
+    if (this.toolsLoggedOn.length > 0) {
+      return `${this.description},${this.toolsLoggedOn[0].toolName}`;
+    } else {
+      return `${this.description}`;
+    }
   }
 
   //#endregion

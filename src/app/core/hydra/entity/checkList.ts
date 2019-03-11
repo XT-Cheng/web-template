@@ -27,6 +27,8 @@ export class CheckListResult {
   //#region Fields
 
   sequence = -1;
+  answer = '';
+  criticalAnswer = '';
   checkListType: '';
   headerId = -1;
   operationName = '';

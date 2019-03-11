@@ -102,10 +102,10 @@ export class MachineService {
      AND GROUPASSIGNMENT.GRUPPE = MACHINEGROUP.GRUPPE  AND MACHINEGROUP.AUSW_GRUPPE = 'J')`;
 
   static loggedOnToolSql =
-    `SELECT SUBKEY1 AS MACHINE, SUBKEY2 AS OPERATION, SUBKEY6 AS RESOURCEID,RES_NR AS TOOLNAME
-    FROM HYBUCH, RES_BESTAND
-    WHERE KEY_TYPE = 'O' AND SUBKEY1 IN (${MachineService.toolMachinesTBR})
-    AND RES_ID = SUBKEY6`;
+    `SELECT SUBKEY1 AS MACHINE, SUBKEY2 AS OPERATION, SUBKEY6 AS RESOURCEID,RES_NR AS TOOLNAME, PARAM_STR1 AS OPERATIONNAME
+     FROM HYBUCH, RES_BESTAND
+     WHERE KEY_TYPE = 'O' AND SUBKEY1 IN (${MachineService.toolMachinesTBR})
+     AND RES_ID = SUBKEY6`;
 
   static operationShiftOutputSql =
     `SELECT NVL(ADE.MACHINE_NUMBER, HBZ.MACHINE_NUMBER) MACHINE_NUMBER,
@@ -205,7 +205,7 @@ export class MachineService {
 
   static machineCheckListItemSql =
     `SELECT CHECKLIST_TYPE.PMDM_HEADER_ID,CHECKLIST_TYPE.MACHINE_NUMBER,CHECKLIST_TYPE.CHECKLIST_TYPE,
-     CHECKLIST_TYPE.PROCESS_TYPE,PMDM_DATA.PMDM_DATA FROM
+     CHECKLIST_TYPE.PROCESS_TYPE,PMDM_DATA.PMDM_DATA, PMDM_DATA.PMDM_DATA_EXTD FROM
      (SELECT DISTINCT H.PMDM_HEADER_ID,
        HD1.PMDM_HEADER_DATA AS MACHINE_NUMBER,
        HD2.PMDM_HEADER_DATA AS CHECKLIST_TYPE,
@@ -235,14 +235,17 @@ export class MachineService {
      AND UPPER(HD1.PMDM_HEADER_DATA)  = '${MachineService.machineNameTBR}'
      AND UPPER(HD3.PMDM_HEADER_DATA) IN ('CHANGEOVER','CHANGESHIFT')) CHECKLIST_TYPE,
      (SELECT U_TE_PMDM_DATA.PMDM_HEADER_ID,
-       U_TE_PMDM_DATA.PMDM_DATA
+       U_TE_PMDM_DATA.PMDM_DATA AS PMDM_DATA,
+       U_TE_PMDM_DATA_EXTD.PMDM_DATA AS PMDM_DATA_EXTD
      FROM U_TE_PMDM_PROCESS,
        U_TE_PMDM_PROCESSES,
-       U_TE_PMDM_DATA
+       U_TE_PMDM_DATA,
+       U_TE_PMDM_DATA_EXTD
      WHERE U_TE_PMDM_PROCESS.PMDM_PROCESS_ID       = U_TE_PMDM_PROCESSES.PMDM_PROCESS_ID
      AND U_TE_PMDM_DATA.PMDM_PROCESSES_ID          = U_TE_PMDM_PROCESSES.PMDM_PROCESSES_ID
      AND (U_TE_PMDM_PROCESS.PMDM_BUSINESS_PROCESS  = 'CheckLists')
-     AND (U_TE_PMDM_PROCESSES.PMDM_FIELD_NAME      = 'CheckList')) PMDM_DATA
+     AND (U_TE_PMDM_PROCESSES.PMDM_FIELD_NAME      = 'CheckList')
+     AND U_TE_PMDM_DATA_EXTD.PMDM_DATA_ID(+) = U_TE_PMDM_DATA.PMDM_DATA_ID) PMDM_DATA
      WHERE PMDM_DATA.PMDM_HEADER_ID = CHECKLIST_TYPE.PMDM_HEADER_ID`;
 
   static machineCheckListDoneOfCurrentShift =
@@ -345,6 +348,7 @@ export class MachineService {
               machineRet.toolsLoggedOn.push({
                 requiredMaterial: ``,
                 loggedOnOperation: tool.OPERATION,
+                targetOperation: tool.OPERATIONNAME,
                 loggedOnMachine: tool.MACHINE,
                 toolName: tool.TOOLNAME,
                 toolId: tool.RESOURCEID,
@@ -539,7 +543,7 @@ export class MachineService {
             checkList.headerId = rec.PMDM_HEADER_ID;
             checkList.checkListType = rec.CHECKLIST_TYPE;
             checkList.processType = rec.PROCESS_TYPE;
-            checkList.items = this.processCheckListItems(rec.PMDM_DATA);
+            checkList.items = this.processCheckListItems(rec.PMDM_DATA, rec.PMDM_DATA_EXTD);
 
             machineRet.checkLists.set(checkList.processType, checkList);
           });
@@ -563,6 +567,7 @@ export class MachineService {
                   machineRet.toolsLoggedOn.push({
                     requiredMaterial: ``,
                     loggedOnOperation: tool.OPERATION,
+                    targetOperation: tool.OPERATIONNAME,
                     loggedOnMachine: tool.MACHINE,
                     toolName: tool.TOOLNAME,
                     toolId: tool.RESOURCEID,
@@ -667,7 +672,9 @@ export class MachineService {
                 checkListResults.map(rec => {
                   const result = new CheckListResult();
                   result.headerId = rec.PMDM_HEADER_ID;
-                  result.sequence = rec.CHECKLIST_SEQUENCE;
+                  result.answer = rec.CHECKLIST_ANSWER;
+                  result.criticalAnswer = rec.CHECKLIST_CRITICAL_ANSWERS;
+                  result.sequence = rec.CHECKLIST_SEQUENCE + 1;
                   result.finishedAt = new Date(rec.STEP_END_TIMESTAMP);
                   result.finishedBy = rec.NAME;
                   result.checkListType = rec.CHECKLIST_TYPE;
@@ -700,7 +707,9 @@ export class MachineService {
                 checkListResults.map(rec => {
                   const result = new CheckListResult();
                   result.headerId = rec.PMDM_HEADER_ID;
-                  result.sequence = rec.CHECKLIST_SEQUENCE;
+                  result.answer = rec.CHECKLIST_ANSWER;
+                  result.criticalAnswer = rec.CHECKLIST_CRITICAL_ANSWERS;
+                  result.sequence = rec.CHECKLIST_SEQUENCE + 1;
                   result.finishedAt = new Date(rec.STEP_END_TIMESTAMP);
                   result.finishedBy = rec.NAME;
                   result.checkListType = rec.CHECKLIST_TYPE;
@@ -762,7 +771,11 @@ export class MachineService {
       );
   }
 
-  private processCheckListItems(data: string) {
+  private processCheckListItems(data: string, extd: string) {
+    if (data.includes(`[@PMDM_DATA_EXTD]`)) {
+      data = extd;
+    }
+
     const ret = [];
     const lines = data.split(`\n`);
     const fields = lines[0].split(`\t`);

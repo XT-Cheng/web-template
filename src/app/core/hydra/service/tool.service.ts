@@ -64,7 +64,22 @@ export class ToolService {
             toolRet.currentCycles = toNumber(tool[0].CURRENTCYCLES, -1);
             toolRet.intervalCycles = toNumber(tool[0].INTERVALCYCLES, -1);
             toolRet.maintenanceId = toNumber(tool[0].MAIN_ID, -1);
-            toolRet.maintenanceStatus = MaintenanceStatusEnum[typedString];
+            switch (tool[0].MAIN_STATUS) {
+              case 0:
+                toolRet.maintenanceStatus = MaintenanceStatusEnum.GREEN;
+                break;
+              case 1:
+                toolRet.maintenanceStatus = MaintenanceStatusEnum.BLUE;
+                break;
+              case 2:
+                toolRet.maintenanceStatus = MaintenanceStatusEnum.YELLOW;
+                break;
+              case 3:
+                toolRet.maintenanceStatus = MaintenanceStatusEnum.RED;
+                break;
+              default:
+                break;
+            }
           }
 
           if (tool[0].ACTIVE === 'J') {

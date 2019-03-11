@@ -13,11 +13,12 @@
         </div>
       </div>
       <div nz-row [nzGutter]="24">
-        <div nz-col [nzSpan]="8">
+        <div nz-col [nzSpan]="16">
           <nz-form-item nzFlex>
             <nz-form-label nzFor="batch">{{'app.report.condition.batch' | translate}}</nz-form-label>
             <nz-form-control style='width: 100%;'>
-              <input nz-input [placeholder]="'app.report.condition.batch.placeholder' | translate" formControlName="batch">
+              <input #batch nz-input [placeholder]="'app.report.condition.batch.placeholder' | translate"
+                formControlName="batch">
             </nz-form-control>
           </nz-form-item>
         </div>

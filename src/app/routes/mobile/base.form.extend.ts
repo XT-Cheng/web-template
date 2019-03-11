@@ -564,7 +564,7 @@ export abstract class BaseExtendForm implements OnDestroy {
 
   private afterReqDataSuccess(next) {
     if (next) {
-      next.focus();
+      setTimeout(() => next.focus(), 0);
     }
   }
 

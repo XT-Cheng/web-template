@@ -1,10 +1,23 @@
 <nz-spin [nzSpinning]="isLoading">
   <nz-card [nzTitle]="('app.machine.summary.general' | translate) + ': ' + machine.description">
     <div class="mb-md" style='margin: 10px;'>
-      <div class="rounded-md" [ngStyle]="getMachineColor(machine)">
-        <div class="p-md text-white">
-          <div class="h2 mt0">{{machine.currentStatus}}</div>
+      <div nzType="flex" nz-row [nzGutter]="8" style='padding-top: 1px;'>
+        <div nz-col [nzSpan]="machineStatusSpan">
+          <div class="rounded-md" [ngStyle]="getMachineColor(machine)">
+            <div class="p-md text-white">
+              <div class="h2 mt0">{{machine.currentStatus}}</div>
+            </div>
+          </div>
         </div>
+        <ng-container *ngIf='warningMessages.length > 0'>
+          <div nz-col nzSpan="6">
+            <nz-carousel [nzAutoPlay]='true' [nzDots]='false' [nzEffect]="'fade'">
+              <div nz-carousel-content *ngFor="let msg of warningMessages">
+                <h3>{{msg}}</h3>
+              </div>
+            </nz-carousel>
+          </div>
+        </ng-container>
       </div>
     </div>
     <div nzType="flex" nz-row [nzGutter]="8" style='padding-top: 1px;'>
@@ -73,9 +86,9 @@
   </nz-card>
   <nz-card [nzBordered]="false">
     <nz-tabset>
-      <nz-tab [nzTitle]="'app.machine.summary.hourOutput' | translate">
+      <!-- <nz-tab [nzTitle]="'app.machine.summary.hourOutput' | translate">
         <fw-widget-hour-output [machine]='machine'></fw-widget-hour-output>
-      </nz-tab>
+      </nz-tab> -->
       <!-- <nz-tab [nzTitle]="'app.machine.summary.hourScrap' | translate">
         <fw-widget-hour-scrap [machine]='machine'></fw-widget-hour-scrap>
       </nz-tab> -->

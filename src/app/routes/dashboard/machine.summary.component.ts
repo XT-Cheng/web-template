@@ -57,12 +57,13 @@ export class MachineSummaryComponent implements OnInit {
       this.machineName = param.get('machineName');
       this.reuseTabService.title = `${this.i18n.fanyi('app.route.line-summary')} - ${this.machineName}`;
 
-      setInterval(() => {
-        this.isLoading = true;
-        this.machineService.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
-          this.machine = machine;
-        });
-      }, 30000);
+      // setInterval(() => {
+      //   this.isLoading = true;
+      //   this.machineService.getMachineWithStatistic(this.machineName).pipe(
+      //  finalize(() => this.isLoading = false)).subscribe((machine) => {
+      //     this.machine = machine;
+      //   });
+      // }, 30000);
       this.machineService.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
         this.machine = machine;
       });
@@ -223,6 +224,30 @@ export class MachineSummaryComponent implements OnInit {
   //#endregion
 
   //#region Public methods
+  get machineStatusSpan(): number {
+    if (this.warningMessages.length > 0) return 18;
+
+    return 24;
+  }
+
+  get warningMessages(): string[] {
+    const messages = [];
+
+    // Change Over
+    const changeOverResult = this.ifChangeOverCheckListFinished(this.machine);
+    if (changeOverResult.notFinished > 0) {
+      messages.push(`换型点检未完成, 已完成${changeOverResult.finished}，未完成${changeOverResult.notFinished}`);
+    }
+
+    // Change Shift
+    const changeShiftResult = this.ifChangeShiftCheckListFinished(this.machine);
+    if (changeShiftResult.notFinished > 0) {
+      messages.push(`换班点检未完成, 已完成${changeShiftResult.finished}，未完成${changeShiftResult.notFinished}`);
+    }
+
+    return messages;
+  }
+
   get isMaterailRequired(): boolean {
     if (!this.machine.currentOperation) return false;
 
@@ -305,6 +330,67 @@ export class MachineSummaryComponent implements OnInit {
     }
 
     return { 'background-color': color };
+  }
+
+
+  //#endregion
+
+  //#region Private methods
+
+  private ifChangeOverCheckListFinished(machine: Machine): { finished: number, notFinished: number } {
+    const result = {
+      finished: 0,
+      notFinished: 0
+    };
+
+    if (!this.isChangeOverCheckListVisible) return result;
+
+    if (machine.checkListResultsOfChangeOver.size === 0) {
+      return Object.assign(result, {
+        notFinished: machine.checkLists.get(ProcessType.CHANGEOVER).items.length
+      });
+    }
+
+    let finished = 0;
+
+    Array.from(machine.checkListResultsOfChangeOver.values()).forEach(ret => {
+      if (!!ret.finishedAt && ret.answer === ret.criticalAnswer) {
+        finished++;
+      }
+    });
+
+    return Object.assign(result, {
+      notFinished: machine.checkLists.get(ProcessType.CHANGEOVER).items.length - finished,
+      finished: finished
+    });
+  }
+
+  private ifChangeShiftCheckListFinished(machine: Machine): { finished: number, notFinished: number } {
+    const result = {
+      finished: 0,
+      notFinished: 0
+    };
+
+    if (!this.isShiftChangeCheckListVisible) return result;
+
+    if (machine.checkListResultsOfCurrentShift.size === 0) {
+      return Object.assign(result, {
+        notFinished: machine.checkLists.get(ProcessType.CHANGESHIFT).items.length
+      });
+    }
+
+    let finished = 0;
+
+    Array.from(machine.checkListResultsOfCurrentShift.values()).forEach(ret => {
+      if (!!ret.finishedAt && ret.answer === ret.criticalAnswer) {
+        finished++;
+      }
+    });
+
+    return Object.assign(result, {
+      notFinished: machine.checkLists.get(ProcessType.CHANGESHIFT).items.length - finished,
+      finished: finished
+    });
   }
 
   //#endregion
