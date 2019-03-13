@@ -116,7 +116,7 @@ export class Operation {
   }
 
   get estimatedFinishedAt(): Date {
-    if (this.targetQty === -1) return new Date();
+    if (this.targetQty <= this.totalYield) return new Date();
 
     const begin = new Date().getTime();
     return new Date(begin + 1000 * (this.targetQty - this.totalYield) * this.targetCycleTime);

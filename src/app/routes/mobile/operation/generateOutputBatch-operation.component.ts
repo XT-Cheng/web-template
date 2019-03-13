@@ -56,7 +56,7 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
       machine: [null, [Validators.required], 'machineData'],
       operation: [null, [Validators.required], 'operationData'],
       materialData: [null, [Validators.required]],
-      quantity: [null, [Validators.required, Validators.min(1), Validators.pattern(/^[0-9]*$/), this.validateQuantity.bind(this)]],
+      quantity: [null, [Validators.required, Validators.min(0), Validators.pattern(/^[0-9]*$/), this.validateQuantity.bind(this)]],
     });
   }
 

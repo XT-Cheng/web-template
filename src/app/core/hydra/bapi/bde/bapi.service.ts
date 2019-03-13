@@ -180,13 +180,22 @@ export class BDEBapiService {
       switchMap(materialBatch => {
         return this._bapiMPL.modifyOutputBatch(materialBatch, qty, operator);
       }),
-      switchMap(_ => {
-        return this._printService.printOutputBatchLabel([currentBatch], machine.machineName);
+      switchMap(ret => {
+        if (qty > 0) {
+          return this._printService.printOutputBatchLabel([currentBatch], machine.machineName);
+        }
+        return of(ret);
       }),
       map((ret: IActionResult) => {
-        return Object.assign(ret, {
-          description: `Batch ${currentBatch} Generated And Print!`
-        });
+        if (qty > 0) {
+          return Object.assign(ret, {
+            description: `Batch ${currentBatch} Generated And Print!`
+          });
+        } else {
+          return Object.assign(ret, {
+            description: `Batch ${currentBatch} Abandoned!`
+          });
+        }
       })
     );
   }

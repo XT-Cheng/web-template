@@ -1,6 +1,5 @@
 import { Component, Injector } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { IActionResult } from '@core/utils/helpers';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';

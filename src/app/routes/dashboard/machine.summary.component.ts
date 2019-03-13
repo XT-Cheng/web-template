@@ -12,6 +12,8 @@ import { I18NService } from '@core/i18n/i18n.service';
 import { ReuseTabService } from '@shared/components/reuse-tab/reuse-tab.service';
 import { ChartGaugeComponent } from '@shared/components/chart/gauge.component';
 import { ProcessType } from '@core/hydra/entity/checkList';
+import { getComponentStatus } from '@core/hydra/utils/operationHelper';
+import { MaterialPreparationComponent } from './widget/materialPreparation.component';
 
 @Component({
   selector: 'fw-machine-summary',
@@ -57,13 +59,13 @@ export class MachineSummaryComponent implements OnInit {
       this.machineName = param.get('machineName');
       this.reuseTabService.title = `${this.i18n.fanyi('app.route.line-summary')} - ${this.machineName}`;
 
-      // setInterval(() => {
-      //   this.isLoading = true;
-      //   this.machineService.getMachineWithStatistic(this.machineName).pipe(
-      //  finalize(() => this.isLoading = false)).subscribe((machine) => {
-      //     this.machine = machine;
-      //   });
-      // }, 30000);
+      setInterval(() => {
+        this.isLoading = true;
+        this.machineService.getMachineWithStatistic(this.machineName).pipe(
+          finalize(() => this.isLoading = false)).subscribe((machine) => {
+            this.machine = machine;
+          });
+      }, 15000);
       this.machineService.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
         this.machine = machine;
       });
@@ -224,6 +226,14 @@ export class MachineSummaryComponent implements OnInit {
   //#endregion
 
   //#region Public methods
+  get currentOPDisplay(): string {
+    if (this.machine.currentOperation) {
+      return this.machine.currentOperation.leadOrder + ' / ' + this.machine.currentOperation.order;
+    }
+
+    return ``;
+  }
+
   get machineStatusSpan(): number {
     if (this.warningMessages.length > 0) return 18;
 
@@ -232,6 +242,16 @@ export class MachineSummaryComponent implements OnInit {
 
   get warningMessages(): string[] {
     const messages = [];
+
+    // Material Shortage
+    const matShortage = this.checkMaterialShortage(this.machine);
+    matShortage.forEach(element => {
+      if (element.remainTime <= 0) {
+        messages.push(`物料报警, ${element.material}已经耗尽`);
+      } else {
+        messages.push(`物料报警, ${element.material}仅可使用${element.remainTime.toFixed(1)}分钟`);
+      }
+    });
 
     // Change Over
     const changeOverResult = this.ifChangeOverCheckListFinished(this.machine);
@@ -295,7 +315,7 @@ export class MachineSummaryComponent implements OnInit {
   format(date) {
     if (!date) return ``;
 
-    return format(date, 'MM-DD HH:MM');
+    return format(date, 'MM-DD HH:mm');
   }
 
   getTrendFlag(actual, expected) {
@@ -336,6 +356,42 @@ export class MachineSummaryComponent implements OnInit {
   //#endregion
 
   //#region Private methods
+  private checkMaterialShortage(machine: Machine): any[] {
+    const result = [];
+
+    if (machine.currentOperation) {
+      const op = machine.currentOperation;
+      const componentStatus = getComponentStatus(op, machine);
+      componentStatus.forEach((comp) => {
+        // 1: 'In Use',
+        // 2: 'No Mat.',
+        // 3: 'Need Replenish',
+        let percentage = 0;
+        let loaded = -1;
+        if (!comp.isReady) {
+          loaded = 2;
+        } else {
+          const bomItem = op.bomItems.get(comp.pos);
+          const remainTime = toNumber((comp.quantity / bomItem.quantity * op.targetCycleTime).toFixed());
+          percentage = toNumber(((remainTime / MaterialPreparationComponent.COMP_REMAIN_TIME) * 100).toFixed());
+          if (percentage > MaterialPreparationComponent.COMP_REMAIN_PERCENTAGE) {
+            loaded = 1;
+          } else {
+            loaded = 3;
+          }
+
+          if (loaded === 3) {
+            result.push({
+              material: bomItem.material,
+              remainTime: remainTime / 60
+            });
+          }
+        }
+      });
+    }
+
+    return result;
+  }
 
   private ifChangeOverCheckListFinished(machine: Machine): { finished: number, notFinished: number } {
     const result = {

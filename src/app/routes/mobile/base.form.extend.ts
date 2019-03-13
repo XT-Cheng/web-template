@@ -1,4 +1,4 @@
-import { ViewChild, Injector, OnDestroy } from '@angular/core';
+import { ViewChild, Injector, OnDestroy, HostListener } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, tap, map } from 'rxjs/operators';
@@ -15,6 +15,7 @@ import { Machine } from '@core/hydra/entity/machine';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { Tool } from '@core/hydra/entity/tool';
 import { toNumber } from '@delon/util';
+import { MachineService } from '@core/hydra/service/machine.service';
 
 
 interface ITranError {
@@ -68,6 +69,8 @@ export abstract class BaseExtendForm implements OnDestroy {
   protected success: ITranSuccess[] = [];
   protected executionContext: any;
 
+  protected machineService: MachineService;
+
   //#endregion
 
   //#region Private member
@@ -105,6 +108,8 @@ export abstract class BaseExtendForm implements OnDestroy {
     this.i18n = this.injector.get(I18NService);
     this.operatorService = this.injector.get(OperatorService);
     this.document = this.injector.get(DOCUMENT);
+
+    this.machineService = this.injector.get(MachineService);
 
     // Setup Dialog Config
     this.dialogConfig.title = this.i18n.fanyi(`app.mobile.dialog.title`);
@@ -372,7 +377,7 @@ export abstract class BaseExtendForm implements OnDestroy {
   }
 
   getOperationToolStatusDisplay(toolStatus: ToolStatus[]) {
-    if (this.operationData && toolStatus.length > 0) {
+    if (this.machineData && this.operationData && toolStatus.length > 0) {
       let ready = 0;
       let missed = 0;
       toolStatus.map(status => {
@@ -394,7 +399,7 @@ export abstract class BaseExtendForm implements OnDestroy {
   }
 
   getOperationComponentStatusDisplay(componentStatus: ComponentStatus[]) {
-    if (this.operationData && componentStatus.length > 0) {
+    if (this.machineData && this.operationData && componentStatus.length > 0) {
       let ready = 0;
       let missed = 0;
       componentStatus.map(status => {
@@ -416,7 +421,7 @@ export abstract class BaseExtendForm implements OnDestroy {
   }
 
   getCurrentOperationDisplay() {
-    if (this.operationData) {
+    if (this.machineData && this.operationData) {
       const operation = this.form.value.operationData as Operation;
       return {
         title: operation.leadOrder || operation.order,
@@ -624,7 +629,17 @@ export abstract class BaseExtendForm implements OnDestroy {
   //#region Implemented Interface
 
   ngOnDestroy(): void {
+    this.deleteMachineUsed();
+
     this.routerSubcription.unsubscribe();
+  }
+
+  @HostListener('window:beforeunload')
+  deleteMachineUsed() {
+    if (this.storedData
+      && this.storedData.machine) {
+      this.machineService.deleteMachineUsed(this.storedData.machine).subscribe();
+    }
   }
 
   //#endregion

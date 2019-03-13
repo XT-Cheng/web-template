@@ -218,8 +218,11 @@ function escapeRegExp(str) {
 export function isMobile() {
   const ua = navigator.userAgent;
 
-  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(ua))
-    return true;
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(ua)) {
+    if (!/HUAWEIBEETHOVEN-W09/i.test(ua) && !/TbooK/i.test(ua)) {
+      return true;
+    }
+  }
 
   return false;
 }

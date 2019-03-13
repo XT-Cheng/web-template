@@ -4,7 +4,7 @@ import { Machine, MachineAlarmSetting, MachineOutput, MachineOEE } from '../enti
 import { HttpClient } from '@angular/common/http';
 import { FetchService } from './fetch.service';
 import { VBoardService } from './vBoard.service';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { Operation } from '../entity/operation';
 import { toNumber, deepCopy } from '@delon/util';
 import { CheckList, CheckListItem, ProcessType, CheckListResult } from '../entity/checkList';
@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { replaceAll, dateFormatOracle, dateFormat } from '@core/utils/helpers';
 import { OperationService } from './operation.service';
 import { ToolMachine } from '../entity/toolMachine';
+import { SettingsService } from '@delon/theme';
 
 @Injectable()
 export class MachineService {
@@ -24,8 +25,21 @@ export class MachineService {
   static shiftNbrTBR = '$shiftNbr';
   static operationsTBR = '$operations';
   static toolMachinesTBR = '$toolMachines';
+  static timeStampTBR = '$timeStampTBR';
 
   //#region SQLs
+  static checkMachineUsedSql = `SELECT VALUE AS COUNT FROM U_TE_MSNT_MACHINE_PROPS WHERE FROMID = '${MachineService.machineNameTBR}'
+    AND NAME = 'INUSE' AND DATATYPE = 'ATTRIBUTE'`;
+
+  static insertMachineUsedSql = `INSERT INTO U_TE_MSNT_MACHINE_PROPS (FROMID, VALUE, NAME, DATATYPE)
+    VALUES ('${MachineService.machineNameTBR}', '${MachineService.timeStampTBR}', 'INUSE', 'ATTRIBUTE')`;
+
+  static deleteMachineUsedSql = `DELETE FROM U_TE_MSNT_MACHINE_PROPS WHERE FROMID = '${MachineService.machineNameTBR}'
+    AND VALUE = '${MachineService.timeStampTBR}' AND NAME = 'INUSE' AND DATATYPE = 'ATTRIBUTE'`;
+
+  static deleteAllMachineUsedSql = `DELETE FROM U_TE_MSNT_MACHINE_PROPS WHERE
+   VALUE = '${MachineService.timeStampTBR}' AND NAME = 'INUSE' AND DATATYPE = 'ATTRIBUTE'`;
+
   static availableStatusToChangeSql = `SELECT MACHINE.MASCH_NR AS MACHINE,STATUSASSIGN.STOERNR AS STATUS, TEXT.STOER_TEXT AS TEXT
   FROM STOER_TABELLE STATUSASSIGN, STOERTEXTE TEXT, MASCHINEN MACHINE
   WHERE STATUSASSIGN.MASCH_NR = MACHINE.MASCH_NR AND STATUSASSIGN.MANUELL = 'J' AND STATUSASSIGN.STOERTXT_NR = TEXT.STOERTXT_NR
@@ -71,7 +85,8 @@ export class MachineService {
   static machineNextOPSql =
     `SELECT OPERATION.USER_C_55 AS LEADORDER,
      OPERATION.AUNR AS WORKORDER, OPERATION.AGNR AS SEQUENCE, OPERATION.ARTIKEL AS ARTICLE,
-     OP_STATUS.GUT_BAS AS YIELD, OP_STATUS.AUS_BAS AS SCRAP, OPERATION.SOLL_MENGE_BAS AS TARGETQTY, OPERATION.SOLL_DAUER AS TARGET_CYCLE,
+     OP_STATUS.GUT_BAS AS YIELD, OP_STATUS.AUS_BAS AS SCRAP, OPERATION.SOLL_MENGE_BAS AS TARGETQTY,
+     (OPERATION.SOLL_DAUER / 1000) AS TARGET_CYCLE,
      (OPERATION.FRUEH_ANF_DAT + OPERATION.FRUEH_ANF_ZEIT / 60 / 60 / 24) AS EARLIEST_START,
      (OPERATION.FRUEH_END_DAT + OPERATION.FRUEH_END_ZEIT / 60 / 60 / 24) AS EARLIEST_FINISH,
      (OPERATION.SPAET_ANF_DAT + OPERATION.SPAET_ANF_ZEIT / 60 / 60 / 24) AS LATEST_START,
@@ -282,7 +297,8 @@ export class MachineService {
 
   //#region Constructor
 
-  constructor(protected _httpClient: HttpClient, protected _fetchService: FetchService, protected _operationService: OperationService,
+  constructor(protected _httpClient: HttpClient, private _settingService: SettingsService,
+    protected _fetchService: FetchService, protected _operationService: OperationService,
     protected _vBoardService: VBoardService) { }
 
   //#endregion
@@ -311,8 +327,31 @@ export class MachineService {
     );
   }
 
+  deleteMachineUsed(machineName?: string): Observable<any> {
+    if (machineName) {
+      return this._fetchService.query(replaceAll(MachineService.deleteMachineUsedSql,
+        [MachineService.machineNameTBR, MachineService.timeStampTBR],
+        [machineName, this._settingService.app.timeStamp]));
+    } else {
+      return this._fetchService.query(replaceAll(MachineService.deleteAllMachineUsedSql,
+        [MachineService.timeStampTBR],
+        [this._settingService.app.timeStamp]));
+    }
+  }
+
+
   getMachine(machineName: string): Observable<Machine> {
-    return this.getMachineInternal(machineName, false);
+    return this.deleteMachineUsed().pipe(
+      switchMap(() => {
+        return this.checkMachineUsed(machineName);
+      }),
+      tap(exist => {
+        if (exist)
+          throw Error(`Machine ${machineName} In Use!`);
+      }),
+      switchMap(() => {
+        return this.getMachineInternal(machineName, false);
+      }));
   }
 
   getMachineWithStatistic(machineName: string): Observable<Machine> {
@@ -362,6 +401,27 @@ export class MachineService {
   }
 
   //#region Private methods
+  private checkMachineUsed(machineName: string): Observable<boolean> {
+    // return of(false);
+    return this._fetchService.query(replaceAll(MachineService.checkMachineUsedSql,
+      [MachineService.machineNameTBR, MachineService.timeStampTBR],
+      [machineName, this._settingService.app.timeStamp])).pipe(
+        switchMap(rec => {
+          if (rec.length === 0) {
+            return this._fetchService.query(replaceAll(MachineService.insertMachineUsedSql,
+              [MachineService.machineNameTBR, MachineService.timeStampTBR],
+              [machineName, this._settingService.app.timeStamp])).pipe(
+                map(() => false)
+              );
+          } else if (rec[0].VALUE === this._settingService.app.timeStamp) {
+            return of(false);
+          } else {
+            return of(true);
+          }
+        })
+      );
+  }
+
   private getMachineInternal(machineName: string, withStatistics: boolean = false): Observable<Machine> {
     let machineRet: Machine;
     return forkJoin(

@@ -26,7 +26,8 @@ export class OperationService {
   static operationSql =
     `SELECT OPERATION.USER_C_55 AS LEADORDER,
      OPERATION.AUNR AS WORKORDER, OPERATION.AGNR AS SEQUENCE,OPERATION.ARTIKEL AS ARTICLE,
-     OP_STATUS.GUT_BAS AS YIELD, OP_STATUS.AUS_BAS AS SCRAP, OPERATION.SOLL_MENGE_BAS AS TARGETQTY, OPERATION.SOLL_DAUER AS TARGET_CYCLE,
+     OP_STATUS.GUT_BAS AS YIELD, OP_STATUS.AUS_BAS AS SCRAP, OPERATION.SOLL_MENGE_BAS AS TARGETQTY,
+     (OPERATION.SOLL_DAUER / 1000) AS TARGET_CYCLE,
      (OPERATION.FRUEH_ANF_DAT + OPERATION.FRUEH_ANF_ZEIT / 60 / 60 / 24) AS EARLIEST_START,
      (OPERATION.FRUEH_END_DAT + OPERATION.FRUEH_END_ZEIT / 60 / 60 / 24) AS EARLIEST_FINISH,
      (OPERATION.SPAET_ANF_DAT + OPERATION.SPAET_ANF_ZEIT / 60 / 60 / 24) AS LATEST_START,
@@ -139,7 +140,7 @@ export class OperationService {
           //#region Setup Opearation's Last LoggedOn
 
           const allLoggedOn = opeartionLastLoggedOn
-            .sort((a, b) => a.LOGGEDONDATE > b.LOGGEDONDATE ? 1 : -1);
+            .sort((a, b) => a.LOGGEDONDATE > b.LOGGEDONDATE ? -1 : 1);
           if (allLoggedOn.length > 0) {
             operationRet.lastLoggedOn = new Date(allLoggedOn[0].LOGGEDONDATE);
           }

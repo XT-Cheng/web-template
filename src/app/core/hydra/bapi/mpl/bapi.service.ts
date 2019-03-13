@@ -96,6 +96,24 @@ export class MPLBapiService {
     );
   }
 
+  changeBatchQuantityAndStatus(batch: MaterialBatch, newQuantity: number,
+    newStatus: string, operator: Operator): Observable<IActionResult> {
+    return forkJoin(
+      new GoodsMovementBatch(batch.name, newQuantity,
+        batch.materialType, newStatus, batch.class, operator.badge).execute(this._http),
+      this._webAPIService.createLicenseTagInfo(batch.name, batch.material, newQuantity)
+    ).pipe(
+      map(_ => {
+        return {
+          isSuccess: true,
+          error: ``,
+          content: ``,
+          description: `Batch ${batch.name} Quantity Changed!`,
+        };
+      })
+    );
+  }
+
   changeBatchQuantity(batch: MaterialBatch, newQuantity: number, operator: Operator): Observable<IActionResult> {
     return forkJoin(
       new GoodsMovementBatch(batch.name, newQuantity,

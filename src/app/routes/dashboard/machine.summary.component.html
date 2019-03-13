@@ -22,7 +22,7 @@
     </div>
     <div nzType="flex" nz-row [nzGutter]="8" style='padding-top: 1px;'>
       <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
-        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.workOrder' | translate" [total]="machine.currentOperation?.leadOrder"
+        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.workOrder' | translate" [total]="currentOPDisplay"
           totalHeight="200px" contentHeight="50px" [footer]="footer1">
           <p class="text-truncate mb0">
             {{'app.machine.summary.targetQty' | translate}} / {{'app.machine.summary.finishedQty' | translate}}:
@@ -79,7 +79,7 @@
       <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
         <fw-g2-card [bordered]='true' [title]="'app.machine.summary.oee' | translate" totalHeight="200px" contentHeight="87px">
           <fw-g2-gauge [height]="150" [lower]='machine.alarmSetting?.oeeLower' [upper]='machine.alarmSetting?.oeeUpper'
-            [percent]="machine.currentShiftOEE?.overAll"></fw-g2-gauge>
+            [percent]="machine.currentOperation ? machine.currentShiftOEE?.overAll : 0"></fw-g2-gauge>
         </fw-g2-card>
       </div>
     </div>

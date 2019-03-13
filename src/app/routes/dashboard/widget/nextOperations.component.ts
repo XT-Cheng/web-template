@@ -24,7 +24,7 @@ export class NextOperationsComponent implements OnInit {
     { title: 'Target Cycle.', index: 'targetCycleTime', i18n: 'app.operation.targetCycleTime' },
     {
       title: 'Sch. Complete', i18n: 'app.operation.scheduleCompleted', index: 'scheduleCompleted', format: (value: Operation) => {
-        return format(value.planEnd, 'MM-DD HH:MM');
+        return format(value.planEnd, 'MM-DD HH:mm');
       }
     },
   ];
