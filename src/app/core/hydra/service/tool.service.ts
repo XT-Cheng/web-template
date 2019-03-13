@@ -58,8 +58,6 @@ export class ToolService {
           });
 
           if (tool[0].MAIN_ID) {
-            const typedString = tool[0].MAIN_STATUS as keyof typeof MaintenanceStatusEnum;
-
             toolRet.nextMaintennaceCycles = toNumber(tool[0].NEXTCYCLES, -1);
             toolRet.currentCycles = toNumber(tool[0].CURRENTCYCLES, -1);
             toolRet.intervalCycles = toNumber(tool[0].INTERVALCYCLES, -1);

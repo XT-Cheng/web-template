@@ -172,6 +172,8 @@ export class ToolLoggedOn {
   loggedOnMachine = '';
   toolName = '';
   toolId = '';
+  toolStatus = -1;
+  currentCycle = -1;
 }
 
 export interface ToolStatus {

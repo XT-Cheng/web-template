@@ -116,7 +116,12 @@ export class Machine {
 
   get display(): string {
     if (this.currentOperation) {
-      return `${this.currentOperation.leadOrder} / ${this.currentOperation.order}`;
+      if (this.currentOperation.leadOrder) {
+        return `${this.currentOperation.leadOrder} / ${this.currentOperation.order}`;
+      } else {
+        return `${this.currentOperation.order}`;
+      }
+
     } else {
       return `No Order Logon`;
     }

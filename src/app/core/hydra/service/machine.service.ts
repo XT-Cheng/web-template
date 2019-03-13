@@ -117,10 +117,11 @@ export class MachineService {
      AND GROUPASSIGNMENT.GRUPPE = MACHINEGROUP.GRUPPE  AND MACHINEGROUP.AUSW_GRUPPE = 'J')`;
 
   static loggedOnToolSql =
-    `SELECT SUBKEY1 AS MACHINE, SUBKEY2 AS OPERATION, SUBKEY6 AS RESOURCEID,RES_NR AS TOOLNAME, PARAM_STR1 AS OPERATIONNAME
-     FROM HYBUCH, RES_BESTAND
-     WHERE KEY_TYPE = 'O' AND SUBKEY1 IN (${MachineService.toolMachinesTBR})
-     AND RES_ID = SUBKEY6`;
+    `SELECT HYBUCH.SUBKEY1 AS MACHINE, HYBUCH.SUBKEY2 AS OPERATION, HYBUCH.SUBKEY6 AS RESOURCEID,
+     RES.RES_NR AS TOOLNAME, HYBUCH.PARAM_STR1 AS OPERATIONNAME, MAINTENNACE.ZUSTAND AS TOOLSTATUS, HYBUCH.HUB_GUT AS CURRENTCYCLE
+     FROM HYBUCH, RES_BESTAND RES, RES_WARTUNGEN MAINTENNACE
+     WHERE HYBUCH.KEY_TYPE = 'O' AND HYBUCH.SUBKEY1 IN (${MachineService.toolMachinesTBR})
+     AND RES.RES_ID = HYBUCH.SUBKEY6 AND MAINTENNACE.RES_ID(+) = RES.RES_ID`;
 
   static operationShiftOutputSql =
     `SELECT NVL(ADE.MACHINE_NUMBER, HBZ.MACHINE_NUMBER) MACHINE_NUMBER,
@@ -391,6 +392,8 @@ export class MachineService {
                 loggedOnMachine: tool.MACHINE,
                 toolName: tool.TOOLNAME,
                 toolId: tool.RESOURCEID,
+                toolStatus: tool.TOOLSTATUS ? tool.TOOLSTATUS : -1,
+                currentCycle: tool.CURRENTCYCLE ? tool.CURRENTCYCLE : -1,
               });
             });
             //#endregion
@@ -631,6 +634,8 @@ export class MachineService {
                     loggedOnMachine: tool.MACHINE,
                     toolName: tool.TOOLNAME,
                     toolId: tool.RESOURCEID,
+                    toolStatus: tool.TOOLSTATUS ? tool.TOOLSTATUS : -1,
+                    currentCycle: tool.CURRENTCYCLE ? tool.CURRENTCYCLE : -1,
                   });
                 });
               })

@@ -443,6 +443,41 @@ export class BatchService {
       }));
   }
 
+  getBatchInformationWithRunning(batchName: string): Observable<MaterialBatch> {
+    let sql = BatchService.batchByNameSql;
+    sql = sql.replace(BatchService.batchNameTBR, batchName);
+
+    return this._fetchService.query(sql).pipe(
+      map((batches) => {
+        let ret: MaterialBatch = null;
+        batches.forEach(batch => {
+          ret = new MaterialBatch();
+          ret.name = batch.BATCHNAME;
+          ret.bufferName = batch.BUFFERNAME;
+          ret.lastChanged = new Date(batch.LASTCHANGED);
+          ret.bufferDescription = batch.DESCRIPTION;
+          ret.parentBuffer = batch.PARENT_BUFFERNAME;
+          ret.quantity = batch.QUANTITY;
+          ret.material = batch.MATERIAL;
+          ret.status = batch.STATUS;
+          ret.class = batch.CLASS;
+          ret.SAPBatch = batch.SAPBATCH;
+          ret.dateCode = batch.DATECODE;
+          ret.materialType = batch.MATTYPE;
+          ret.unit = batch.UNIT;
+        });
+
+        return ret;
+      }),
+      map(batch => {
+        if (batch !== null && batch.quantity > 0) {
+          return batch;
+        } else {
+          return null;
+        }
+      }));
+  }
+
   getBatchInformationAllowNegativeQuantity(batchName: string): Observable<MaterialBatch> {
     let sql = BatchService.batchByNameSql;
     sql = sql.replace(BatchService.batchNameTBR, batchName);

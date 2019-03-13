@@ -14,6 +14,8 @@ import { ChartGaugeComponent } from '@shared/components/chart/gauge.component';
 import { ProcessType } from '@core/hydra/entity/checkList';
 import { getComponentStatus } from '@core/hydra/utils/operationHelper';
 import { MaterialPreparationComponent } from './widget/materialPreparation.component';
+import { ToolService } from '@core/hydra/service/tool.service';
+import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
 
 @Component({
   selector: 'fw-machine-summary',
@@ -21,7 +23,9 @@ import { MaterialPreparationComponent } from './widget/materialPreparation.compo
   styleUrls: ['./machine.summary.component.less']
 })
 export class MachineSummaryComponent implements OnInit {
-  //#region Check List
+  //#region Private field
+
+  private toolCycles: Map<string, { pre: number, now: number }> = new Map<string, { pre: number, now: number }>();
 
   //#endregion
 
@@ -64,10 +68,31 @@ export class MachineSummaryComponent implements OnInit {
         this.machineService.getMachineWithStatistic(this.machineName).pipe(
           finalize(() => this.isLoading = false)).subscribe((machine) => {
             this.machine = machine;
+
+            this.machine.toolsLoggedOn.forEach(logon => {
+              const exist = this.toolCycles.get(logon.toolName);
+              if (exist) {
+                exist.pre = exist.now;
+                exist.now = logon.currentCycle;
+              } else {
+                this.toolCycles.set(logon.toolName, { pre: logon.currentCycle, now: logon.currentCycle });
+              }
+            });
+
           });
       }, 15000);
       this.machineService.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
         this.machine = machine;
+
+        this.machine.toolsLoggedOn.forEach(logon => {
+          const exist = this.toolCycles.get(logon.toolName);
+          if (exist) {
+            exist.pre = exist.now;
+            exist.now = logon.currentCycle;
+          } else {
+            this.toolCycles.set(logon.toolName, { pre: logon.currentCycle, now: logon.currentCycle });
+          }
+        });
       });
     });
   }
@@ -265,6 +290,20 @@ export class MachineSummaryComponent implements OnInit {
       messages.push(`换班点检未完成, 已完成${changeShiftResult.finished}，未完成${changeShiftResult.notFinished}`);
     }
 
+    // Tool Maintennace
+    const toolWarning = this.checkToolMaintennace(this.machine);
+
+    toolWarning.forEach(warning => {
+      messages.push(`工夹具${warning.toolName}需要维护`);
+    });
+
+    // Tool Cycle
+    Array.from(this.toolCycles.entries()).forEach(kvp => {
+      if (this.machine.currentStatusNr !== MACHINE_STATUS_PRODUCTION && kvp[1].pre !== kvp[1].now) {
+        messages.push(`工夹具${kvp[0]}异常启动`);
+      }
+    });
+
     return messages;
   }
 
@@ -356,6 +395,21 @@ export class MachineSummaryComponent implements OnInit {
   //#endregion
 
   //#region Private methods
+  private checkToolMaintennace(machine: Machine) {
+    const result = [];
+    if (machine.currentOperation) {
+      this.machine.toolsLoggedOn.forEach(logon => {
+        if (logon.toolStatus === 3) {
+          result.push({
+            toolName: logon.toolName,
+          });
+        }
+      });
+    }
+    return result;
+  }
+
+
   private checkMaterialShortage(machine: Machine): any[] {
     const result = [];
 

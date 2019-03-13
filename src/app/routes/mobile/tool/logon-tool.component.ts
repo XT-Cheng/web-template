@@ -15,6 +15,7 @@ import { MaterialBatch } from '@core/hydra/entity/batch';
 import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
 import { FetchService } from '@core/hydra/service/fetch.service';
 import { replaceAll, IActionResult } from '@core/utils/helpers';
+import { MaintenanceStatusEnum } from '@core/hydra/entity/tool';
 
 @Component({
   selector: 'fw-tool-logon',
@@ -101,6 +102,10 @@ export class LogonToolComponent extends BaseExtendForm {
           throw Error(`Tool ${this.form.value.tool} already log on to ${tool.loggedOnMachine}`);
         }
 
+        if (tool.maintenanceStatus && tool.maintenanceStatus === MaintenanceStatusEnum.RED) {
+          throw Error(`Tool must maintain before use`);
+        }
+
         const toolItem = this.operationData.toolItems.get(this.batchData.material);
         if (!toolItem.availableTools.includes(tool.toolName)) {
           throw Error(`Tool ${tool.toolName} not valid for Material ${this.batchData.material}`);
@@ -178,14 +183,30 @@ export class LogonToolComponent extends BaseExtendForm {
   }
 
   requestBatchData = () => {
-    return requestBatchData(this.form, this._batchService)().pipe(
-      map((batch: MaterialBatch) => {
-        if (!Array.from(this.operationData.toolItems.keys()).includes(batch.material)) {
-          throw Error(`Material ${batch.material} in-correct!`);
-        }
-        return batch;
-      }
-      ));
+    let barCodeInfo: MaterialBatch;
+    return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch).pipe(
+      switchMap((barCodeData: MaterialBatch) => {
+        barCodeInfo = barCodeData;
+        return this._batchService.getBatchInformationWithRunning(barCodeData.name).pipe(
+          map((batch: MaterialBatch) => {
+            if (batch) {
+              batch.barCode = barCodeData.barCode;
+            }
+            return batch;
+          }),
+          map((batch: MaterialBatch) => {
+            if (!Array.from(this.operationData.toolItems.keys()).includes(batch.material)) {
+              throw Error(`Material ${batch.material} in-correct!`);
+            }
+            return batch;
+          }),
+          tap((batch: MaterialBatch) => {
+            if (!batch) {
+              throw Error(`${barCodeInfo.name} not exist!`);
+            }
+          })
+        );
+      }));
   }
 
   //#endregion

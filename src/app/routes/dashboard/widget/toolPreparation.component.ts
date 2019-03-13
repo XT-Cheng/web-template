@@ -12,6 +12,7 @@ import { Tool, MaintenanceStatusEnum } from '@core/hydra/entity/tool';
 const TOOL_TAG: STColumnTag = {
   1: { text: 'In Use', color: 'green' },
   2: { text: 'No Tool.', color: 'red' },
+  3: { text: 'Need Maintain', color: 'red' },
 };
 
 @Component({
@@ -22,9 +23,6 @@ const TOOL_TAG: STColumnTag = {
 export class ToolPreparationComponent implements OnInit {
 
   //#region static Fields
-
-  static COMP_REMAIN_TIME = 30 * 60;
-  static COMP_REMAIN_PERCENTAGE = 20;
 
   //#endregion
 
@@ -38,16 +36,16 @@ export class ToolPreparationComponent implements OnInit {
       i18n: 'app.tool.toolName'
     },
     { title: 'Used.', render: 'percentages', i18n: 'app.tool.percentage' },
-    {
-      title: 'Current Cycles',
-      index: 'currentCycles',
-      i18n: 'app.tool.currentCycles'
-    },
-    {
-      title: 'Cycles Limits',
-      index: 'cyclesLimit',
-      i18n: 'app.tool.cyclesLimit'
-    },
+    // {
+    //   title: 'Current Cycles',
+    //   index: 'currentCycles',
+    //   i18n: 'app.tool.currentCycles'
+    // },
+    // {
+    //   title: 'Cycles Limits',
+    //   index: 'cyclesLimit',
+    //   i18n: 'app.tool.cyclesLimit'
+    // },
     { title: 'Logged On At', index: 'loggedOnMachine', i18n: 'app.tool.loggedOnMachine' },
     { title: 'Status', index: 'loaded', i18n: 'app.tool.status', type: 'tag', tag: TOOL_TAG },
   ];
@@ -130,16 +128,31 @@ export class ToolPreparationComponent implements OnInit {
             });
           } else {
             const tool = array.find(x => x.toolName === toolStatus.toolName);
-            ret.push({
+            const item: any = {
               toolName: toolStatus.toolName,
               loggedOnMachine: toolStatus.loggedOnMachine,
               requiredMaterial: toolStatus.requiredMaterial,
               currentCycles: tool ? tool.currentCycles : ``,
               cyclesLimit: tool ? tool.nextMaintennaceCycles : ``,
-              percentage: tool ? toNumber(((tool.nextMaintennaceCycles - tool.currentCycles) / tool.intervalCycles) * 100).toFixed() : 0,
               maintenanceStatus: tool ? tool.maintenanceStatus : ``,
-              loaded: 1
-            });
+            };
+
+            let leftUsage = tool ? (tool.currentCycles + tool.intervalCycles - tool.nextMaintennaceCycles)
+              / tool.intervalCycles : 0;
+
+            if (leftUsage < 0) {
+              leftUsage = 0;
+            }
+
+            item.percentage = (leftUsage * 100).toFixed();
+
+            if (tool && tool.maintenanceStatus === MaintenanceStatusEnum.RED) {
+              item.loaded = 3;
+            } else {
+              item.loaded = 1;
+            }
+
+            ret.push(item);
           }
         });
         this.data.next(ret);

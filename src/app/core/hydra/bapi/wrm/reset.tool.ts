@@ -8,9 +8,10 @@ export class ResetTool extends DialogBase {
 
   public dialogString(): string {
     return `${super.dialogString()}` +
-      `MODE=R|` +
+      `MOD=R|` +
       `RESID=${this.toolId}|` +
       `WARTVERWEIS=${this.maintenanceId}|` +
+      `AUFSATZ=I|` +
       `KNR=${this.badgeName}|`;
   }
 }
