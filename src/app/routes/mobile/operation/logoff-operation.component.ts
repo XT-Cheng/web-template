@@ -90,7 +90,7 @@ export class LogoffOperationComponent extends BaseExtendForm {
   requestOperationData = (): Observable<any> => {
     return this._operationService.getOperation(this.form.value.operation).pipe(
       map(operation => {
-        if (operation.pendingYieldQty !== 0) {
+        if (operation.leadOrder && operation.pendingYieldQty !== 0) {
           throw Error(`Please Generate Output Batch first!`);
         }
         return operation;

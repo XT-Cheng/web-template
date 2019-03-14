@@ -1,17 +1,11 @@
-import { Component, Injector, ViewChild } from '@angular/core';
+import { Component, Injector, ViewChild, ElementRef } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { requestBatchData } from './request.common';
-import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
-import { Machine } from '@core/hydra/entity/machine';
-import { MachineService } from '@core/hydra/service/machine.service';
-import { Operation, ComponentStatus } from '@core/hydra/entity/operation';
-import { OperationService } from '@core/hydra/service/operation.service';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
-import { getComponentStatus } from '@core/hydra/utils/operationHelper';
-import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { PopupComponent } from 'ngx-weui';
 import { PrintService } from '@core/hydra/service/print.service';
 
@@ -27,7 +21,7 @@ export class ReprintBatchComponent extends BaseExtendForm {
   //#region View Children
 
   @ViewChild(`batchList`) batchListPopup: PopupComponent;
-
+  @ViewChild(`batch`, { read: ElementRef }) batchElement: ElementRef;
   //#endregion
 
   //#region Protected member
@@ -122,6 +116,7 @@ export class ReprintBatchComponent extends BaseExtendForm {
 
   //#region Exeuction
   reprintBatchSuccess = () => {
+    this.init();
   }
 
   reprintBatchFailed = () => {
@@ -141,6 +136,9 @@ export class ReprintBatchComponent extends BaseExtendForm {
       if (batches.length > 0) {
         this.form.controls.batch.setValue(batches[0].name);
         this.form.controls.batchData.setValue(batches[0]);
+        if (this.batchElement) {
+          this.batchElement.nativeElement.select();
+        }
       }
     });
   }
@@ -151,6 +149,8 @@ export class ReprintBatchComponent extends BaseExtendForm {
     this._batchService.getRecentlyCreatedMaterialBatch().subscribe(batches => {
       this.materialBatches$.next(batches);
     });
+
+    this.init();
   }
 
   //#endregion

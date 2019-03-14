@@ -16,7 +16,7 @@
         <label class="weui-label">{{'app.mobile.material.reprint.batch' | translate}}</label>
       </div>
       <div class="weui-cell__bd">
-        <input class="weui-input" id='batch' fwShareAutoFocus formControlName="batch" [fwShareKeyHandler]='{controlName: "batch", inputing: Inputing, nextInputId: "badge", req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
+        <input class="weui-input" #batch id='batch' fwShareAutoFocus formControlName="batch" [fwShareKeyHandler]='{controlName: "batch", inputing: Inputing, nextInputId: "badge", req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
           [placeholder]="'app.mobile.material.reprint.batch.placeholder' | translate">
       </div>
     </div>

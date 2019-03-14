@@ -150,6 +150,7 @@
   "app.machine.summary.checkListOfChangeOver": "Chang Over Check.",
   "app.machine.summary.toolListOfChangeOver": "Tool. Prep.",
   "app.checklist.sequence": "Seq",
+  "app.checklist.answer": "Answer",
   "app.checklist.finishedBy": "Finished By.",
   "app.checklist.finishedAt": "Finished At",
   "app.checklist.comment": "Comment",

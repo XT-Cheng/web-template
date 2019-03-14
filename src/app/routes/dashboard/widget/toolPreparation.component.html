@@ -1,5 +1,5 @@
 <st [data]='data | async' [columns]="toolCols" size="small" ps="5" [page]="{toTop:false}">
   <ng-template st-row="percentages" let-item let-index="index">
-    <fw-g2-mini-progress [percent]="100" [target]="100" strokeWidth="15" [color]="getToolStatusColor(item)"></fw-g2-mini-progress>
+    <fw-g2-mini-progress [percent]="item.percentage" [target]="item.percentage" strokeWidth="15" [color]="getToolStatusColor(item)"></fw-g2-mini-progress>
   </ng-template>
 </st>

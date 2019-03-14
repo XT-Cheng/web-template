@@ -30,6 +30,7 @@ export class CheckListOfShiftChangeComponent implements OnInit {
       title: 'Description',
       index: 'shortText', i18n: 'app.checklist.description'
     },
+    { title: 'Answer', index: 'answer', i18n: 'app.checklist.answer' },
     { title: 'Finished By', index: 'finishedBy', i18n: 'app.checklist.finishedBy' },
     {
       title: 'Finished At.', index: 'finishedAt', i18n: 'app.checklist.finishedAt', format: (value) => {
@@ -81,14 +82,27 @@ export class CheckListOfShiftChangeComponent implements OnInit {
       shiftChange.items.forEach(item => {
         if (this._machine.checkListResultsOfCurrentShift.get(item.sequence)) {
           const result = this._machine.checkListResultsOfCurrentShift.get(item.sequence);
-          ret.push({
-            sequence: result.sequence,
-            shortText: item.shortText,
-            finishedBy: result.finishedBy,
-            finishedAt: result.finishedAt,
-            comment: result.comment,
-            completed: 1
-          });
+          if (result.criticalAnswer === result.answer) {
+            ret.push({
+              sequence: result.sequence,
+              shortText: item.shortText,
+              answer: result.answer,
+              finishedBy: result.finishedBy,
+              finishedAt: result.finishedAt,
+              comment: result.comment,
+              completed: 1
+            });
+          } else {
+            ret.push({
+              sequence: result.sequence,
+              shortText: item.shortText,
+              answer: result.answer,
+              finishedBy: result.finishedBy,
+              finishedAt: result.finishedAt,
+              comment: result.comment,
+              completed: 3
+            });
+          }
         } else {
           ret.push({
             sequence: item.sequence,

@@ -152,6 +152,7 @@
   "app.checklist.sequence": "序号",
   "app.checklist.finishedBy": "完成人员",
   "app.checklist.finishedAt": "完成于",
+  "app.checklist.answer": "结果",
   "app.checklist.comment": "备注",
   "app.checklist.completed": "状态",
   "app.checklist.description": "描述",
