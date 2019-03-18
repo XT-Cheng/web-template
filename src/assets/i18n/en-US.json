@@ -173,6 +173,7 @@
   "app.operation.targetQty": "Target Qty.",
   "app.operation.targetCycleTime": "Target Cycle",
   "app.operation.scheduleCompleted": "Sch. Completed",
+  "app.report": "Reports",
   "app.report.batch.general": "Batch Genearl Report",
   "app.report.batch.trace": "Batch Traceability Report",
   "app.report.condition": "Query Condition",
@@ -275,7 +276,7 @@
   "app.mobile.material.moveTo914.batch.placeholder": "Pls input Batch Nr.",
   "app.mobile.material.moveTo914.buffer": "Buffer",
   "app.mobile.material.moveTo914.buffer.placeholder": "Pls input Buffer",
-  "app.mobile.material.moveTo914.action": "Send To SAP",
+  "app.mobile.material.moveTo914.action": "Send To 914",
 
   "app.mobile.material.moveToSAP": "Send Batch To SAP",
   "app.mobile.material.moveToSAP.batch": "Batch Nr.",

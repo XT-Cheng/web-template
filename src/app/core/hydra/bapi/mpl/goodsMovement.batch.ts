@@ -19,9 +19,7 @@ export class GoodsMovementBatch extends DialogBase {
       ret += `HZTYP=${this.newMatType}|`;
     }
 
-    if (this.newRemainQuantity === 0) {
-      ret += `STA=A|`;
-    } else if (this.newStatus !== null && this.newStatus !== undefined) {
+    if (this.newStatus !== null && this.newStatus !== undefined) {
       ret += `STA=${this.newStatus}|`;
     }
 

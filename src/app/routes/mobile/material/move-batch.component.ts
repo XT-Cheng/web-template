@@ -1,12 +1,13 @@
-import { Component, Injector } from '@angular/core';
+import { Component, Injector, ViewChild } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { MaterialBatch } from '@core/hydra/entity/batch';
-import { IActionResult } from '@core/utils/helpers';
 import { requestBatchData } from './request.common';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
+import { BehaviorSubject, forkJoin } from 'rxjs';
+import { PopupComponent } from 'ngx-weui';
 
 @Component({
   selector: 'fw-batch-move',
@@ -18,7 +19,7 @@ import { BaseExtendForm } from '../base.form.extend';
 })
 export class MoveBatchComponent extends BaseExtendForm {
   //#region View Children
-
+  @ViewChild(`batchList`) batchListPopup: PopupComponent;
   //#endregion
 
   //#region Protected member
@@ -26,6 +27,7 @@ export class MoveBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Public member
+  batches$: BehaviorSubject<MaterialBatch[]> = new BehaviorSubject<[]>([]);
 
   requestBatchData = requestBatchData(this.form, this._batchService);
 
@@ -40,7 +42,7 @@ export class MoveBatchComponent extends BaseExtendForm {
   ) {
     super(injector);
     this.addControls({
-      batch: [null, [Validators.required], 'batchData'],
+      batch: [null, []],
       materialBuffer: [null, [Validators.required], 'materialBufferData'],
     });
   }
@@ -48,6 +50,22 @@ export class MoveBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Public methods
+  showBatchList() {
+    if (this.batchListPopup) {
+      this.batchListPopup.config = Object.assign({}, this.batchListPopup.config, {
+        cancel: this.i18n.fanyi(`app.common.cancel`),
+        confirm: this.i18n.fanyi(`app.common.confirm`),
+      });
+      this.batchListPopup.show();
+    }
+  }
+
+  getBatchsDisplay(batches: MaterialBatch[]) {
+    if (batches.length === 0) return null;
+    return {
+      total: batches.length,
+    };
+  }
 
   //#endregion
 
@@ -55,7 +73,9 @@ export class MoveBatchComponent extends BaseExtendForm {
 
   //#region Batch Reqeust
   requestBatchDataSuccess = (batch: MaterialBatch) => {
-    this.form.controls.batch.setValue(batch.name);
+    this.batches$.next([...this.batches$.value, batch]);
+    this.form.controls.batch.setValue(``);
+    this.document.getElementById(`batch`).focus();
   }
 
   requestBatchDataFailed = () => {
@@ -76,9 +96,6 @@ export class MoveBatchComponent extends BaseExtendForm {
         if (!buffer) {
           throw Error(`${this.form.value.materialBuffer} not exist!`);
         }
-        if (buffer.name === this.batchData.bufferName) {
-          throw Error(`Batch alreaday in Location ${this.batchData.bufferName}`);
-        }
       })
     );
   }
@@ -94,11 +111,19 @@ export class MoveBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Event Handler
+  batchSelected(selected: MaterialBatch) {
+    this.batchListPopup.close();
+
+    this.batches$.next(this.batches$.value.filter(batch => batch.name !== selected.name));
+
+    this.document.getElementById(`materialBuffer`).focus();
+  }
 
   //#endregion
 
   //#region Exeuction
   moveBatchSuccess = () => {
+    this.batches$.next([]);
   }
 
   moveBatchFailed = () => {
@@ -106,13 +131,30 @@ export class MoveBatchComponent extends BaseExtendForm {
 
   moveBatch = () => {
     // Move Batch
-    return this._bapiService.moveBatch(this.batchData, this.form.value.materialBufferData, this.operatorData);
+    const batchMove$ = [];
+    this.batches$.value.forEach(batch => {
+      batchMove$.push(this._bapiService.moveBatch(batch, this.form.value.materialBufferData, this.operatorData));
+    });
+
+    return forkJoin(batchMove$).pipe(
+      map(_ => {
+        return {
+          isSuccess: true,
+          description: `Batch Moved to ${this.form.value.materialBufferData.name}!`,
+        };
+      })
+    );
   }
 
   //#endregion
 
   //#region Override methods
+  protected isValid() {
+    return this.batches$.value.length > 0;
+  }
+
   protected afterReset() {
+    this.batches$.next([]);
     this.document.getElementById(`batch`).focus();
   }
 

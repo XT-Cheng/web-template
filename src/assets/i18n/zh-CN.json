@@ -173,6 +173,7 @@
   "app.operation.targetQty": "目标数量",
   "app.operation.targetCycleTime": "生产周期",
   "app.operation.scheduleCompleted": "计划完工于",
+  "app.report": "报表",
   "app.report.batch.general": "物料批次概览",
   "app.report.batch.trace": "物料追溯",
   "app.report.condition": "查询条件",

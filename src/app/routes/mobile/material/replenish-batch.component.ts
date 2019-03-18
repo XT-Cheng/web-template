@@ -95,7 +95,7 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   requestMachineData = () => {
     return this._machineService.getMachine(this.form.value.machine).pipe(
       map(machine => {
-        this.componentsToBeReplenish$.next(getComponentToBeReplenish(machine).filter(item => !item.allowLogoff));
+        this.componentsToBeReplenish$.next(getComponentToBeReplenish(machine));
         return machine;
       }));
   }
@@ -177,14 +177,25 @@ export class ReplenishBatchComponent extends BaseExtendForm {
         })
       );
     });
-    // 2. Merge Batch
+    // 2. Adjust Batch if quantity < 0
+    if (componentToBeReplenish.batchQty < 0) {
+      replenishBatch$ = replenishBatch$.pipe(
+        switchMap(_ => {
+          return this._batchService.getBatchInformationAllowNegativeQuantity(componentToBeReplenish.batchName);
+        }),
+        switchMap((batch) => {
+          return this._bapiService.changeBatchQuantityAndStatus(batch, 0, 'F', this.operatorData);
+        })
+      );
+    }
+    // 3. Merge Batch
     replenishBatch$ = replenishBatch$.pipe(
       switchMap(_ => {
         return this._bapiService.mergeBatch({ name: componentToBeReplenish.batchName }, [newBatch.name], this.operatorData);
       })
     );
 
-    // 3. Logon Again
+    // 4. Logon Again
     componentToBeReplenish.operations.forEach(op => {
       replenishBatch$ = replenishBatch$.pipe(
         switchMap(() => {

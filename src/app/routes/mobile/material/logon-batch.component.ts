@@ -10,8 +10,9 @@ import { Operation, ComponentStatus } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
 import { map, switchMap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
-import { getComponentStatus } from '@core/hydra/utils/operationHelper';
+import { getComponentStatus, getComponentToBeReplenish } from '@core/hydra/utils/operationHelper';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
+import { IActionResult } from '@core/utils/helpers';
 
 @Component({
   selector: 'fw-batch-logon',
@@ -106,9 +107,9 @@ export class LogonBatchComponent extends BaseExtendForm {
           return throwError(`Material ${batch.material} in-correct!`);
         }
 
-        if (found.isReady) {
-          return throwError(`Material ${batch.material} already logged on!`);
-        }
+        // if (found.isReady) {
+        //   return throwError(`Material ${batch.material} already logged on!`);
+        // }
 
         this.form.controls.actionData.setValue(found);
         return of(batch);
@@ -175,10 +176,62 @@ export class LogonBatchComponent extends BaseExtendForm {
 
   logonBatch = () => {
     // LogOn Batch
-    const actionData = this.form.value.actionData;
-    return this._bapiService.logonInputBatch(this.operationData,
-      this.machineData, this.operatorData,
-      this.batchData, actionData.pos);
+    const actionData = this.form.value.actionData as ComponentStatus;
+    if (actionData.isReady) {
+      // #region Replenish Mode
+      const newBatch = this.form.value.batchData as MaterialBatch;
+      const toBeReplenish = getComponentToBeReplenish(this.machineData)
+        .filter(item => item.material === newBatch.material)[0];
+      let replenishBatch$ = of(null);
+      // 1. Logoff first
+      toBeReplenish.operations.forEach(op => {
+        replenishBatch$ = replenishBatch$.pipe(
+          switchMap(() => {
+            return this._bapiService.logoffInputBatch({ name: op.name },
+              this.machineData, this.operatorData, { name: toBeReplenish.batchName }, op.pos);
+          })
+        );
+      });
+      // 2. Adjust Batch if quantity < 0
+      if (toBeReplenish.batchQty < 0) {
+        replenishBatch$ = replenishBatch$.pipe(
+          switchMap(_ => {
+            return this._batchService.getBatchInformationAllowNegativeQuantity(toBeReplenish.batchName);
+          }),
+          switchMap((batch) => {
+            return this._bapiService.changeBatchQuantityAndStatus(batch, 0, 'F', this.operatorData);
+          })
+        );
+      }
+      // 3. Merge Batch
+      replenishBatch$ = replenishBatch$.pipe(
+        switchMap(_ => {
+          return this._bapiService.mergeBatch({ name: toBeReplenish.batchName }, [newBatch.name], this.operatorData);
+        })
+      );
+      // 4. Logon Again
+      toBeReplenish.operations.forEach(op => {
+        replenishBatch$ = replenishBatch$.pipe(
+          switchMap(() => {
+            return this._bapiService.logonInputBatch({ name: op.name },
+              this.machineData, this.operatorData, { name: toBeReplenish.batchName, material: toBeReplenish.material },
+              op.pos);
+          })
+        );
+      });
+      return replenishBatch$.pipe(
+        map((ret: IActionResult) => {
+          return Object.assign(ret, {
+            description: `Batch ${newBatch.name} Logged On!`
+          });
+        }
+        ));
+      //#endregion
+    } else {
+      return this._bapiService.logonInputBatch(this.operationData,
+        this.machineData, this.operatorData,
+        this.batchData, actionData.pos);
+    }
   }
 
   //#endregion

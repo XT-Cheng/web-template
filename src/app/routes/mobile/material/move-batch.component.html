@@ -5,7 +5,7 @@
         <label class="weui-label">{{'app.mobile.material.move.batch' | translate}}</label>
       </div>
       <div class="weui-cell__bd">
-        <input class="weui-input" id='batch' formControlName="batch" fwShareAutoFocus [fwShareKeyHandler]='{controlName: "batch", inputing: Inputing, nextInputId: "materialBuffer", req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
+        <input class="weui-input" id='batch' formControlName="batch" fwShareAutoFocus [fwShareKeyHandler]='{controlName: "batch", inputing: Inputing, req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
           [placeholder]="'app.mobile.material.move.batch.placeholder' | translate">
       </div>
     </div>
@@ -14,6 +14,14 @@
         {{getAssociateDataDisplay('batch')}}
       </span>
     </label>
+    <ng-container *ngIf='getBatchsDisplay((batches$ | async)) as display'>
+      <div class="weui-cell weui-cell_board weui-cell_access" (click)="showBatchList()">
+        <div class="weui-cell__bd">
+          <span>{{'app.common.total' | translate}}: <span [ngStyle]="{ 'color': 'green' }">{{display.total}}</span></span>
+        </div>
+        <div class="weui-cell__ft"></div>
+      </div>
+    </ng-container>
     <div class="weui-cell">
       <div class="weui-cell__hd">
         <label class="weui-label">{{'app.mobile.material.move.buffer' | translate}}</label>
@@ -36,4 +44,7 @@
       [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
   </div>
 </form>
+<weui-popup #batchList>
+  <fw-mobile-batch-list [materialBatches$]='batches$' (itemClicked)='batchSelected($event)'></fw-mobile-batch-list>
+</weui-popup>
 <weui-mask #mask [backdrop]="false"></weui-mask>

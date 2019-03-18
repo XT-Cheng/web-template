@@ -353,6 +353,11 @@ export class MachineService {
       }),
       switchMap(() => {
         return this.getMachineInternal(machineName, false);
+      }),
+      tap(machine => {
+        if (!machine) {
+          throw Error(`Machine ${machineName} not exist`);
+        }
       }));
   }
 
@@ -560,7 +565,7 @@ export class MachineService {
             previousValue += currentValue.YIELD;
             return previousValue;
           }, 0);
-          currentShiftOutput.filter(rec => rec.REASON_CODE > 0).map(rec => {
+          currentShiftOutput.filter(rec => rec.REJECTS > 0).map(rec => {
             if (machineRet.currentShiftOutput.scrap.has(rec.REASON_CODE)) {
               machineRet.currentShiftOutput.scrap.get(rec.REASON_CODE).scrap += rec.REJECTS;
             } else {

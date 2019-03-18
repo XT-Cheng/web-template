@@ -4,15 +4,18 @@ import { toBoolean } from '@delon/util';
 
 const menuInfo: Menu[] = [{
   text: '主导航',
+  i18n: `menu.main`,
   group: true,
   /** 图标 */
   icon: `anticon anticon-rocket`,
   children: [{
     text: '仪表盘',
+    i18n: `menu.dashboard`,
     group: true,
     icon: `anticon anticon-dashboard`,
     children: [{
-      text: 'Line Summary',
+      text: '产线概况',
+      i18n: `app.route.line-summary`,
       group: true,
       /** 图标 */
       icon: `anticon anticon-rocket`,
@@ -104,10 +107,12 @@ const menuInfo: Menu[] = [{
   },
   {
     text: '报表',
+    i18n: `app.route.line-summary`,
     group: true,
     icon: `anticon anticon-area-chart`,
     children: [{
       text: '物料批次概览',
+      i18n: `app.report.batch.general`,
       group: false,
       /** 图标 */
       icon: `anticon anticon-rocket`,
@@ -116,6 +121,7 @@ const menuInfo: Menu[] = [{
     },
     {
       text: '物料批次追溯',
+      i18n: `app.report.batch.trace`,
       group: false,
       /** 图标 */
       icon: `anticon anticon-rocket`,
@@ -127,6 +133,7 @@ const menuInfo: Menu[] = [{
 
 const mobileMenuInfo: Menu[] = [{
   text: '主导航',
+  i18n: `menu.main`,
   group: true,
   /** 图标 */
   icon: `anticon anticon-rocket`,
@@ -134,30 +141,35 @@ const mobileMenuInfo: Menu[] = [{
     text: '物料相关',
     group: false,
     icon: `anticon anticon-area-chart`,
+    i18n: `app.mobile.material.functions`,
     link: `/material/list`,
   },
   {
     text: '工单相关',
     group: false,
     icon: `anticon anticon-area-chart`,
+    i18n: `app.mobile.operation.functions`,
     link: `/operation/list`,
   },
   {
     text: '设备相关',
     group: false,
     icon: `anticon anticon-area-chart`,
+    i18n: `app.mobile.machine.functions`,
     link: `/machine/list`,
   },
   {
     text: '工夹具相关',
     group: false,
     icon: `anticon anticon-area-chart`,
+    i18n: `app.mobile.tool.functions`,
     link: `/tool/list`,
   },
   {
     text: '人员相关',
     group: false,
     icon: `anticon anticon-area-chart`,
+    i18n: `app.mobile.operator.functions`,
     link: `/operator/list`,
   }]
 }];
