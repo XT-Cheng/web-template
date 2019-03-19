@@ -2,11 +2,9 @@ import { Component, OnInit, Input } from '@angular/core';
 import { STColumn, STColumnTag } from '@delon/abc';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
-import { toNumber } from '@delon/util';
 import { getToolStatus } from '@core/hydra/utils/operationHelper';
-import { of, forkJoin, Subject, BehaviorSubject } from 'rxjs';
+import { of, forkJoin, BehaviorSubject } from 'rxjs';
 import { ToolService } from '@core/hydra/service/tool.service';
-import { map } from 'rxjs/operators';
 import { Tool, MaintenanceStatusEnum } from '@core/hydra/entity/tool';
 
 const TOOL_TAG: STColumnTag = {

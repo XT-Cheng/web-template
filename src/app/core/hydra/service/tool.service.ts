@@ -23,7 +23,6 @@ export class ToolService {
  AND RESSTATUS.RES_ID = RES.RES_ID AND STATUSTEXT.STATUS = RESSTATUS.STATUS AND STATUSTEXT.RES_TYP = 'VOR'
  AND RES.RES_ID = MAINTENNACE.RES_ID(+)`;
 
-  static toolMaintenanceSQL = ``;
   //#endregion
 
   //#region Private members
