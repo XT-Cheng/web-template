@@ -423,10 +423,17 @@ export abstract class BaseExtendForm implements OnDestroy {
   getCurrentOperationDisplay() {
     if (this.machineData && this.operationData) {
       const operation = this.form.value.operationData as Operation;
+      let title = ``;
+      if (operation.leadOrder) {
+        title = `${operation.leadOrder} / ${operation.order}`;
+        // title = `${operation.leadOrder}`;
+      } else {
+        title = `${operation.order}`;
+      }
+
       return {
-        title: operation.leadOrder || operation.order,
+        title: title,
         description: `${operation.display}`
-        // `${operation.order} ${operation.article} ${operation.totalYield} ${operation.targetQty}`
       };
     }
 

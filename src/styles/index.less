@@ -15,6 +15,8 @@
   section {
     display: flex;
     flex: 1;
+    margin-left: 12px;
+    margin-right: 12px;
   }
 
   form {
@@ -28,12 +30,38 @@
     flex-direction: column;
   }
 
+  .weui-cell:before {
+    border-top: 1px solid #8b8bdc;
+  }
+
+  .weui-cells:before {
+    border-top: 1px solid #8b8bdc;
+  }
+
+  .weui-cells:after {
+    border-bottom: 1px solid #8b8bdc;
+  }
+
   .weui-popup {
     .weui-cells {
       margin-top: 0px;
       display: block;
       overflow-y: auto;
     }
+
+    .weui-cell {
+      padding: 2px 0px 0px 0px;
+    }
+
+    .weui-media-box {
+      padding: 2px 0px 0px 0px;
+    }
+
+  }
+
+  .weui-media-box {
+    padding-left: 0px;
+    padding-right: 0px;
   }
 
   .weui-cell_select {
@@ -65,7 +93,7 @@
 
   .weui-cell_board {
     font-size: 14px;
-    padding: 10px 15px;
+    padding: 10px 8px;
   }
 
   .weui-agree {

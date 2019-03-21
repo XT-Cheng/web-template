@@ -118,7 +118,7 @@ export class LogoffBatchComponent extends BaseExtendForm {
 
     const newQty = toNumber(this.form.value.newQty, 0);
 
-    if (newQty < 1) {
+    if (newQty < 0) {
       return throwError('Incorrect New Qty');
     }
 
@@ -177,10 +177,13 @@ export class LogoffBatchComponent extends BaseExtendForm {
       }),
       switchMap(batch => {
         batchData = batch;
-        return this._bapiService.changeBatchQuantityAndStatus(batch, newQty, 'F', this.operatorData);
+        return this._bapiService.changeBatchQuantityAndStatus(batch, newQty, newQty > 0 ? 'F' : 'A', this.operatorData);
       }),
-      switchMap(_ => {
-        return this._printService.printMaterialBatchLabel([componentToBeLoggedOff.batchName]);
+      switchMap(ret => {
+        if (newQty > 0) {
+          return this._printService.printMaterialBatchLabel([componentToBeLoggedOff.batchName]);
+        }
+        return of(ret);
       }),
       map((ret: IActionResult) => {
         return Object.assign(ret, {

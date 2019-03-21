@@ -18,6 +18,17 @@ export class MobileOperationListComponent {
   }
 
   getDisplay(operation: Operation) {
-    return `${operation.leadOrder || operation.order} ${operation.article} ${operation.targetQty}`;
+    let title = ``;
+    if (operation.leadOrder) {
+      title = `${operation.leadOrder} / ${operation.order}`;
+      // title = `${operation.leadOrder}`;
+    } else {
+      title = `${operation.order}`;
+    }
+    return {
+      title: title,
+      description: `${operation.display}`
+    };
+    // return `${operation.leadOrder || operation.order} ${operation.article} ${operation.targetQty}`;
   }
 }

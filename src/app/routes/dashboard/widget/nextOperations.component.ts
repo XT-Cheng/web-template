@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { Operation } from '@core/hydra/entity/operation';
+import { toNumber } from '@delon/util';
 
 @Component({
   selector: 'fw-widget-next-op',
@@ -15,16 +16,40 @@ export class NextOperationsComponent implements OnInit {
 
   selectedOperation = ``;
   operationCols: STColumn[] = [
-    { title: 'Opeartion', index: 'order', i18n: 'app.operation.name' },
-    { title: 'Lead Order', index: 'leadOrder', i18n: 'app.operation.leadOrder' },
+    {
+      title: 'Opeartion', index: 'order', i18n: 'app.operation.name',
+      sort: {
+        compare: (a, b) => a.order > b.order ? 1 : -1,
+      }
+    },
+    {
+      title: 'Lead Order', index: 'leadOrder', i18n: 'app.operation.leadOrder',
+      sort: {
+        compare: (a, b) => a.leadOrder > b.leadOrder ? 1 : -1,
+      }
+    },
     {
       title: 'Target Qty.',
-      index: 'targetQty', i18n: 'app.operation.targetQty'
+      index: 'targetQty', i18n: 'app.operation.targetQty',
+      sort: {
+        compare: (a, b) => a.targetQty > b.targetQty ? 1 : -1,
+      }
     },
-    { title: 'Target Cycle.', index: 'targetCycleTime', i18n: 'app.operation.targetCycleTime' },
+    {
+      title: 'Target Cycle.', index: 'targetCycleTime', i18n: 'app.operation.targetCycleTime',
+      format: (value: Operation) => {
+        return toNumber(value.targetCycleTime.toFixed(2));
+      },
+      sort: {
+        compare: (a, b) => a.targetCycleTime > b.targetCycleTime ? 1 : -1,
+      }
+    },
     {
       title: 'Sch. Complete', i18n: 'app.operation.scheduleCompleted', index: 'scheduleCompleted', format: (value: Operation) => {
         return format(value.planEnd, 'MM-DD HH:mm');
+      },
+      sort: {
+        compare: (a, b) => a.scheduleCompleted > b.scheduleCompleted ? 1 : -1,
       }
     },
   ];
