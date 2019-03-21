@@ -76,7 +76,7 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
     return this._machineService.getMachine(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
-          throw Error('Machine invalide');
+          throw Error('Machine invalid');
         }
       })
     );

@@ -80,6 +80,10 @@ export class LogonOperationComponent extends BaseExtendForm {
   requestMachineData = () => {
     return this._machineService.getMachine(this.form.value.machine).pipe(
       tap(machine => {
+        if (!machine) {
+          throw Error('Machine invalid');
+        }
+
         if (machine.currentStatusNr !== MACHINE_STATUS_NOORDER && machine.currentStatusNr !== MACHINE_STATUS_PRODUCTION) {
           throw Error(`Machine Status not valid!`);
         }

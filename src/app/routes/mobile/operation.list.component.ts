@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { Operation } from '@core/hydra/entity/operation';
 
 @Component({
@@ -9,7 +9,7 @@ import { Operation } from '@core/hydra/entity/operation';
 })
 export class MobileOperationListComponent {
   @Input()
-  operations$: Observable<Operation[]>;
+  operations$: BehaviorSubject<Operation[]>;
   @Output()
   itemClicked: EventEmitter<string> = new EventEmitter();
 
@@ -29,6 +29,17 @@ export class MobileOperationListComponent {
       title: title,
       description: `${operation.display}`
     };
-    // return `${operation.leadOrder || operation.order} ${operation.article} ${operation.targetQty}`;
+  }
+
+  findOperation() {
+    return (srcElement, nextElement, controlName) => {
+      const operation = this.operations$.value.find(op => op.name === srcElement.value);
+      if (operation) {
+        srcElement.value = ``;
+        this.itemClicked.next(operation.name);
+      } else {
+        srcElement.select();
+      }
+    };
   }
 }

@@ -4,7 +4,7 @@ import { Validators } from '@angular/forms';
 import { IActionResult } from '@core/utils/helpers';
 import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
 import { MachineService } from '@core/hydra/service/machine.service';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { ComponentToBeLoggedOff, getComponentToBeLoggedOff } from '@core/hydra/utils/operationHelper';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
@@ -96,6 +96,11 @@ export class LogoffBatchComponent extends BaseExtendForm {
 
   requestMachineData = () => {
     return this._machineService.getMachine(this.form.value.machine).pipe(
+      tap(machine => {
+        if (!machine) {
+          throw Error('Machine invalid');
+        }
+      }),
       map(machine => {
         this.componentsToBeLoggedOff$.next(getComponentToBeLoggedOff(machine).filter(item => item.allowLogoff));
         return machine;

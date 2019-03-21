@@ -1,3 +1,12 @@
+<div class="weui-cells">
+  <div class="weui-cell input-cell">
+    <div class="weui-cell__bd">
+      <input class="weui-input" id='operationList.op.input' fwShareAutoFocus [fwShareKeyHandler]='{req: findOperation()}'
+        [placeholder]="'app.mobile.material.logon.operation.placeholder' | translate">
+    </div>
+  </div>
+</div>
+
 <div class="weui-cells" [ngStyle]="{'max-height': '200px'}">
   <ng-container *ngIf='(operations$ | async) as operations'>
     <div class="weui-cell weui-cell_access" *ngFor='let operation of operations'>
@@ -8,11 +17,5 @@
         </div>
       </div>
     </div>
-
-    <!-- <div class="weui-cell weui-cell_access" *ngFor='let operation of operations' (click)='click(operation)'>
-      <div class="weui-cell__bd">
-        <span>{{getDisplay(operation)}}</span>
-      </div>
-    </div> -->
   </ng-container>
 </div>

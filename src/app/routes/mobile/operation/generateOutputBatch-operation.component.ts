@@ -84,6 +84,10 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   requestMachineData = () => {
     return this._machineService.getMachine(this.form.value.machine).pipe(
       tap(machine => {
+        if (!machine) {
+          throw Error('Machine invalid');
+        }
+
         if (machine.currentStatusNr !== MACHINE_STATUS_PRODUCTION) {
           throw Error(`Machine Status is not Production!`);
         }

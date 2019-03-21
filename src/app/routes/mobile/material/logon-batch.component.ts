@@ -8,7 +8,7 @@ import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation, ComponentStatus } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { getComponentStatus, getComponentToBeReplenish } from '@core/hydra/utils/operationHelper';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
@@ -81,7 +81,13 @@ export class LogonBatchComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine);
+    return this._machineService.getMachine(this.form.value.machine).pipe(
+      tap(machine => {
+        if (!machine) {
+          throw Error('Machine invalid');
+        }
+      })
+    );
   }
 
   //#endregion

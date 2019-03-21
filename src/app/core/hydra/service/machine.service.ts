@@ -459,7 +459,7 @@ export class MachineService {
             alarmSetting] = array;
 
           if (machine.length === 0) {
-            return;
+            return null;
           }
 
           //#region Initialize Machine
@@ -622,6 +622,8 @@ export class MachineService {
         //#endregion
         //#region Setup Logged On Tools
         switchMap(_ => {
+          if (machineRet === null) return of(null);
+
           const toolMacineNames = [];
 
           if (machineRet.toolMachines.length === 0) return of(null);
@@ -650,6 +652,8 @@ export class MachineService {
         //#endregion
         //#region Fetch Current Operations
         switchMap(_ => {
+          if (machineRet === null) return of(null);
+
           return this._fetchService.query(replaceAll(MachineService.machineCurrentOPSql,
             [MachineService.machineNameTBR], [machineName])).pipe(
               switchMap((machineCurrentOP) => {
@@ -680,6 +684,8 @@ export class MachineService {
         //#endregion
         //#region Setup Previous Article
         switchMap(_ => {
+          if (machineRet === null) return of(null);
+
           return this._fetchService.query(replaceAll(MachineService.machineLastOPSql, [MachineService.machineNameTBR], [machineName])).pipe(
             map(lastOPs => {
               if (machineRet.currentOperation) {
@@ -702,6 +708,8 @@ export class MachineService {
         //#endregion
         //#region Setup Next Operations
         switchMap(_ => {
+          if (machineRet === null) return of(null);
+
           return this._fetchService.query(replaceAll(MachineService.machineNextOPSql, [MachineService.machineNameTBR], [machineName])).pipe(
             map(nextOPs => {
               nextOPs.forEach(rec => {
@@ -734,6 +742,8 @@ export class MachineService {
         //#endregion
         //#region Fetch Shift Change Check List Results
         switchMap(_ => {
+          if (machineRet === null) return of(null);
+
           const checkList = machineRet.checkLists.get(ProcessType.CHANGESHIFT);
           if (!checkList) return of(null);
           return this._fetchService.query(replaceAll(MachineService.machineCheckListDoneOfCurrentShift
@@ -767,6 +777,8 @@ export class MachineService {
         //#endregion
         //#region Fetch Change Over Check List Results
         switchMap(_ => {
+          if (machineRet === null) return of(null);
+
           const checkList = machineRet.checkLists.get(ProcessType.CHANGEOVER);
 
           if (!checkList || !machineRet.currentOperation) return of(null);
@@ -803,6 +815,8 @@ export class MachineService {
         //#endregion
         //#region Setup Opeartion's Current Shift Output
         switchMap(_ => {
+          if (machineRet === null) return of(null);
+
           if (machineRet.currentOperations.length === 0 || !withStatistics) return of(null);
 
           const operationNames = [];

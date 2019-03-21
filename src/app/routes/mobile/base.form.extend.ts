@@ -346,19 +346,27 @@ export abstract class BaseExtendForm implements OnDestroy {
     }
   }
 
-  showOperationList(focusId = ``) {
+  showOperationList(focusIdAfterShow = ``, focusIdBeforeShow = ``) {
     if (this.operationListPopup) {
       this.operationListPopup.config = Object.assign({}, this.operationListPopup.config, {
         cancel: this.i18n.fanyi(`app.common.cancel`),
         confirm: this.i18n.fanyi(`app.common.confirm`),
       });
       this.operationListPopup.show().subscribe(() => {
-        if (!focusId) return;
-        const element = this.document.getElementById(focusId);
+        if (!focusIdAfterShow) return;
+        const element = this.document.getElementById(focusIdAfterShow);
         if (element) {
           element.focus();
         }
       });
+      if (focusIdBeforeShow) {
+        setTimeout(() => {
+          const element = this.document.getElementById(focusIdBeforeShow);
+          if (element) {
+            element.focus();
+          }
+        }, 1000);
+      }
     }
   }
 

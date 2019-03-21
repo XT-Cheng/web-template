@@ -5,7 +5,7 @@ import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 
@@ -74,7 +74,13 @@ export class LogoffOperationComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine);
+    return this._machineService.getMachine(this.form.value.machine).pipe(
+      tap(machine => {
+        if (!machine) {
+          throw Error('Machine invalid');
+        }
+      })
+    );
   }
 
   //#endregion

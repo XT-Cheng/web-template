@@ -161,6 +161,10 @@ export class LogonToolComponent extends BaseExtendForm {
   requestMachineData = () => {
     return this._machineService.getMachine(this.form.value.machine).pipe(
       tap(machine => {
+        if (!machine) {
+          throw Error('Machine invalid');
+        }
+
         if (!machine.toolLogonOrder) {
           throw Error(`No Tool Logon Order for ${machine.machineName}`);
         }

@@ -9,7 +9,7 @@ import { BaseExtendForm } from '../base.form.extend';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 import { MasterService } from '@core/hydra/service/master.service';
 import { toNumber } from '@delon/util';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { IActionResult } from '@core/utils/helpers';
 
 @Component({
@@ -80,7 +80,13 @@ export class PackingComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine);
+    return this._machineService.getMachine(this.form.value.machine).pipe(
+      tap(machine => {
+        if (!machine) {
+          throw Error('Machine invalid');
+        }
+      })
+    );
   }
 
   //#endregion
