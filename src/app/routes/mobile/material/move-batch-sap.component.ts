@@ -2,7 +2,6 @@ import { Component, Injector, ViewChild } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { MaterialBatch } from '@core/hydra/entity/batch';
-import { IActionResult } from '@core/utils/helpers';
 import { BUFFER_SAP } from './constants';
 import { requestBatchData } from './request.common';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
@@ -108,6 +107,7 @@ export class MoveBatchToSAPComponent extends BaseExtendForm {
   }
 
   moveBatchFailed = () => {
+    this.batches$.next([]);
   }
 
   moveBatch = () => {

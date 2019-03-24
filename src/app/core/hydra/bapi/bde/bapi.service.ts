@@ -175,7 +175,7 @@ export class BDEBapiService {
         return new ChangeOutputBatch(operation.name, machine.machineName, operator.badge, batchName, 0).execute(this._http);
       }),
       switchMap(_ => {
-        return this._batchService.getBatchInformation(currentBatch);
+        return this._batchService.getBatchInformationWithRunning(currentBatch);
       }),
       switchMap(materialBatch => {
         return this._bapiMPL.modifyOutputBatch(materialBatch, qty, operator);

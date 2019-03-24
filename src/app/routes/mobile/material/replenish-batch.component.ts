@@ -65,6 +65,8 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   }
 
   getMachineComponentLoggedOnDisplay() {
+    if (!this.batchData) return null;
+
     const componentToBeReplenishData = this.form.value.componentToBeReplenishData as ComponentToBeReplenish;
     if (componentToBeReplenishData) {
       return {
@@ -84,7 +86,6 @@ export class ReplenishBatchComponent extends BaseExtendForm {
 
   requestMachineDataSuccess = (_) => {
     if (this.componentsToBeReplenish$.value.length > 0) {
-      this.form.controls.componentToBeReplenishData.setValue(this.componentsToBeReplenish$.value[0]);
       setTimeout(() => this.document.getElementById(`batch`).focus(), 0);
     }
   }
@@ -111,12 +112,12 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   requestBatchDataSuccess = (batch) => {
     this.form.controls.batch.setValue(batch.name);
 
-    if (!this.isDisable()) {
-      this.doAction(this.replenishBatch, this.replenishBatchSuccess, this.replenishBatchFailed);
-    }
+    this.form.controls.componentToBeReplenishData.setValue(
+      this.componentsToBeReplenish$.value.find(comp => comp.material === batch.material));
   }
 
   requestBatchDataFailed = () => {
+    this.form.controls.componentToBeReplenishData.setValue(null);
   }
 
   requestBatchData = () => {
@@ -126,10 +127,9 @@ export class ReplenishBatchComponent extends BaseExtendForm {
           return throwError(`Batch ${batch.name} status in-correct!`);
         }
 
-        if (this.form.value.componentToBeReplenishData.material !== batch.material) {
+        if (!this.componentsToBeReplenish$.value.find(comp => comp.material === batch.material)) {
           return throwError(`Material ${batch.material} in-correct!`);
         }
-
         return of(batch);
       }
       ));

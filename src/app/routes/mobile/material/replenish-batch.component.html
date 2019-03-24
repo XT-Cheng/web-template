@@ -14,6 +14,20 @@
         {{getAssociateDataDisplay('machine')}}
       </span>
     </label>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.material.replenish.batch' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='batch' formControlName="batch" [fwShareKeyHandler]='{controlName: "batch", inputing: Inputing, req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
+          [placeholder]="'app.mobile.material.replenish.batch.placeholder' | translate">
+      </div>
+    </div>
+    <label for="weuiAgree" class="weui-agree">
+      <span class="weui-agree__text">
+        {{getAssociateDataDisplay('batch')}}
+      </span>
+    </label>
     <ng-container *ngIf='getMachineComponentLoggedOnDisplay() as display'>
       <div class="weui-cell weui-cell_access">
         <div class="weui-panel__bd" (click)="showComponentStatus('newQty')">
@@ -23,24 +37,8 @@
             <p class="weui-media-box__desc">{{'app.common.component.qty' | translate}}: {{display.quantity}}</p>
           </div>
         </div>
-        <div class="weui-panel__ft"></div>
+        <div class="weui-cell__ft"></div>
       </div>
-    </ng-container>
-    <ng-container *ngIf='hasComponentToBeReplenishData()'>
-      <div class="weui-cell">
-        <div class="weui-cell__hd">
-          <label class="weui-label">{{'app.mobile.material.replenish.batch' | translate}}</label>
-        </div>
-        <div class="weui-cell__bd">
-          <input class="weui-input" id='batch' formControlName="batch" [fwShareKeyHandler]='{controlName: "batch", inputing: Inputing, req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
-            [placeholder]="'app.mobile.material.replenish.batch.placeholder' | translate">
-        </div>
-      </div>
-      <label for="weuiAgree" class="weui-agree">
-        <span class="weui-agree__text">
-          {{getAssociateDataDisplay('batch')}}
-        </span>
-      </label>
     </ng-container>
     <div class="mobile-fill">
       <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(replenishBatch, replenishBatchSuccess, replenishBatchFailed)'>{{'app.mobile.material.replenish.action'

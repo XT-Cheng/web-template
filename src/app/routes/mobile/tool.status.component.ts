@@ -16,6 +16,14 @@ export class MobileToolStatusComponent {
     this.itemClicked.next(toolItem);
   }
 
+  getDescription(status) {
+    if (status.isReady) {
+      return `${status.requiredMaterial} / ${status.loggedOnMachine} / ${status.toolName}`;
+    } else {
+      return `${status.requiredMaterial}`;
+    }
+  }
+
   getColor(status) {
     if (status.isReady) {
       return { color: `rgba(0, 0, 0, 0.65)` };

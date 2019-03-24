@@ -98,6 +98,8 @@ export function getToolStatus(operation: Operation, machine: Machine): ToolStatu
       toolStatus.push({
         requiredMaterial: key,
         loggedOnMachine: loggedOnFound.loggedOnMachine,
+        loggedOnOperation: loggedOnFound.loggedOnOperation,
+        toolId: loggedOnFound.toolId,
         toolName: loggedOnFound.toolName,
         isReady: true,
       });
@@ -109,5 +111,5 @@ export function getToolStatus(operation: Operation, machine: Machine): ToolStatu
     }
   });
 
-  return toolStatus;
+  return toolStatus.sort((a) => a.isReady ? 1 : -1);
 }

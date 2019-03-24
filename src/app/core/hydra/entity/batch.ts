@@ -29,6 +29,7 @@ export class MaterialBuffer {
   bufferLevel: number;
   parentBuffer: string;
   parentBuffers: string[] = [];
+  allowedMaterials: string[] = [];
   leadBuffer: string;
   get display(): string {
     return `${this.description}`;

@@ -84,8 +84,12 @@ export class BatchService {
      WHERE MAT_MASTER.PART_NUMBER = '${BatchService.materialNameTBR}' AND TYPE_REF.SAP_MRP_GROUP = MAT_MASTER.MRP_GROUP`;
 
   static batchBufferSql =
-    `SELECT MAT_PUF AS BUFFER_NAME, BEZ AS BUFFER_DESC, HIERARCHIE_ID AS BUFFER_LEVEL, H_MAT_PUF AS PARENT_BUFFER
-     FROM MAT_PUFFER WHERE WERK = '${BUFFER_PLANT}' AND PUFFER_TYP IN ('F','H') AND SUBSTR(KFG_KZ01,1,1) = 'N'`;
+    `SELECT BUFFERAREA.MAT_PUF AS BUFFER_NAME, BUFFERAREA.BEZ AS BUFFER_DESC, BUFFERAREA.HIERARCHIE_ID AS BUFFER_LEVEL,
+     BUFFERAREA.H_MAT_PUF AS PARENT_BUFFER,
+     BUFFEREXT.ALLOWED_MAT
+     FROM MAT_PUFFER BUFFERAREA, U_TE_MPL_BUFFER_EXT BUFFEREXT
+     WHERE BUFFERAREA.WERK = '${BUFFER_PLANT}' AND BUFFERAREA.PUFFER_TYP IN ('F','H') AND SUBSTR(BUFFERAREA.KFG_KZ01,1,1) = 'N'
+     AND BUFFERAREA.MAT_PUF = BUFFEREXT.MAT_PUF(+)`;
 
   static batchConnectionForwardSql =
     `SELECT CONNECT_BY_ROOT(AL_NR) AS ROOT,LEVEL,EL_NR AS INPUTBATCH, (EL_AN_DAT + EL_AN_ZEIT / 24 / 3600) AS INPUTLOGON ,
@@ -245,6 +249,7 @@ export class BatchService {
             description: rec.BUFFER_DESC,
             bufferLevel: rec.BUFFER_LEVEL,
             parentBuffer: rec.PARENT_BUFFER ? rec.PARENT_BUFFER : ``,
+            allowedMaterials: rec.ALLOWED_MAT ? rec.ALLOWED_MAT.split(`;`) : []
           });
 
           this.buffers.push(data);
@@ -470,7 +475,7 @@ export class BatchService {
         return ret;
       }),
       map(batch => {
-        if (batch !== null && batch.quantity > 0) {
+        if (batch !== null && batch.quantity > 0 && (batch.status === 'F' || batch.status === 'L')) {
           return batch;
         } else {
           return null;

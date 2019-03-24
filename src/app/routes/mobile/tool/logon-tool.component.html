@@ -22,7 +22,7 @@
             <p class="weui-media-box__desc">{{display.description}}</p>
           </div>
         </div>
-        <div class="weui-panel__ft"></div>
+        <div class="weui-cell__ft"></div>
       </div>
     </ng-container>
     <ng-container *ngIf='hasOperationData()'>
@@ -76,7 +76,7 @@
       </div>
     </ng-container>
     <div class="mobile-fill">
-      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='executeLogOnTool()'>{{'app.mobile.tool.logon.action'
+      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(logonTool, logonToolSuccess, logonToolFailed)'>{{'app.mobile.tool.logon.action'
         | translate}}</button>
     </div>
     <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'

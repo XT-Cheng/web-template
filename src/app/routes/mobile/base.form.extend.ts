@@ -1,7 +1,7 @@
 import { ViewChild, Injector, OnDestroy, HostListener } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter, tap, map } from 'rxjs/operators';
+import { filter, tap, map, switchMap } from 'rxjs/operators';
 import { Observable, of, Subscription } from 'rxjs';
 import { TitleService, SettingsService } from '@delon/theme';
 import { MaskComponent, ToastService, ToptipsService, PopupComponent, DialogComponent, DialogConfig } from 'ngx-weui';
@@ -255,15 +255,17 @@ export abstract class BaseExtendForm implements OnDestroy {
   }
 
   doAction(handler: () => Observable<IActionResult>, success: (ret: any) => void, failed: (err: any) => void) {
-    this.start();
-
-    handler().pipe(
+    this.beforeStartCheck().pipe(
+      filter(passed => passed),
+      switchMap(_ => {
+        this.start();
+        return handler();
+      }),
       tap((ret: IActionResult) => {
         if (!ret.isSuccess) {
           throw Error(ret.description);
         }
-      }
-      )).subscribe((ret: IActionResult) => {
+      })).subscribe((ret: IActionResult) => {
         this.end();
         this.genSuccess();
         this.beforeActionSuccess(ret);
@@ -542,6 +544,9 @@ export abstract class BaseExtendForm implements OnDestroy {
     this.tipService.warn(message, 5000);
   }
 
+  protected beforeStartCheck(): Observable<boolean> {
+    return of(true);
+  }
   //#endregion
 
   //#region Private methods

@@ -182,6 +182,8 @@ export interface ToolStatus {
   isReady: boolean;
   loggedOnMachine?: string;
   toolName?: string;
+  loggedOnOperation?: string;
+  toolId?: string;
 }
 
 export class OperatorLoggedOn {

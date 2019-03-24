@@ -43,7 +43,7 @@ export class PrintService {
       });
     }
 
-    return this._batchService.getBatchInformation(batchNames[0]).pipe(
+    return this._batchService.getBatchInformationWithRunning(batchNames[0]).pipe(
       switchMap(batch => {
         return this.printBatchLabel(batchNames, batch.SAPBatch, batch.dateCode,
           machineName ? machineName : this.materialBatchPrintMachine, this.materialBatchLabelFile);
@@ -61,7 +61,7 @@ export class PrintService {
       });
     }
 
-    return this._batchService.getBatchInformation(batchNames[0]).pipe(
+    return this._batchService.getBatchInformationWithRunning(batchNames[0]).pipe(
       switchMap(batch => {
         return this.printBatchLabel(batchNames, batch.SAPBatch, batch.dateCode,
           machineName, this.outputBatchLabelFile);

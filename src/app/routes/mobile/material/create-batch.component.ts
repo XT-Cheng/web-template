@@ -4,7 +4,7 @@ import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { of, throwError, Observable, forkJoin } from 'rxjs';
 import { switchMap, tap, map } from 'rxjs/operators';
-import { MaterialBatch } from '@core/hydra/entity/batch';
+import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
 import { deepExtend, IActionResult } from '@core/utils/helpers';
 import { PrintService } from '@core/hydra/service/print.service';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
@@ -183,6 +183,15 @@ export class CreateBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+
+  protected beforeStartCheck(): Observable<boolean> {
+    const buffer = this.form.value.materialBufferData as MaterialBuffer;
+    if (buffer.allowedMaterials.length > 0 && !buffer.allowedMaterials.includes(this.batchData.material)) {
+      return this.showDialog(`Buffer ${buffer.name} not allow material ${this.batchData.material}<br/>are you sure?`);
+    } else {
+      return of(true);
+    }
+  }
 
   //#endregion
 

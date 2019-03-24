@@ -2,7 +2,7 @@
   <ng-container *ngIf='(toolStatus$ | async) as toolStatus'>
     <div class="weui-cell" *ngFor='let status of toolStatus' (click)='click(status)'>
       <div class="weui-cell__bd" [ngStyle]="getColor(status)">
-        <span>{{status.requiredMaterial}}</span>
+        <span>{{getDescription(status)}}</span>
       </div>
     </div>
   </ng-container>

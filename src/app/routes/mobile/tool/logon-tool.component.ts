@@ -1,6 +1,6 @@
 import { Component, Injector } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { Observable, BehaviorSubject, of } from 'rxjs';
+import { Observable, BehaviorSubject, of, Subject, forkJoin } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation, ToolStatus } from '@core/hydra/entity/operation';
@@ -16,6 +16,8 @@ import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
 import { FetchService } from '@core/hydra/service/fetch.service';
 import { replaceAll, IActionResult } from '@core/utils/helpers';
 import { MaintenanceStatusEnum } from '@core/hydra/entity/tool';
+import { toNumber } from '@delon/util';
+import { ToolMachine } from '@core/hydra/entity/toolMachine';
 
 @Component({
   selector: 'fw-tool-logon',
@@ -93,13 +95,9 @@ export class LogonToolComponent extends BaseExtendForm {
 
   requestToolData = () => {
     return this._toolService.getTool(this.form.value.tool).pipe(
-      map(tool => {
+      tap(tool => {
         if (!tool) {
           throw Error(`Tool ${this.form.value.tool} not exist`);
-        }
-
-        if (tool.loggedOnMachine) {
-          throw Error(`Tool ${this.form.value.tool} already log on to ${tool.loggedOnMachine}`);
         }
 
         if (tool.maintenanceStatus && tool.maintenanceStatus === MaintenanceStatusEnum.RED) {
@@ -110,8 +108,6 @@ export class LogonToolComponent extends BaseExtendForm {
         if (!toolItem.availableTools.includes(tool.toolName)) {
           throw Error(`Tool ${tool.toolName} not valid for Material ${this.batchData.material}`);
         }
-
-        return tool;
       })
     );
   }
@@ -128,16 +124,10 @@ export class LogonToolComponent extends BaseExtendForm {
 
   requestToolMachineData = () => {
     return this._machineService.getToolMachine(this.form.value.toolMachine).pipe(
-      map(toolMachine => {
+      tap(toolMachine => {
         if (toolMachine === null) {
           throw Error(`Tool Machine ${this.form.value.toolMachine} invalid!`);
         }
-
-        // if (toolMachine.toolsLoggedOn.length > 0) {
-        //   throw Error(`Tool Machine ${this.form.value.toolMachine} already has tool logged on!`);
-        // }
-
-        return toolMachine;
       })
     );
   }
@@ -147,8 +137,12 @@ export class LogonToolComponent extends BaseExtendForm {
   //#region Machine Reqeust
 
   requestMachineDataSuccess = (machine: Machine) => {
-    this.operations$.next(machine.nextOperations);
-    if (machine.nextOperations.length > 0) {
+    this.operations$.next([...machine.currentOperations, ...machine.nextOperations]);
+    if (machine.currentOperation) {
+      this.form.controls.operation.setValue(machine.currentOperation.name);
+      this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
+        (null, null, `operation`);
+    } else if (machine.nextOperations.length > 0) {
       this.form.controls.operation.setValue(machine.nextOperations[0].name);
       this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
         (null, null, `operation`);
@@ -192,6 +186,11 @@ export class LogonToolComponent extends BaseExtendForm {
       switchMap((barCodeData: MaterialBatch) => {
         barCodeInfo = barCodeData;
         return this._batchService.getBatchInformationWithRunning(barCodeData.name).pipe(
+          tap((batch: MaterialBatch) => {
+            if (!batch) {
+              throw Error(`${barCodeInfo.name} not exist!`);
+            }
+          }),
           map((batch: MaterialBatch) => {
             if (batch) {
               batch.barCode = barCodeData.barCode;
@@ -204,11 +203,6 @@ export class LogonToolComponent extends BaseExtendForm {
             }
             return batch;
           }),
-          tap((batch: MaterialBatch) => {
-            if (!batch) {
-              throw Error(`${barCodeInfo.name} not exist!`);
-            }
-          })
         );
       }));
   }
@@ -253,21 +247,9 @@ export class LogonToolComponent extends BaseExtendForm {
   //#endregion
 
   //#region Exeuction
-  executeLogOnTool() {
-    if (this.form.value.toolMachineData.toolsLoggedOn.length > 0) {
-      this.showDialog(`Tool already logged on, Would you like to log it off first?`).subscribe(ok => {
-        if (ok) {
-          this.doAction(this.logonTool, this.logonToolSuccess, this.logonToolFailed);
-        }
-      });
-    } else {
-      this.doAction(this.logonTool, this.logonToolSuccess, this.logonToolFailed);
-    }
-  }
 
   logonToolSuccess = () => {
     const machineName = this.form.value.machine;
-    const operationName = this.form.value.operation;
 
     this.resetForm();
 
@@ -277,9 +259,13 @@ export class LogonToolComponent extends BaseExtendForm {
     this.form.controls.machine.setValue(machineName);
     this._machineService.getMachine(machineName).subscribe((machine) => {
       this.form.controls.machineData.setValue(machine);
-      this.operations$.next(machine.nextOperations);
-      if (machine.nextOperations.length > 0) {
-        this.form.controls.operation.setValue(operationName);
+      this.operations$.next([...machine.currentOperations, ...machine.nextOperations]);
+      if (machine.currentOperation) {
+        this.form.controls.operation.setValue(machine.currentOperation.name);
+        this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
+          (null, null, `operation`);
+      } else if (machine.nextOperations.length > 0) {
+        this.form.controls.operation.setValue(machine.nextOperations[0].name);
         this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
           (null, null, `operation`);
       }
@@ -295,9 +281,17 @@ export class LogonToolComponent extends BaseExtendForm {
       // Log off first
       logonTool$ = logonTool$.pipe(
         switchMap(_ => {
-          return this._bapiService.logoffTool({ name: this.form.value.toolMachineData.toolsLoggedOn[0].loggedOnOperation },
-            { machineName: this.form.value.toolMachine }, { toolId: this.form.value.toolMachineData.toolsLoggedOn[0].toolId },
-            this.operatorData);
+          return this.showDialog(`Tool already logged on, Would you like to log it off first?`).pipe(
+            switchMap(confirmed => {
+              if (confirmed) {
+                return this._bapiService.logoffTool({ name: this.form.value.toolMachineData.toolsLoggedOn[0].loggedOnOperation },
+                  { machineName: this.form.value.toolMachine }, { toolId: this.form.value.toolMachineData.toolsLoggedOn[0].toolId },
+                  this.operatorData);
+              }
+
+              return of(null);
+            })
+          );
         }));
     }
 
