@@ -17,6 +17,7 @@ export class Tool {
   currentStatusNr = -1;
 
   loggedOnMachine = '';
+  loggedOnOperation = '';
   occupied = false;
 
   currentCycles = -1;

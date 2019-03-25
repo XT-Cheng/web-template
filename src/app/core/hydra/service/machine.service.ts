@@ -432,7 +432,7 @@ export class MachineService {
   }
 
   private getMachineInternal(machineName: string, withStatistics: boolean = false): Observable<Machine> {
-    let machineRet: Machine;
+    let machineRet: Machine = null;
     return forkJoin(
       this._fetchService.query(replaceAll(MachineService.machineSql, [MachineService.machineNameTBR], [machineName])),
       this._fetchService.query(replaceAll(MachineService.loggedOnOperatorSql, [MachineService.machineNameTBR], [machineName])),

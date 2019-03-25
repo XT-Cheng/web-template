@@ -18,7 +18,12 @@ import { ChangeOutputBatch } from './change.outputBatch';
 import { LogonOperator } from './logon.operator';
 import { LogoffOperator } from './logoff.operator';
 import { MDEBapiService } from '../mde/bapi.service';
-import { MACHINE_STATUS_CHANGOVER_SETUP, MACHINE_STATUS_PRODUCTION, MACHINE_STATUS_NOORDER } from '../constants';
+import {
+  MACHINE_STATUS_CHANGOVER_SETUP,
+  MACHINE_STATUS_PRODUCTION,
+  MACHINE_STATUS_NOORDER,
+  MACHINE_STATUS_CHANGSHIT_SETUP
+} from '../constants';
 import { MachineService } from '@core/hydra/service/machine.service';
 
 @Injectable()
@@ -40,12 +45,12 @@ export class BDEBapiService {
     componentStatus: ComponentStatus[], operator: Operator)
     : Observable<IActionResult> {
 
-    let batchLogon$ = of(null);
+    let operationLogon$ = of(null);
 
     // LogOn Batch if required
     componentStatus.forEach((status: ComponentStatus) => {
       if (status.isReady && status.operation !== operation.name) {
-        batchLogon$ = batchLogon$.pipe(
+        operationLogon$ = operationLogon$.pipe(
           switchMap(() => {
             return this._bapiMPL.logonInputBatch(operation,
               machine, operator, { name: status.batchName, material: status.material }, status.pos);
@@ -55,7 +60,7 @@ export class BDEBapiService {
     });
 
     // LogOn Operation
-    batchLogon$ = batchLogon$.pipe(
+    operationLogon$ = operationLogon$.pipe(
       switchMap(() => {
         return this._webAPIService.getNextLicenseTag(operation.article, operation.name).pipe(
           switchMap((name) => {
@@ -65,8 +70,23 @@ export class BDEBapiService {
     );
 
     // Change Machine Status if required
-    if (machine.lastArticle !== operation.article && machine.currentOperations.length === 0) {
-      batchLogon$ = batchLogon$.pipe(
+    if (!machine.changeShiftCheckListFinished) {
+      operationLogon$ = operationLogon$.pipe(
+        switchMap((ret: IActionResult) => {
+          // Change it to MACHINE_STATUS_CHANGSHIT_SETUP
+          return this._machineService.hasStatusAssigned(machine.machineName, MACHINE_STATUS_CHANGSHIT_SETUP).pipe(
+            switchMap(exist => {
+              if (exist) {
+                return this._bapiMDE.changeMachineStatus(machine, MACHINE_STATUS_CHANGSHIT_SETUP, operator);
+              }
+
+              return of(ret);
+            })
+          );
+        })
+      );
+    } else if (machine.lastArticle !== operation.article && machine.currentOperations.length === 0) {
+      operationLogon$ = operationLogon$.pipe(
         switchMap((ret: IActionResult) => {
           // Change it to MACHINE_STATUS_CHANGOVER_SETUP
           return this._machineService.hasStatusAssigned(machine.machineName, MACHINE_STATUS_CHANGOVER_SETUP).pipe(
@@ -81,7 +101,7 @@ export class BDEBapiService {
         })
       );
     } else if (machine.currentStatusNr === MACHINE_STATUS_NOORDER) {
-      batchLogon$ = batchLogon$.pipe(
+      operationLogon$ = operationLogon$.pipe(
         switchMap(() => {
           // Change it to MACHINE_STATUS_PRODUCTION
           return this._bapiMDE.changeMachineStatus(machine, MACHINE_STATUS_PRODUCTION, operator);
@@ -89,7 +109,7 @@ export class BDEBapiService {
       );
     }
 
-    return batchLogon$.pipe(
+    return operationLogon$.pipe(
       map((ret: IActionResult) => {
         return Object.assign(ret, {
           description: `Operation ${operation.name} Logged On!`

@@ -39,7 +39,6 @@ export class LogoffToolComponent extends BaseExtendForm {
     injector: Injector,
     private _machineService: MachineService,
     private _bapiService: WRMBapiService,
-    private _fetchService: FetchService
   ) {
     super(injector);
     this.addControls({

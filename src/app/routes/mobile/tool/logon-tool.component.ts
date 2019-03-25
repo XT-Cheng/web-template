@@ -5,7 +5,7 @@ import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation, ToolStatus } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { map, switchMap, tap, delay } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { getToolStatus } from '@core/hydra/utils/operationHelper';
 import { ToolService } from '@core/hydra/service/tool.service';
@@ -107,6 +107,10 @@ export class LogonToolComponent extends BaseExtendForm {
         const toolItem = this.operationData.toolItems.get(this.batchData.material);
         if (!toolItem.availableTools.includes(tool.toolName)) {
           throw Error(`Tool ${tool.toolName} not valid for Material ${this.batchData.material}`);
+        }
+
+        if (tool.loggedOnMachine === this.form.value.toolMachineData.machineName) {
+          throw Error(`Tool ${tool.toolName} already logged on to ${this.form.value.toolMachineData.machineName}`);
         }
       })
     );
@@ -281,18 +285,22 @@ export class LogonToolComponent extends BaseExtendForm {
       // Log off first
       logonTool$ = logonTool$.pipe(
         switchMap(_ => {
-          return this.showDialog(`Tool already logged on, Would you like to log it off first?`).pipe(
-            switchMap(confirmed => {
-              if (confirmed) {
-                return this._bapiService.logoffTool({ name: this.form.value.toolMachineData.toolsLoggedOn[0].loggedOnOperation },
-                  { machineName: this.form.value.toolMachine }, { toolId: this.form.value.toolMachineData.toolsLoggedOn[0].toolId },
-                  this.operatorData);
-              }
+          return this._bapiService.logoffTool({ name: this.form.value.toolMachineData.toolsLoggedOn[0].loggedOnOperation },
+            { machineName: this.form.value.toolMachine }, { toolId: this.form.value.toolMachineData.toolsLoggedOn[0].toolId },
+            this.operatorData);
+        })
+      );
+    }
 
-              return of(null);
-            })
-          );
-        }));
+    if (this.toolData.loggedOnMachine) {
+      // Log off first
+      logonTool$ = logonTool$.pipe(
+        switchMap(_ => {
+          return this._bapiService.logoffTool({ name: this.toolData.loggedOnOperation },
+            { machineName: this.toolData.loggedOnMachine }, { toolId: this.toolData.toolId },
+            this.operatorData);
+        })
+      );
     }
 
     // LogOn Tool
@@ -324,6 +332,31 @@ export class LogonToolComponent extends BaseExtendForm {
 
     this.toolStatus$.next([]);
     this.operations$.next([]);
+  }
+
+  protected beforeStartCheck(): Observable<boolean> {
+    let check$ = of(true);
+
+    if (this.form.value.toolMachineData.toolsLoggedOn.length > 0) {
+      check$ = check$.pipe(
+        switchMap(_ => {
+          return this.showDialog(`${this.form.value.toolMachineData.machineName}
+         already has tool ${this.form.value.toolMachineData.toolsLoggedOn[0].toolName} logged on,
+         Would you like to log it off first?`).pipe(delay(100));
+        })
+      );
+    }
+
+    if (this.toolData.loggedOnMachine) {
+      check$ = check$.pipe(
+        switchMap(_ => {
+          return this.showDialog(`${this.toolData.toolName} already logged on to ${this.toolData.loggedOnMachine},
+         Would you like to log it off first?`).pipe(delay(100));
+        })
+      );
+    }
+
+    return check$;
   }
 
   //#endregion

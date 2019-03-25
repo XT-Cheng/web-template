@@ -16,7 +16,7 @@ export class ToolService {
     `SELECT RES.RES_ID AS ID, RES.RES_NR AS NAME, RES.BEZEICHNUNG AS DESCRIPTION,
  MAINTENNACE.WART_ID AS MAIN_ID, MAINTENNACE.ZUSTAND AS MAIN_STATUS, MAINTENNACE.S_SOLLTAKTE AS INTERVALCYCLES,
  MAINTENNACE.N_SOLLTAKTE AS NEXTCYCLES, MAINTENNACE.I_TAKTE AS CURRENTCYCLES,
- RESSTATUS.AKTIV AS ACTIVE, RESSTATUS.MASCH_NR AS LOGGEDONTO,
+ RESSTATUS.AKTIV AS ACTIVE, RESSTATUS.MASCH_NR AS LOGGEDONTO,RESSTATUS.AUFTRAG_NR AS LOGGEDONOP,
  STATUSTEXT.STATUSTEXT AS CURRENTSTATUS, RESSTATUS.STATUS AS CURRENTSTATUSNR
  FROM RES_BESTAND RES, RES_WARTUNGEN MAINTENNACE, RES_STATUS RESSTATUS, RES_STATUS_ZUORD STATUSTEXT
  WHERE RES.RES_NR = '${ToolService.toolNameTBR}' AND RES.RES_TYP = 'VOR'
@@ -37,7 +37,7 @@ export class ToolService {
 
   //#region Public methods
   getTool(toolName: string): Observable<Tool> {
-    let toolRet: Tool;
+    let toolRet: Tool = null;
     return forkJoin(
       this._fetchService.query(replaceAll(ToolService.toolSQL, [ToolService.toolNameTBR], [toolName]))).pipe(
         map((array: Array<Array<any>>) => {
@@ -82,9 +82,11 @@ export class ToolService {
           if (tool[0].ACTIVE === 'J') {
             toolRet.occupied = true;
             toolRet.loggedOnMachine = tool[0].LOGGEDONTO;
+            toolRet.loggedOnOperation = tool[0].LOGGEDONOP;
           } else {
             toolRet.occupied = false;
             toolRet.loggedOnMachine = '';
+            toolRet.loggedOnOperation = '';
           }
 
           return toolRet;

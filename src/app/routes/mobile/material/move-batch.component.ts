@@ -1,12 +1,12 @@
 import { Component, Injector, ViewChild } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
-import { MaterialBatch } from '@core/hydra/entity/batch';
+import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
 import { requestBatchData } from './request.common';
-import { tap, map } from 'rxjs/operators';
+import { tap, map, filter, switchMap, delay } from 'rxjs/operators';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
-import { BehaviorSubject, forkJoin } from 'rxjs';
+import { BehaviorSubject, forkJoin, Observable, of } from 'rxjs';
 import { PopupComponent } from 'ngx-weui';
 
 @Component({
@@ -156,6 +156,27 @@ export class MoveBatchComponent extends BaseExtendForm {
   protected afterReset() {
     this.batches$.next([]);
     this.document.getElementById(`batch`).focus();
+  }
+
+  protected beforeStartCheck(): Observable<boolean> {
+    const buffer = this.form.value.materialBufferData as MaterialBuffer;
+    const materials = this.batches$.value.map(batch => batch.material).filter((value, index, self) => self.indexOf(value) === index);
+    let check$ = of(true);
+    materials.forEach(mat => {
+      check$ = check$.pipe(
+        filter(passed => {
+          return passed;
+        }),
+        switchMap(_ => {
+          if (buffer.allowedMaterials.length > 0 && !buffer.allowedMaterials.includes(mat)) {
+            return this.showDialog(`Buffer ${buffer.name} not allow material ${mat}<br/>are you sure?`).pipe(delay(100));
+          } else {
+            return of(true);
+          }
+        })
+      );
+    });
+    return check$;
   }
 
   //#endregion

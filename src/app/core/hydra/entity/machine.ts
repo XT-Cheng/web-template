@@ -110,6 +110,30 @@ export class Machine {
     return this.nextOperations[0];
   }
 
+  get changeShiftCheckListFinished(): boolean {
+    if (!this.checkLists.has(ProcessType.CHANGESHIFT)) {
+      return true;
+    }
+
+    if (this.checkLists.get(ProcessType.CHANGESHIFT).items.length === 0) {
+      return true;
+    }
+
+    if (this.checkListResultsOfCurrentShift.size === 0) {
+      return false;
+    }
+
+    const finished = Array.from(this.checkListResultsOfCurrentShift.values()).every(result => {
+      if (result.finishedAt && result.answer === result.criticalAnswer) {
+        return true;
+      }
+
+      return false;
+    });
+
+    return finished;
+  }
+
   //#endregion
 
   //#region Display

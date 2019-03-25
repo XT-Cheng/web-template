@@ -110,27 +110,6 @@ export class MoveBatchTo914Component extends BaseExtendForm {
 
   //#region Protected methods
 
-  protected beforeStartCheck(): Observable<boolean> {
-    const buffer = this.form.value.materialBufferData as MaterialBuffer;
-    const materials = this.batches$.value.map(batch => batch.material).filter((value, index, self) => self.indexOf(value) === index);
-    let check$ = of(true);
-    materials.forEach(mat => {
-      check$ = check$.pipe(
-        filter(passed => {
-          return passed;
-        }),
-        switchMap(_ => {
-          if (buffer.allowedMaterials.length > 0 && !buffer.allowedMaterials.includes(mat)) {
-            return this.showDialog(`Buffer ${buffer.name} not allow material ${mat}<br/>are you sure?`).pipe(delay(100));
-          } else {
-            return of(true);
-          }
-        })
-      );
-    });
-    return check$;
-  }
-
   //#endregion
 
   //#region Event Handler
@@ -181,6 +160,26 @@ export class MoveBatchTo914Component extends BaseExtendForm {
     this.document.getElementById(`batch`).focus();
   }
 
+  protected beforeStartCheck(): Observable<boolean> {
+    const buffer = this.form.value.materialBufferData as MaterialBuffer;
+    const materials = this.batches$.value.map(batch => batch.material).filter((value, index, self) => self.indexOf(value) === index);
+    let check$ = of(true);
+    materials.forEach(mat => {
+      check$ = check$.pipe(
+        filter(passed => {
+          return passed;
+        }),
+        switchMap(_ => {
+          if (buffer.allowedMaterials.length > 0 && !buffer.allowedMaterials.includes(mat)) {
+            return this.showDialog(`Buffer ${buffer.name} not allow material ${mat}<br/>are you sure?`).pipe(delay(100));
+          } else {
+            return of(true);
+          }
+        })
+      );
+    });
+    return check$;
+  }
   //#endregion
 
   //#region Override properties

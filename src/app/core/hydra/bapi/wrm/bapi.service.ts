@@ -51,7 +51,7 @@ export class WRMBapiService {
     return new ResetTool(tool.toolId, tool.maintenanceId, operator.badge).execute(this._http).pipe(
       map((ret: IActionResult) => {
         return Object.assign(ret, {
-          description: `Tool ${tool.toolId} Reset!`
+          description: `Tool ${tool.toolName} Reset!`
         });
       })
     );

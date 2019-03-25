@@ -90,7 +90,7 @@ export class OperationService {
   //#region Public methods
 
   getOperation(operationName: string): Observable<Operation> {
-    let operationRet: Operation;
+    let operationRet: Operation = null;
     return forkJoin(
       this._fetchService.query(replaceAll(OperationService.operationSql, [OperationService.operationNameTBR], [operationName])),
       this._fetchService.query(replaceAll(OperationService.opeartionLoggedOnDateSql, [OperationService.operationNameTBR], [operationName])),
