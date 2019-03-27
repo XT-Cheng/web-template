@@ -74,13 +74,13 @@ export class MPLBapiService {
       }));
   }
 
-  modifyOutputBatch(batch: MaterialBatch, newQuantity: number, operator: Operator): Observable<IActionResult> {
+  modifyOutputBatch(batch: MaterialBatch, newQuantity: number, operator: Operator, toolUsed: string): Observable<IActionResult> {
     return this._fetchService.query(`SELECT TO_CHAR(SYSDATE,'yywwD') AS DATECODE FROM DUAL`).pipe(
       switchMap(rec => {
         const dateCode = rec[0].DATECODE;
         return forkJoin(
           new GoodsMovementBatch(batch.name, newQuantity,
-            batch.materialType, batch.status, batch.class, operator.badge, `${dateCode}D`, dateCode).execute(this._http),
+            batch.materialType, batch.status, batch.class, operator.badge, `${dateCode}D`, dateCode, toolUsed).execute(this._http),
           this._webAPIService.createLicenseTagInfo(batch.name, batch.material, newQuantity)
         ).pipe(
           map(_ => {

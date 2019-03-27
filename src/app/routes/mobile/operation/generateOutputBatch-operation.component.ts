@@ -1,7 +1,7 @@
 import { Component, ViewChild, Injector } from '@angular/core';
 import { PopupComponent } from 'ngx-weui';
 import { Validators, FormControl } from '@angular/forms';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { OperationService } from '@core/hydra/service/operation.service';
@@ -12,6 +12,8 @@ import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 import { MasterService } from '@core/hydra/service/master.service';
 import { IActionResult } from '@core/utils/helpers';
 import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
+import { ReasonCode } from '@core/hydra/entity/reasonCode';
+import { MaterialMaster } from '@core/hydra/entity/materialMaster';
 
 @Component({
   selector: 'fw-operation-generate-output-batch',
@@ -22,11 +24,9 @@ import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
   },
 })
 export class GenerateOutputBatchComponent extends BaseExtendForm {
-  static REASON = 99;
-
   //#region View Children
 
-  @ViewChild(`componentStatus`) componentStatusPopup: PopupComponent;
+  @ViewChild(`reasonCode`) reasonCodePopup: PopupComponent;
 
   //#endregion
 
@@ -35,6 +35,8 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Public member
+
+  public reasonCodes$: BehaviorSubject<ReasonCode[]> = new BehaviorSubject<ReasonCode[]>([]);
 
   //#endregion
 
@@ -56,13 +58,63 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
       machine: [null, [Validators.required], 'machineData'],
       operation: [null, [Validators.required], 'operationData'],
       materialData: [null, [Validators.required]],
-      quantity: [null, [Validators.required, Validators.min(0), Validators.pattern(/^[0-9]*$/), this.validateQuantity.bind(this)]],
+      reasonCodeData: [null],
+      scrap: [null],
+      quantity: [null, [Validators.required, Validators.min(0),
+      Validators.pattern(/^[0-9]*$/)], 'quantityData'],
     });
   }
 
   //#endregion
 
   //#region Public methods
+
+  getReasonCodeStyle(reasonCodeDisplay) {
+    return reasonCodeDisplay.selected ? {} : { 'color': 'red' };
+  }
+
+  getSelectedReasonCodeDisplay() {
+    if (!this.operationData) return null;
+    if (!this.form.value.quantityData) return null;
+    if (!this.form.value.materialData) return null;
+    if (!this.form.value.quantityData) return null;
+
+    if (this.operationData.pendingYieldQty > this.form.value.quantityData
+      && this.form.value.quantityData !== this.form.value.materialData.standardPackageQty) {
+
+      this.form.controls.scrap.setValue(this.operationData.pendingYieldQty - this.form.value.quantityData);
+
+      if (this.form.value.reasonCodeData) {
+        return {
+          description: this.form.value.reasonCodeData.description,
+          selected: true
+        };
+      }
+
+      return {
+        description: `Please select Reason Code`,
+        selected: false
+      };
+    }
+
+    return null;
+  }
+
+  showReasonCodes(focusId = ``) {
+    if (this.reasonCodePopup) {
+      this.reasonCodePopup.config = Object.assign({}, this.reasonCodePopup.config, {
+        cancel: this.i18n.fanyi(`app.common.cancel`),
+        confirm: this.i18n.fanyi(`app.common.confirm`),
+      });
+      this.reasonCodePopup.show().subscribe(() => {
+        if (!focusId) return;
+        const element = this.document.getElementById(focusId);
+        if (element) {
+          element.focus();
+        }
+      });
+    }
+  }
 
   //#endregion
 
@@ -91,8 +143,15 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
         if (machine.currentStatusNr !== MACHINE_STATUS_PRODUCTION) {
           throw Error(`Machine Status is not Production!`);
         }
-      })
-    );
+      }),
+      switchMap(machine => {
+        return this._machineService.getScrapReasonByMachine(machine.machineName).pipe(
+          map(reasonCodes => {
+            this.reasonCodes$.next(reasonCodes);
+            return machine;
+          })
+        );
+      }));
   }
 
   //#endregion
@@ -127,10 +186,25 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
 
   //#region Number of Quantity Reqeust
   requestQuantityDataSuccess = () => {
+    this.form.controls.reasonCodeData.setValue(null);
   }
 
-  requestQuantityDataDataFailed = () => {
-    this.form.controls.quantity.setValue(this.operationData.pendingYieldQty);
+  requestQuantityDataFailed = () => {
+    this.form.controls.reasonCodeData.setValue(null);
+    if (this.form.value.materialData) {
+      const material = this.form.value.materialData as MaterialMaster;
+      if (this.operationData.pendingYieldQty === 0) {
+        this.form.controls.quantity.setValue(material.standardPackageQty);
+      } else {
+        if (material) {
+          if (material.standardPackageQty > this.operationData.pendingYieldQty) {
+            this.form.controls.quantity.setValue(this.operationData.pendingYieldQty);
+          } else {
+            this.form.controls.quantity.setValue(material.standardPackageQty);
+          }
+        }
+      }
+    }
   }
 
   requestQuantityData = () => {
@@ -138,7 +212,13 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
       return throwError('Invalid Quantity');
     }
 
-    return of(null);
+    const quantity = toNumber(this.form.value.quantity);
+
+    if (this.form.value.materialData && quantity > this.form.value.materialData.standardPackageQty) {
+      return throwError('Quantity larger than standard packing qty');
+    }
+
+    return of(quantity);
   }
 
   //#endregion
@@ -150,7 +230,10 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Event Handler
-
+  reasonCodeSelected(reasonCode: ReasonCode) {
+    this.reasonCodePopup.close();
+    this.form.controls.reasonCodeData.setValue(reasonCode);
+  }
   //#endregion
 
   //#region Exeuction
@@ -162,10 +245,10 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
 
   generateOutputBatch = () => {
     let outputBatchGeneration$ = of(null);
-    const quantity = toNumber(this.form.value.quantity, 0);
+    const quantity = toNumber(this.form.value.quantityData, 0);
     const standardQty = this.form.value.materialData.standardPackageQty;
 
-    if (this.operationData.pendingYieldQty >= standardQty) {
+    if (this.operationData.pendingYieldQty >= standardQty && quantity === standardQty) {
       // TODO: Request Web API to Change Output Batch
       return outputBatchGeneration$.pipe(
         map((ret: IActionResult) => {
@@ -190,7 +273,7 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
           outputBatchGeneration$ = outputBatchGeneration$.pipe(
             switchMap(_ => {
               return this._bapiService.partialConfirmOperation(this.operationData, this.machineData, this.operatorData
-                , 0, delta * -1, GenerateOutputBatchComponent.REASON);
+                , 0, delta * -1, this.form.value.reasonCodeData.codeNbr);
             })
           );
         }
@@ -213,6 +296,24 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
     this.document.getElementById(`machine`).focus();
   }
 
+  protected isValid() {
+    if (!this.operationData) return false;
+    if (!this.form.value.quantityData) return false;
+    if (!this.form.value.materialData) return false;
+
+    if (this.form.value.quantityData > this.form.value.materialData.standardPackageQty) {
+      return false;
+    }
+
+    if (this.operationData.pendingYieldQty > this.form.value.quantityData
+      && !this.form.value.reasonCodeData
+      && this.form.value.quantityData !== this.form.value.materialData.standardPackageQty) {
+      return false;
+    }
+
+    return true;
+  }
+
   //#endregion
 
   //#region Private methods
@@ -223,24 +324,6 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
 
   get upperLevel(): string {
     return `/operation/list`;
-  }
-
-  //#endregion
-
-  //#region Validators
-
-  validateQuantity(c: FormControl) {
-    if (!this.operationData) return null;
-
-    if (!this.form.value.materialData) return null;
-
-    if (toNumber(c.value, 0) > this.form.value.materialData.standardPackageQty) {
-      return {
-        validateQuantity: {
-          valid: false
-        }
-      };
-    }
   }
 
   //#endregion

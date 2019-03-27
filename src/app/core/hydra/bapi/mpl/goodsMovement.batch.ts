@@ -3,7 +3,8 @@ import { DialogBase } from '@core/hydra/bapi/dialog.base';
 
 export class GoodsMovementBatch extends DialogBase {
   constructor(private batchName: string, private newRemainQuantity: number, private newMatType: string,
-    private newStatus: string, private newClass: string, private badge: string, private SAPBatch?: string, private dateCode?: string) {
+    private newStatus: string, private newClass: string, private badge: string, private SAPBatch?: string,
+    private dateCode?: string, private toolUsed?: string) {
     super(DialogTypeEnum.GOODS_MOVEMENT);
   }
 
@@ -33,6 +34,10 @@ export class GoodsMovementBatch extends DialogBase {
 
     if (this.dateCode !== null && this.dateCode !== undefined) {
       ret += `EXTCNR=${this.dateCode}|`;
+    }
+
+    if (this.toolUsed !== null && this.toolUsed !== undefined) {
+      ret += `ATTR:101=${this.toolUsed}|`;
     }
 
     return ret +

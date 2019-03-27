@@ -147,6 +147,21 @@ export class LogonBatchComponent extends BaseExtendForm {
 
   //#region Protected methods
 
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    switch (srcElement.id) {
+      case 'batch':
+        if (!this.machineData) {
+          return throwError(`Input Machine First`);
+        }
+        break;
+      default:
+        return of(true);
+    }
+    return of(true);
+  }
+
   //#endregion
 
   //#region Event Handler

@@ -2,7 +2,7 @@ import { Component, Injector } from '@angular/core';
 import { toNumber } from 'ng-zorro-antd';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Observable } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { PrintService } from '@core/hydra/service/print.service';
 import { requestBatchData } from './request.common';
@@ -77,10 +77,6 @@ export class AdjustBatchQuantityComponent extends BaseExtendForm {
       return throwError('Incorrect New Qty');
     }
 
-    if (!this.batchData) {
-      return throwError('Input Batch First');
-    }
-
     const newQty = toNumber(this.form.value.newQty, 0);
 
     if (newQty < 1) {
@@ -99,6 +95,15 @@ export class AdjustBatchQuantityComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    if (srcElement.id === 'newQty' && !this.batchData) {
+      return throwError(`Input Batch First`);
+    }
+    return of(true);
+  }
 
   //#endregion
 

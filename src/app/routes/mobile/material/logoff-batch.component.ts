@@ -63,10 +63,12 @@ export class LogoffBatchComponent extends BaseExtendForm {
   //#region Public methods
 
   hasComponentToBeLoggedOffData() {
-    return !!this.form.value.componentToBeLoggedOffData;
+    return (this.form.value.componentToBeLoggedOffData && this.machineData);
   }
 
   getMachineComponentLoggedOnDisplay() {
+    if (!this.machineData) return null;
+
     const componentToBeLoggedOffData = this.form.value.componentToBeLoggedOffData as ComponentToBeLoggedOff;
     if (componentToBeLoggedOffData) {
       return {
@@ -136,13 +138,28 @@ export class LogoffBatchComponent extends BaseExtendForm {
 
   //#region Protected methods
 
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    switch (srcElement.id) {
+      case 'newQty':
+        if (!this.machineData) {
+          return throwError(`Input Machine First`);
+        }
+        break;
+      default:
+        return of(true);
+    }
+    return of(true);
+  }
+
   //#endregion
 
   //#region Event Handler
 
   componentSelected(componentSelected: ComponentToBeLoggedOff) {
     this.componentStatusPopup.close();
-    this.form.controls.componentToBeLoggedOff.setValue(componentSelected);
+    this.form.controls.componentToBeLoggedOffData.setValue(componentSelected);
     this.document.getElementById('newQty').focus();
   }
 

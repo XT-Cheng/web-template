@@ -126,6 +126,7 @@
   "app.common.component.material": "物料",
   "app.common.component.batch": "批次",
   "app.common.component.qty": "数量",
+  "app.common.reasonCode": "原因",
 
   "app.route.line-summary": "产线概览",
   "app.machine.summary.general": "设备基本信息",
@@ -376,6 +377,7 @@
 
   "app.mobile.operation.generateOutputBatch": "生成输出批次",
   "app.mobile.operation.generateOutputBatch.machine": "设备",
+  "app.mobile.operation.generateOutputBatch.scrap": "不良",
   "app.mobile.operation.generateOutputBatch.machine.placeholder": "请输入设备",
   "app.mobile.operation.generateOutputBatch.quantity": "数量",
   "app.mobile.operation.generateOutputBatch.quantity.placeholder": "请输入数量",

@@ -7,7 +7,7 @@ import { BUFFER_914 } from './constants';
 import { requestBatchData } from './request.common';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
-import { forkJoin, BehaviorSubject, Observable, of } from 'rxjs';
+import { forkJoin, BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { PopupComponent } from 'ngx-weui';
 
 @Component({
@@ -109,6 +109,15 @@ export class MoveBatchTo914Component extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    if (srcElement.id === 'materialBuffer' && this.batches$.value.length === 0) {
+      return throwError(`Input Batch First`);
+    }
+    return of(true);
+  }
 
   //#endregion
 

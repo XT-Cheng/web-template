@@ -6,7 +6,7 @@ import { requestBatchData } from './request.common';
 import { tap, map, filter, switchMap, delay } from 'rxjs/operators';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
-import { BehaviorSubject, forkJoin, Observable, of } from 'rxjs';
+import { BehaviorSubject, forkJoin, Observable, of, throwError } from 'rxjs';
 import { PopupComponent } from 'ngx-weui';
 
 @Component({
@@ -107,6 +107,15 @@ export class MoveBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    if (srcElement.id === 'materialBuffer' && this.batches$.value.length === 0) {
+      return throwError(`Input Batch First`);
+    }
+    return of(true);
+  }
 
   //#endregion
 

@@ -63,6 +63,7 @@ import { ToolFunctionsComponent } from './mobile/tool/tool-functions.component';
 import { ReprintBatchComponent } from './mobile/material/reprint-batch.component';
 import { MobileBatchListComponent } from './mobile/batch.list.component';
 import { PackingComponent } from './mobile/operation/packing.component';
+import { MobileReasonCodeListComponent } from './mobile/reasonCode.list.component';
 
 const BAPI = [
   BAPITestComponent
@@ -106,6 +107,7 @@ const COMPONENTS = [
   MobileToolStatusComponent,
   MobileOperatorListComponent,
   MobileBatchListComponent,
+  MobileReasonCodeListComponent,
   // Material
   MaterialFunctionsComponent,
   CreateBatchComponent,

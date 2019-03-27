@@ -126,6 +126,7 @@
   "app.common.component.material": "Material",
   "app.common.component.batch": "Batch",
   "app.common.component.qty": "Qty",
+  "app.common.reasonCode": "Reason",
 
   "app.route.line-summary": "Line Summary",
   "app.machine.summary.general": "Machine Genearl Info",
@@ -206,6 +207,7 @@
   "app.mobile.common.setupOperator": "Setup Operator",
   "app.mobile.common.badge.placeholder": "Pls input Badge",
   "app.mobile.common.reset": "Reset",
+
 
   "app.mobile.dialog.title": "Please confirm",
   "app.mobile.dialog.no": "No",
@@ -376,6 +378,7 @@
 
   "app.mobile.operation.generateOutputBatch": "Generate Output Batch",
   "app.mobile.operation.generateOutputBatch.machine": "Machine",
+  "app.mobile.operation.generateOutputBatch.scrap": "Scrap",
   "app.mobile.operation.generateOutputBatch.machine.placeholder": "Pls input Machine Nr.",
   "app.mobile.operation.generateOutputBatch.quantity": "Quantity",
   "app.mobile.operation.generateOutputBatch.quantity.placeholder": "Pls input quantity",

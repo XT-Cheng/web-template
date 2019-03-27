@@ -237,9 +237,13 @@ export abstract class BaseExtendForm implements OnDestroy {
   //#region Public methods
   request(handler: () => Observable<any>, success: (ret: any) => void, failed: (err: any) => void) {
     return (srcElement, nextElement, controlName) => {
-      this.start();
-
-      handler().subscribe((ret) => {
+      this.beforeRequestCheck(srcElement).pipe(
+        filter(passed => passed),
+        switchMap(_ => {
+          this.start();
+          return handler();
+        })
+      ).subscribe((ret) => {
         this.end();
         this.beforeReqDataSuccess(ret, controlName);
         success(ret);
@@ -547,6 +551,11 @@ export abstract class BaseExtendForm implements OnDestroy {
   protected beforeStartCheck(): Observable<boolean> {
     return of(true);
   }
+
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    return of(true);
+  }
+
   //#endregion
 
   //#region Private methods
@@ -560,6 +569,9 @@ export abstract class BaseExtendForm implements OnDestroy {
   }
 
   private end(err: any = null) {
+    if (err && err.stack) {
+      this.settingService.setApp(Object.assign(this.settingService.app, { lastErrorStack: err.stack }));
+    }
     if (err && err.message) {
       this.showError(err.message);
     } else if (typeof (err) === 'string') {
@@ -604,7 +616,7 @@ export abstract class BaseExtendForm implements OnDestroy {
 
   private afterReqDataFailed(source) {
     if (source) {
-      source.focus();
+      setTimeout(() => source.focus(), 0);
     }
   }
 

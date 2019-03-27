@@ -33,6 +33,23 @@
         </div>
       </div>
     </ng-container>
+    <ng-container *ngIf='getSelectedReasonCodeDisplay() as display'>
+      <div class="weui-cell">
+        <div class="weui-cell__hd">
+          <label class="weui-label">{{'app.mobile.operation.generateOutputBatch.scrap' | translate}}</label>
+        </div>
+        <div class="weui-cell__bd">
+          <input class="weui-input" id='scrap' formControlName="scrap" [readOnly]='true'>
+        </div>
+      </div>
+      <div class="weui-cell weui-cell_board weui-cell_access" (click)='showReasonCodes()'>
+        <div class="weui-cell__bd">
+          <span [ngStyle]="getReasonCodeStyle(display)">{{'app.common.reasonCode' | translate}}:
+            {{display.description}}</span>
+        </div>
+        <div class="weui-cell__ft"></div>
+      </div>
+    </ng-container>
     <div class="mobile-fill">
       <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(generateOutputBatch, generateOutputBatchSuccess, generateOutputBatchFailed)'>{{'app.mobile.operation.generateOutputBatch.action'
         | translate}}</button>
@@ -41,4 +58,7 @@
       [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
   </div>
 </form>
+<weui-popup #reasonCode>
+  <fw-mobile-reason-list [reasonCodes$]='reasonCodes$' (itemClicked)='reasonCodeSelected($event)'></fw-mobile-reason-list>
+</weui-popup>
 <weui-mask #mask [backdrop]="false"></weui-mask>

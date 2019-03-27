@@ -448,7 +448,7 @@ export class BatchService {
       }));
   }
 
-  getBatchInformationWithRunning(batchName: string): Observable<MaterialBatch> {
+  getBatchInformationWithRunning(batchName: string, includeZeroQty: boolean = false): Observable<MaterialBatch> {
     let sql = BatchService.batchByNameSql;
     sql = sql.replace(BatchService.batchNameTBR, batchName);
 
@@ -475,11 +475,16 @@ export class BatchService {
         return ret;
       }),
       map(batch => {
-        if (batch !== null && batch.quantity > 0 && (batch.status === 'F' || batch.status === 'L')) {
-          return batch;
+        if (includeZeroQty) {
+          if (batch !== null && (batch.status === 'F' || batch.status === 'L')) {
+            return batch;
+          }
         } else {
-          return null;
+          if (batch !== null && batch.quantity > 0 && (batch.status === 'F' || batch.status === 'L')) {
+            return batch;
+          }
         }
+        return null;
       }));
   }
 

@@ -14,7 +14,7 @@
         <label class="weui-label">{{'app.mobile.tool.reset.current' | translate}}</label>
       </div>
       <div class="weui-cell__bd">
-        <input class="weui-input" id='current' formControlName="current">
+        <input class="weui-input" id='current' formControlName="current" [readOnly]='true'>
       </div>
     </div>
     <div class="weui-cell">
@@ -22,7 +22,7 @@
         <label class="weui-label">{{'app.mobile.tool.reset.next' | translate}}</label>
       </div>
       <div class="weui-cell__bd">
-        <input class="weui-input" id='next' formControlName="next">
+        <input class="weui-input" id='next' formControlName="next" [readOnly]='true'>
       </div>
     </div>
     <div class="weui-cell">
@@ -30,17 +30,9 @@
         <label class="weui-label">{{'app.mobile.tool.reset.interval' | translate}}</label>
       </div>
       <div class="weui-cell__bd">
-        <input class="weui-input" id='interval' formControlName="interval">
+        <input class="weui-input" id='interval' formControlName="interval" [readOnly]='true'>
       </div>
     </div>
-    <!-- <div class="weui-cell">
-      <div class="weui-cell__hd">
-        <label class="weui-label">{{'app.mobile.tool.reset.status' | translate}}</label>
-      </div>
-      <div class="weui-cell__bd">
-        <input class="weui-input" id='status' formControlName="status">
-      </div>
-    </div> -->
     <div class="mobile-fill">
       <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(resetTool, resetToolSuccess, resetToolFailed)'>{{'app.mobile.tool.reset.action'
         | translate}}</button>

@@ -93,10 +93,6 @@ export class SplitBatchComponent extends BaseExtendForm {
       return throwError('Incorrect Child Count');
     }
 
-    if (!this.batchData) {
-      return throwError('Input Batch First');
-    }
-
     const numberOfSplits = toNumber(this.form.value.numberOfSplits, 1);
 
     if ((this.batchData.quantity % numberOfSplits) > 0) {
@@ -113,6 +109,15 @@ export class SplitBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    if (srcElement.id === 'numberOfSplits' && !this.batchData) {
+      return throwError(`Input Batch First`);
+    }
+    return of(true);
+  }
 
   //#endregion
 

@@ -203,6 +203,26 @@ export class CombineBatchComponent extends BaseExtendForm {
 
   //#region Protected methods
 
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    switch (srcElement.id) {
+      case 'quantity1':
+        if (!this.form.value.batch1Data) {
+          return throwError(`Input Batch 1 First`);
+        }
+        break;
+      case 'quantity2':
+        if (!this.form.value.batch2Data) {
+          return throwError(`Input Batch 2 First`);
+        }
+        break;
+      default:
+        return of(true);
+    }
+    return of(true);
+  }
+
   //#endregion
 
   //#region Event Handler

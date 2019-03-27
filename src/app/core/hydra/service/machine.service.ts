@@ -13,6 +13,7 @@ import { replaceAll, dateFormatOracle, dateFormat } from '@core/utils/helpers';
 import { OperationService } from './operation.service';
 import { ToolMachine } from '../entity/toolMachine';
 import { SettingsService } from '@delon/theme';
+import { ReasonCode } from '../entity/reasonCode';
 
 @Injectable()
 export class MachineService {
@@ -58,6 +59,11 @@ export class MachineService {
      FROM MASCHINEN MACHINE, MASCHINEN_STATUS STATUS, STOERTEXTE TEXT
      WHERE MACHINE.MASCH_NR = '${MachineService.machineNameTBR}'
      AND STATUS.MASCH_NR = MACHINE.MASCH_NR AND TEXT.STOERTXT_NR = STATUS.M_STATUS`;
+
+  static scrapReasonByMachineSql = `SELECT REASONCODE.GRUNDTEXT_NR AS REASONCODE, REASONCODE.GRUNDTEXT AS DESCRIPTION
+     FROM ADE_GRUND_ZUORD ASSIGNMENT, ADE_GRUND_TEXTE REASONCODE
+     WHERE ASSIGNMENT.MASCH_NR = '${MachineService.machineNameTBR}' AND ASSIGNMENT.ART = 'A'
+     AND REASONCODE.GRUNDTEXT_NR = ASSIGNMENT.GRUNDTEXT_NR ORDER BY REASONCODE.GRUNDTEXT_NR`;
 
   static machineCurrentOPSql =
     `SELECT OPERATION.AUNR || OPERATION.AGNR AS NAME
@@ -306,6 +312,19 @@ export class MachineService {
   //#endregion
 
   //#region Public methods
+  getScrapReasonByMachine(machineName: string): Observable<ReasonCode[]> {
+    return this._fetchService.query(replaceAll(MachineService.scrapReasonByMachineSql,
+      [MachineService.machineNameTBR], [machineName])).pipe(
+        map(rows => {
+          return rows.map(row => {
+            return {
+              codeNbr: row.REASONCODE,
+              description: row.DESCRIPTION,
+            };
+          });
+        })
+      );
+  }
 
   getAvailableStatusToChange(machineName: string): Observable<{ status: number, text: string }[]> {
     return this._fetchService.query(replaceAll(MachineService.availableStatusToChangeSql,

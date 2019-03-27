@@ -62,10 +62,6 @@ export class ResetToolMaintenanceComponent extends BaseExtendForm {
     this.form.controls.current.setValue(this.form.value.toolData.currentCycles);
     this.form.controls.next.setValue(this.form.value.toolData.nextMaintennaceCycles);
     this.form.controls.interval.setValue(this.form.value.toolData.intervalCycles);
-
-    this.form.controls.current.disable();
-    this.form.controls.next.disable();
-    this.form.controls.interval.disable();
   }
 
   requestToolDataFailed = () => {
@@ -92,11 +88,7 @@ export class ResetToolMaintenanceComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
-  protected init() {
-    this.form.controls.current.disable();
-    this.form.controls.next.disable();
-    this.form.controls.interval.disable();
-  }
+
   //#endregion
 
   //#region Event Handler

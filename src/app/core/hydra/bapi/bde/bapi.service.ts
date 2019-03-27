@@ -25,6 +25,7 @@ import {
   MACHINE_STATUS_CHANGSHIT_SETUP
 } from '../constants';
 import { MachineService } from '@core/hydra/service/machine.service';
+import { getToolStatus } from '@core/hydra/utils/operationHelper';
 
 @Injectable()
 export class BDEBapiService {
@@ -186,8 +187,7 @@ export class BDEBapiService {
       );
   }
 
-  changeOutputBatch(operation: Operation | { name: string, article: string }, machine: Machine | { machineName: string },
-    currentBatch: string, qty: number,
+  changeOutputBatch(operation: Operation, machine: Machine, currentBatch: string, qty: number,
     operator: Operator): Observable<IActionResult> {
 
     return this._webAPIService.getNextLicenseTag(operation.article, operation.name).pipe(
@@ -195,10 +195,14 @@ export class BDEBapiService {
         return new ChangeOutputBatch(operation.name, machine.machineName, operator.badge, batchName, 0).execute(this._http);
       }),
       switchMap(_ => {
-        return this._batchService.getBatchInformationWithRunning(currentBatch);
+        return this._batchService.getBatchInformationWithRunning(currentBatch, true);
       }),
       switchMap(materialBatch => {
-        return this._bapiMPL.modifyOutputBatch(materialBatch, qty, operator);
+        const toolStatus = getToolStatus(operation, machine);
+        const toolUsed = toolStatus.map(status => {
+          if (status.isReady) return status.toolName;
+        });
+        return this._bapiMPL.modifyOutputBatch(materialBatch, qty, operator, toolUsed.join(','));
       }),
       switchMap(ret => {
         if (qty > 0) {

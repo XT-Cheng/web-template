@@ -60,12 +60,8 @@ export class ReplenishBatchComponent extends BaseExtendForm {
 
   //#region Public methods
 
-  hasComponentToBeReplenishData() {
-    return !!this.form.value.componentToBeReplenishData;
-  }
-
   getMachineComponentLoggedOnDisplay() {
-    if (!this.batchData) return null;
+    if (!this.batchData || !this.machineData) return null;
 
     const componentToBeReplenishData = this.form.value.componentToBeReplenishData as ComponentToBeReplenish;
     if (componentToBeReplenishData) {
@@ -85,6 +81,10 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   //#region Machine Reqeust
 
   requestMachineDataSuccess = (_) => {
+    this.form.controls.batch.setValue(``);
+    this.form.controls.batchData.setValue(null);
+    this.form.controls.componentToBeReplenishData.setValue(null);
+
     if (this.componentsToBeReplenish$.value.length > 0) {
       setTimeout(() => this.document.getElementById(`batch`).focus(), 0);
     }
@@ -142,6 +142,21 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    switch (srcElement.id) {
+      case 'batch':
+        if (!this.machineData) {
+          return throwError(`Input Machine First`);
+        }
+        break;
+      default:
+        return of(true);
+    }
+    return of(true);
+  }
 
   //#endregion
 

@@ -1,6 +1,6 @@
 import { Component, Injector } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { Observable, BehaviorSubject, of, Subject, forkJoin } from 'rxjs';
+import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation, ToolStatus } from '@core/hydra/entity/operation';
@@ -9,15 +9,12 @@ import { map, switchMap, tap, delay } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { getToolStatus } from '@core/hydra/utils/operationHelper';
 import { ToolService } from '@core/hydra/service/tool.service';
-import { requestBatchData } from '../material/request.common';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
 import { FetchService } from '@core/hydra/service/fetch.service';
-import { replaceAll, IActionResult } from '@core/utils/helpers';
+import { replaceAll } from '@core/utils/helpers';
 import { MaintenanceStatusEnum } from '@core/hydra/entity/tool';
-import { toNumber } from '@delon/util';
-import { ToolMachine } from '@core/hydra/entity/toolMachine';
 
 @Component({
   selector: 'fw-tool-logon',
@@ -234,6 +231,26 @@ export class LogonToolComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    switch (srcElement.id) {
+      case 'batch':
+        if (!this.form.value.toolMachineData) {
+          return throwError(`Input Tool Machine First`);
+        }
+        break;
+      case 'tool':
+        if (!this.batchData) {
+          return throwError(`Input Batch First`);
+        }
+        break;
+      default:
+        return of(true);
+    }
+    return of(true);
+  }
 
   //#endregion
 
