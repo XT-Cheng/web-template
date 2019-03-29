@@ -63,12 +63,9 @@ export class KeyHandlerDirective {
       return;
     }
 
-    let nextInputElement = this.document.getElementById(this.keyHandler.nextInputId);
-    if (nextInputElement && nextInputElement.tagName !== 'INPUT') {
-      nextInputElement = null;
-    }
+    const nextInputElement = this.document.getElementById(this.keyHandler.nextInputId);
 
-    this.keyHandler.req(srcElement, nextInputElement, this.keyHandler.controlName);
+    this.keyHandler.req(srcElement, nextInputElement || this.keyHandler.nextInputId, this.keyHandler.controlName);
   }
 
   onNext() {

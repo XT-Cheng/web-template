@@ -73,6 +73,11 @@ export class ParetoComponent implements OnDestroy, OnChanges {
   private install() {
     if (!this.data) return;
 
+    if (this.chart) {
+      this.chart.changeData(this.data);
+      return;
+    }
+
     const canvasWidth = this.el.nativeElement.clientWidth;
     const minWidth = this.data.length * 30;
 

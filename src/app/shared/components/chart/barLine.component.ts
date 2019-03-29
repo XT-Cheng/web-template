@@ -90,6 +90,11 @@ export class ChartBarLineComponent implements OnDestroy, OnChanges {
   }
 
   private install() {
+    if (this.chart) {
+      this.chart.changeData(this.data);
+      return;
+    }
+
     let dataLength = 0;
 
     if (this.data) {

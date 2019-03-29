@@ -89,7 +89,7 @@ export class LogoffBatchComponent extends BaseExtendForm {
   requestMachineDataSuccess = (_) => {
     if (this.componentsToBeLoggedOff$.value.length > 0) {
       this.form.controls.componentToBeLoggedOffData.setValue(this.componentsToBeLoggedOff$.value[0]);
-      setTimeout(() => this.document.getElementById(`newQty`).focus(), 0);
+      // setTimeout(() => this.document.getElementById(`newQty`).focus(), 0);
     }
   }
 

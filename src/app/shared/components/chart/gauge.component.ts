@@ -171,8 +171,8 @@ export class ChartGaugeComponent implements OnInit, OnDestroy, OnChanges {
 
   private install() {
     if (this.chart) {
-      this.chart.destroy();
-      this.chart = null;
+      this.chart.changeData(this.createData());
+      return;
     }
 
     this.node.nativeElement.innerHTML = '';

@@ -89,8 +89,8 @@ export class ChartMiniAreaComponent implements OnDestroy, OnChanges {
     if (!this.data) return;
 
     if (this.chart) {
-      this.chart.destroy();
-      this.chart = null;
+      this.chart.changeData(this.data);
+      return;
     }
 
     this.node.nativeElement.innerHTML = '';

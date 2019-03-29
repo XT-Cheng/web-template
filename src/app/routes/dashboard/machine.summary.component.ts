@@ -14,7 +14,6 @@ import { ChartGaugeComponent } from '@shared/components/chart/gauge.component';
 import { ProcessType } from '@core/hydra/entity/checkList';
 import { getComponentStatus } from '@core/hydra/utils/operationHelper';
 import { MaterialPreparationComponent } from './widget/materialPreparation.component';
-import { ToolService } from '@core/hydra/service/tool.service';
 import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
 
 @Component({
@@ -23,6 +22,8 @@ import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
   styleUrls: ['./machine.summary.component.less']
 })
 export class MachineSummaryComponent implements OnInit {
+  private REFRESH_INTERVAL = 15000;
+
   //#region Private field
 
   private toolCycles: Map<string, { pre: number, now: number }> = new Map<string, { pre: number, now: number }>();
@@ -80,7 +81,7 @@ export class MachineSummaryComponent implements OnInit {
             });
 
           });
-      }, 15000);
+      }, this.REFRESH_INTERVAL);
       this.machineService.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
         this.machine = machine;
 
