@@ -368,11 +368,22 @@
   "app.mobile.operation.interrupt": "中断工单",
   "app.mobile.operation.interrupt.machine": "设备",
   "app.mobile.operation.interrupt.machine.placeholder": "请输入设备",
+  "app.mobile.operation.interrupt.scrapQty": "不良数量",
+  "app.mobile.operation.interrupt.scrapQty.placeholder": "请输入不良数量",
   "app.mobile.operation.interrupt.action": "中断工单",
+
+  "app.mobile.operation.partialConfirm": "不良记录",
+  "app.mobile.operation.partialConfirm.machine": "设备",
+  "app.mobile.operation.partialConfirm.machine.placeholder": "请输入设备",
+  "app.mobile.operation.partialConfirm.scrapQty": "不良数量",
+  "app.mobile.operation.partialConfirm.scrapQty.placeholder": "请输入不良数量",
+  "app.mobile.operation.partialConfirm.action": "不良记录",
 
   "app.mobile.operation.logoff": "结束工单",
   "app.mobile.operation.logoff.machine": "设备",
   "app.mobile.operation.logoff.machine.placeholder": "请输入设备",
+  "app.mobile.operation.logoff.scrapQty": "不良数量",
+  "app.mobile.operation.logoff.scrapQty.placeholder": "请输入不良数量",
   "app.mobile.operation.logoff.action": "结束工单",
 
   "app.mobile.operation.generateOutputBatch": "生成输出批次",

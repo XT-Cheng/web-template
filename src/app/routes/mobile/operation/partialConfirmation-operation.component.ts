@@ -1,6 +1,6 @@
 import { Component, Injector, ViewChild } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation } from '@core/hydra/entity/operation';
@@ -8,28 +8,27 @@ import { OperationService } from '@core/hydra/service/operation.service';
 import { map, tap, switchMap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
-import { PopupComponent } from 'ngx-weui';
 import { ReasonCode } from '@core/hydra/entity/reasonCode';
 import { toNumber } from '@delon/util';
+import { PopupComponent } from 'ngx-weui';
 
 @Component({
-  selector: 'fw-operation-logoff',
-  templateUrl: 'logoff-operation.component.html',
-  styleUrls: ['./logoff-operation.component.scss'],
+  selector: 'fw-operation-partial-confirmation',
+  templateUrl: 'partialConfirmation-operation.component.html',
+  styleUrls: ['./partialConfirmation-operation.component.scss'],
   host: {
     '[class.mobile-layout]': 'true',
   },
 })
-export class LogoffOperationComponent extends BaseExtendForm {
+export class PartialConfirmationOperationComponent extends BaseExtendForm {
   //#region View Children
 
   @ViewChild(`reasonCode`) reasonCodePopup: PopupComponent;
 
-
   //#endregion
 
   //#region Protected member
-  protected key = `app.mobile.operation.logoff`;
+  protected key = `app.mobile.operation.partialConfirm`;
   //#endregion
 
   //#region Public member
@@ -54,8 +53,8 @@ export class LogoffOperationComponent extends BaseExtendForm {
     super(injector);
     this.addControls({
       machine: [null, [Validators.required], 'machineData'],
-      reasonCodeData: [null],
-      scrapQty: [null, [], 'scrapQtyData'],
+      reasonCodeData: [null, [Validators.required]],
+      scrapQty: [null, [Validators.required], 'scrapQtyData'],
       operation: [null, [Validators.required], 'operationData'],
     });
 
@@ -66,6 +65,7 @@ export class LogoffOperationComponent extends BaseExtendForm {
   //#endregion
 
   //#region Public methods
+
   getReasonCodeStyle(reasonCodeDisplay) {
     return reasonCodeDisplay.selected ? {} : { 'color': 'red' };
   }
@@ -104,6 +104,7 @@ export class LogoffOperationComponent extends BaseExtendForm {
       });
     }
   }
+
   //#endregion
 
   //#region Data Request
@@ -199,22 +200,21 @@ export class LogoffOperationComponent extends BaseExtendForm {
   //#endregion
 
   //#region Exeuction
-  logoffOperationSuccess = () => {
+  partialConfirmOperationSuccess = () => {
   }
 
-  logoffOperationFailed = () => {
+  partialConfirmOperationFailed = () => {
   }
 
-  logoffOperation = () => {
+  partialConfirmOperation = () => {
     // Interrupt Operation
-    return this._bapiService.logoffOperation(this.operationData,
+    return this._bapiService.partialConfirmOperation(this.operationData,
       this.machineData, this.operatorData, 0, this.form.value.scrapQtyData, this.form.value.reasonCodeData.codeNbr);
   }
 
   //#endregion
 
   //#region Override methods
-
   protected beforeRequestCheck(srcElement): Observable<boolean> {
     if (!srcElement) return of(true);
 
@@ -222,16 +222,6 @@ export class LogoffOperationComponent extends BaseExtendForm {
       return throwError(`Input Machine First`);
     }
     return of(true);
-  }
-
-  protected isValid() {
-    if (!this.operationData) return false;
-
-    if (this.form.value.scrapQtyData > 0 && !this.form.value.reasonCodeData) {
-      return false;
-    }
-
-    return true;
   }
 
   protected afterReset() {

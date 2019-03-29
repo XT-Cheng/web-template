@@ -37,7 +37,6 @@
             <p class="weui-media-box__desc">{{'app.common.component.qty' | translate}}: {{display.quantity}}</p>
           </div>
         </div>
-        <div class="weui-cell__ft"></div>
       </div>
     </ng-container>
     <div class="mobile-fill">
@@ -50,5 +49,5 @@
 </form>
 <weui-mask #mask [backdrop]="false"></weui-mask>
 <weui-popup #componentStatus>
-  <fw-mobile-component-list [componentItems$]='componentsToBeReplenish$' (itemClicked)='componentSelected($event)'></fw-mobile-component-list>
+  <fw-mobile-component-list [componentItems$]='componentsToBeReplenish$'></fw-mobile-component-list>
 </weui-popup>

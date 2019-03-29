@@ -25,13 +25,13 @@ import { SplitBatchComponent } from './mobile/material/split-batch.component';
 import { MoveBatchTo914Component } from './mobile/material/move-batch-914.component';
 import { MoveBatchToSAPComponent } from './mobile/material/move-batch-sap.component';
 import { AdjustBatchQuantityComponent } from './mobile/material/adjust-batch-quantity.component';
-import { LogonBatchComponent } from './mobile/material/logon-batch.component';
+import { LogonBatchComponent } from './mobile/operation/logon-batch.component';
 import { FindBatchComponent } from './mobile/material/find-batch.component';
 import { BatchTraceabilityComponent } from './report/batch/batch.trace.component';
 import { LogonOperationComponent } from './mobile/operation/logon-operation.component';
 import { GenerateOutputBatchComponent } from './mobile/operation/generateOutputBatch-operation.component';
-import { LogoffBatchComponent } from './mobile/material/logoff-batch.component';
-import { ReplenishBatchComponent } from './mobile/material/replenish-batch.component';
+import { LogoffBatchComponent } from './mobile/operation/logoff-batch.component';
+import { ReplenishBatchComponent } from './mobile/operation/replenish-batch.component';
 import { LogonToolComponent } from './mobile/tool/logon-tool.component';
 import { LogoffToolComponent } from './mobile/tool/logoff-tool.component';
 import { InterruptOperationComponent } from './mobile/operation/interrupt-operation.component';
@@ -48,6 +48,7 @@ import { MachineFunctionsComponent } from './mobile/machine/machine-functions.co
 import { ToolFunctionsComponent } from './mobile/tool/tool-functions.component';
 import { ReprintBatchComponent } from './mobile/material/reprint-batch.component';
 import { PackingComponent } from './mobile/operation/packing.component';
+import { PartialConfirmationOperationComponent } from './mobile/operation/partialConfirmation-operation.component';
 
 const routes: Routes = [
   {
@@ -83,6 +84,7 @@ const routes: Routes = [
       { path: 'operator/list', component: OperatorFunctionsComponent },
       { path: 'operation/interrupt', component: InterruptOperationComponent },
       { path: 'operation/logoff', component: LogoffOperationComponent },
+      { path: 'operation/partialConfirm', component: PartialConfirmationOperationComponent },
       { path: 'operation/packing', component: PackingComponent },
       { path: 'operation/list', component: OperationFunctionsComponent },
       { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },

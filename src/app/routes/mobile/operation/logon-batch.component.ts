@@ -2,7 +2,7 @@ import { Component, Injector } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { MaterialBatch } from '@core/hydra/entity/batch';
-import { requestBatchData } from './request.common';
+import { requestBatchData } from '../material/request.common';
 import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
@@ -54,7 +54,7 @@ export class LogonBatchComponent extends BaseExtendForm {
       operation: [null, [Validators.required], 'operationData'],
       machine: [null, [Validators.required], 'machineData'],
       batch: [null, [Validators.required], 'batchData'],
-      actionData: [null, [Validators.required]],
+      compStatusData: [null, [Validators.required]],
     });
   }
 
@@ -113,11 +113,7 @@ export class LogonBatchComponent extends BaseExtendForm {
           return throwError(`Material ${batch.material} in-correct!`);
         }
 
-        // if (found.isReady) {
-        //   return throwError(`Material ${batch.material} already logged on!`);
-        // }
-
-        this.form.controls.actionData.setValue(found);
+        this.form.controls.compStatusData.setValue(found);
         return of(batch);
       }
       ));
@@ -183,7 +179,7 @@ export class LogonBatchComponent extends BaseExtendForm {
     this.form.controls.operation.setValue(``);
     this.form.controls.batchData.setValue(null);
     this.form.controls.operationData.setValue(null);
-    this.form.controls.actionData.setValue(null);
+    this.form.controls.compStatusData.setValue(null);
 
     this.componentStatus$.next([]);
     this.operations$.next([]);
@@ -197,8 +193,8 @@ export class LogonBatchComponent extends BaseExtendForm {
 
   logonBatch = () => {
     // LogOn Batch
-    const actionData = this.form.value.actionData as ComponentStatus;
-    if (actionData.isReady) {
+    const compStatus = this.form.value.compStatusData as ComponentStatus;
+    if (compStatus.isReady) {
       // #region Replenish Mode
       const newBatch = this.form.value.batchData as MaterialBatch;
       const toBeReplenish = getComponentToBeReplenish(this.machineData)
@@ -213,8 +209,8 @@ export class LogonBatchComponent extends BaseExtendForm {
           })
         );
       });
-      // 2. Adjust Batch if quantity < 0
-      if (toBeReplenish.batchQty < 0) {
+      // 2. Adjust Batch if quantity <= 0
+      if (toBeReplenish.batchQty <= 0) {
         replenishBatch$ = replenishBatch$.pipe(
           switchMap(_ => {
             return this._batchService.getBatchInformationAllowNegativeQuantity(toBeReplenish.batchName);
@@ -240,6 +236,17 @@ export class LogonBatchComponent extends BaseExtendForm {
           })
         );
       });
+      // 5. Should logon to selected operation?
+      if (!toBeReplenish.operations.some(op => op.name === this.operationData.name)) {
+        replenishBatch$ = replenishBatch$.pipe(
+          switchMap(() => {
+            return this._bapiService.logonInputBatch(this.operationData,
+              this.machineData, this.operatorData,
+              { name: toBeReplenish.batchName, material: toBeReplenish.material }, compStatus.pos);
+          })
+        );
+      }
+
       return replenishBatch$.pipe(
         map((ret: IActionResult) => {
           return Object.assign(ret, {
@@ -251,7 +258,7 @@ export class LogonBatchComponent extends BaseExtendForm {
     } else {
       return this._bapiService.logonInputBatch(this.operationData,
         this.machineData, this.operatorData,
-        this.batchData, actionData.pos);
+        this.batchData, compStatus.pos);
     }
   }
 

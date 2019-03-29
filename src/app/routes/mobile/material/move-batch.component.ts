@@ -8,6 +8,7 @@ import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
 import { BehaviorSubject, forkJoin, Observable, of, throwError } from 'rxjs';
 import { PopupComponent } from 'ngx-weui';
+import { BUFFER_SAP } from './constants';
 
 @Component({
   selector: 'fw-batch-move',
@@ -95,6 +96,10 @@ export class MoveBatchComponent extends BaseExtendForm {
       tap(buffer => {
         if (!buffer) {
           throw Error(`${this.form.value.materialBuffer} not exist!`);
+        }
+
+        if (buffer.name.startsWith(BUFFER_SAP)) {
+          throw Error(`SAP Buffer not allowed`);
         }
       })
     );

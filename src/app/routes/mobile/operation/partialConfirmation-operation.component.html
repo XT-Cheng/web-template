@@ -2,11 +2,11 @@
   <div class="weui-cells">
     <div class="weui-cell">
       <div class="weui-cell__hd">
-        <label class="weui-label">{{'app.mobile.operation.logoff.machine' | translate}}</label>
+        <label class="weui-label">{{'app.mobile.operation.partialConfirm.machine' | translate}}</label>
       </div>
       <div class="weui-cell__bd">
         <input class="weui-input" id='machine' formControlName="machine" fwShareAutoFocus [fwShareKeyHandler]='{controlName: "machine", inputing: Inputing, req: request(requestMachineData, requestMachineDataSuccess, requestMachineDataFailed)}'
-          [placeholder]="'app.mobile.operation.logoff.machine.placeholder' | translate">
+          [placeholder]="'app.mobile.operation.partialConfirm.machine.placeholder' | translate">
       </div>
     </div>
     <label for="weuiAgree" class="weui-agree">
@@ -26,11 +26,11 @@
     </ng-container>
     <div class="weui-cell">
       <div class="weui-cell__hd">
-        <label class="weui-label">{{'app.mobile.operation.logoff.scrapQty' | translate}}</label>
+        <label class="weui-label">{{'app.mobile.operation.partialConfirm.scrapQty' | translate}}</label>
       </div>
       <div class="weui-cell__bd">
         <input class="weui-input" id='scrapQty' formControlName="scrapQty" [fwShareKeyHandler]='{controlName: "scrapQty", inputing: Inputing, req: request(requestScrapQtyData, requestScrapQtyDataSuccess, requestScrapQtyDataFailed)}'
-          [placeholder]="'app.mobile.operation.logoff.scrapQty.placeholder' | translate">
+          [placeholder]="'app.mobile.operation.partialConfirm.scrapQty.placeholder' | translate">
       </div>
     </div>
     <ng-container *ngIf='getSelectedReasonCodeDisplay() as display'>
@@ -43,7 +43,7 @@
       </div>
     </ng-container>
     <div class="mobile-fill">
-      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(logoffOperation, logoffOperationSuccess, logoffOperationFailed)'>{{'app.mobile.operation.logoff.action'
+      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(partialConfirmOperation, partialConfirmOperationSuccess, partialConfirmOperationFailed)'>{{'app.mobile.operation.partialConfirm.action'
         | translate}}</button>
     </div>
     <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'

@@ -8,7 +8,7 @@ import { map, switchMap, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { ComponentToBeReplenish, getComponentToBeReplenish } from '@core/hydra/utils/operationHelper';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
-import { requestBatchData } from './request.common';
+import { requestBatchData } from '../material/request.common';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 
 @Component({
@@ -122,15 +122,14 @@ export class ReplenishBatchComponent extends BaseExtendForm {
 
   requestBatchData = () => {
     return requestBatchData(this.form, this._batchService)().pipe(
-      switchMap((batch: MaterialBatch) => {
+      tap((batch: MaterialBatch) => {
         if (batch.status !== 'F') {
-          return throwError(`Batch ${batch.name} status in-correct!`);
+          throw Error(`Batch ${batch.name} status in-correct!`);
         }
 
         if (!this.componentsToBeReplenish$.value.find(comp => comp.material === batch.material)) {
-          return throwError(`Material ${batch.material} in-correct!`);
+          throw Error(`Material ${batch.material} in-correct!`);
         }
-        return of(batch);
       }
       ));
   }
@@ -161,12 +160,6 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Event Handler
-
-  componentSelected(componentSelected: ComponentToBeReplenish) {
-    this.componentStatusPopup.close();
-    this.form.controls.componentToBeReplenishData.setValue(componentSelected);
-    this.document.getElementById('batch').focus();
-  }
 
   //#endregion
 

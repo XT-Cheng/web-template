@@ -18,6 +18,6 @@ export class MobileOperatorListComponent {
   }
 
   getDisplay(operatorLoggedOn: OperatorLoggedOn) {
-    return `${operatorLoggedOn.name} ${operatorLoggedOn.badge}`;
+    return `${operatorLoggedOn.name}`;
   }
 }

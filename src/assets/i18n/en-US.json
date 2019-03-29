@@ -208,7 +208,6 @@
   "app.mobile.common.badge.placeholder": "Pls input Badge",
   "app.mobile.common.reset": "Reset",
 
-
   "app.mobile.dialog.title": "Please confirm",
   "app.mobile.dialog.no": "No",
   "app.mobile.dialog.yes": "Yes",
@@ -369,11 +368,22 @@
   "app.mobile.operation.interrupt": "Interrupt Operation",
   "app.mobile.operation.interrupt.machine": "Machine",
   "app.mobile.operation.interrupt.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.operation.interrupt.scrapQty": "Scrap Qty",
+  "app.mobile.operation.interrupt.scrapQty.placeholder": "Pls input Scrap Qty",
   "app.mobile.operation.interrupt.action": "Interrupt Operation",
+
+  "app.mobile.operation.partialConfirm": "Partial Conf. Operation",
+  "app.mobile.operation.partialConfirm.machine": "Machine",
+  "app.mobile.operation.partialConfirm.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.operation.partialConfirm.scrapQty": "Scrap Qty",
+  "app.mobile.operation.partialConfirm.scrapQty.placeholder": "Pls input Scrap Qty",
+  "app.mobile.operation.partialConfirm.action": "Partial Conf.",
 
   "app.mobile.operation.logoff": "Logoff Operation",
   "app.mobile.operation.logoff.machine": "Machine",
   "app.mobile.operation.logoff.machine.placeholder": "Pls input Machine Nr.",
+  "app.mobile.operation.logoff.scrapQty": "Scrap Qty",
+  "app.mobile.operation.logoff.scrapQty.placeholder": "Pls input Scrap Qty",
   "app.mobile.operation.logoff.action": "Logoff Operation",
 
   "app.mobile.operation.generateOutputBatch": "Generate Output Batch",

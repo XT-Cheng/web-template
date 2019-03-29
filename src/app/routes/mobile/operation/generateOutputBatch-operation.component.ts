@@ -74,6 +74,7 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   }
 
   getSelectedReasonCodeDisplay() {
+    if (!this.machineData) return null;
     if (!this.operationData) return null;
     if (!this.form.value.quantityData) return null;
     if (!this.form.value.materialData) return null;

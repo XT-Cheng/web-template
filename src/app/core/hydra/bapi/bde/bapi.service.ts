@@ -160,8 +160,8 @@ export class BDEBapiService {
   }
 
   logoffOperation(operation: Operation | { name: string }, machine: Machine,
-    operator: Operator): Observable<IActionResult> {
-    return new LogoffOperation(operation.name, machine.machineName, operator.badge)
+    operator: Operator, yieldQty: number = 0, scrapQty: number = 0, scrapReason: number = 0): Observable<IActionResult> {
+    return new LogoffOperation(operation.name, machine.machineName, yieldQty, scrapQty, scrapReason, operator.badge)
       .execute(this._http).pipe(
         switchMap(ret => {
           if (machine.currentOperations.length === 1) {

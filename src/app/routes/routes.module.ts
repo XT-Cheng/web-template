@@ -32,7 +32,7 @@ import { SplitBatchComponent } from './mobile/material/split-batch.component';
 import { MoveBatchTo914Component } from './mobile/material/move-batch-914.component';
 import { MoveBatchToSAPComponent } from './mobile/material/move-batch-sap.component';
 import { AdjustBatchQuantityComponent } from './mobile/material/adjust-batch-quantity.component';
-import { LogonBatchComponent } from './mobile/material/logon-batch.component';
+import { LogonBatchComponent } from './mobile/operation/logon-batch.component';
 import { MobileBottomComponent } from './mobile/bottom.component';
 import { FindBatchComponent } from './mobile/material/find-batch.component';
 import { BatchTraceabilityComponent } from './report/batch/batch.trace.component';
@@ -41,9 +41,9 @@ import { MobileComponentStatusComponent } from './mobile/component.status.compon
 import { LogonOperationComponent } from './mobile/operation/logon-operation.component';
 import { MobileOperationListComponent } from './mobile/operation.list.component';
 import { GenerateOutputBatchComponent } from './mobile/operation/generateOutputBatch-operation.component';
-import { LogoffBatchComponent } from './mobile/material/logoff-batch.component';
+import { LogoffBatchComponent } from './mobile/operation/logoff-batch.component';
 import { MobileComponentListComponent } from './mobile/component.list.component';
-import { ReplenishBatchComponent } from './mobile/material/replenish-batch.component';
+import { ReplenishBatchComponent } from './mobile/operation/replenish-batch.component';
 import { LogonToolComponent } from './mobile/tool/logon-tool.component';
 import { MobileToolStatusComponent } from './mobile/tool.status.component';
 import { LogoffToolComponent } from './mobile/tool/logoff-tool.component';
@@ -64,6 +64,7 @@ import { ReprintBatchComponent } from './mobile/material/reprint-batch.component
 import { MobileBatchListComponent } from './mobile/batch.list.component';
 import { PackingComponent } from './mobile/operation/packing.component';
 import { MobileReasonCodeListComponent } from './mobile/reasonCode.list.component';
+import { PartialConfirmationOperationComponent } from './mobile/operation/partialConfirmation-operation.component';
 
 const BAPI = [
   BAPITestComponent
@@ -126,6 +127,7 @@ const COMPONENTS = [
   LogonOperationComponent,
   GenerateOutputBatchComponent,
   InterruptOperationComponent,
+  PartialConfirmationOperationComponent,
   LogoffOperationComponent,
   OperationFunctionsComponent,
   PackingComponent,

@@ -184,6 +184,21 @@ export class CreateBatchComponent extends BaseExtendForm {
 
   //#region Protected methods
 
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    switch (srcElement.id) {
+      case 'materialBuffer':
+        if (!this.batchData) {
+          return throwError(`Input Batch First`);
+        }
+        break;
+      default:
+        return of(true);
+    }
+    return of(true);
+  }
+
   protected beforeStartCheck(): Observable<boolean> {
     const buffer = this.form.value.materialBufferData as MaterialBuffer;
     if (buffer.allowedMaterials.length > 0 && !buffer.allowedMaterials.includes(this.batchData.material)) {

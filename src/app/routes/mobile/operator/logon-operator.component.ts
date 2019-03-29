@@ -1,17 +1,14 @@
 import { Component, Injector, ViewChild } from '@angular/core';
 import { Validators } from '@angular/forms';
 import { IActionResult } from '@core/utils/helpers';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
-import { Operation, ComponentStatus, ToolStatus, OperatorLoggedOn } from '@core/hydra/entity/operation';
-import { OperationService } from '@core/hydra/service/operation.service';
+import { OperatorLoggedOn } from '@core/hydra/entity/operation';
 import { map, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
-import { getComponentStatus, getToolStatus } from '@core/hydra/utils/operationHelper';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 import { OperatorService } from '@core/hydra/service/operator.service';
-import { BapiService } from '@core/hydra/bapi/bapi.service';
 import { PopupComponent } from 'ngx-weui';
 
 @Component({
@@ -104,6 +101,10 @@ export class LogonOperatorComponent extends BaseExtendForm {
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
+        }
+
+        if (machine.currentOperations.length === 0) {
+          throw Error('Machine has no Operation logged on');
         }
       })
     );

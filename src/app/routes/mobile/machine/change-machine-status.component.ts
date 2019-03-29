@@ -4,9 +4,7 @@ import { Validators } from '@angular/forms';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { MDEBapiService } from '@core/hydra/bapi/mde/bapi.service';
 import { BehaviorSubject } from 'rxjs';
-import { filter, map, tap } from 'rxjs/operators';
-
-
+import { map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'fw-machine-change-status',
@@ -112,14 +110,6 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
   //#endregion
 
   //#region Override methods
-  // protected init() {
-  //   if (this.storedData && this.storedData.machineData) {
-  //     this.form.controls.machine.setValue(this.storedData.machineData.machineName);
-
-  //     this.request(this.requestMachineData, this.requestMachineDataSuccess, this.requestMachineDataFailed)
-  //       (null, null, `machine`);
-  //   }
-  // }
 
   protected afterReset() {
     this.document.getElementById(`machine`).focus();
