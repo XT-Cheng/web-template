@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { _HttpClient, ALAIN_I18N_TOKEN } from '@delon/theme';
-import { NzMessageService } from 'ng-zorro-antd';
+import { NzMessageService, NzCarouselComponent } from 'ng-zorro-antd';
 import { format } from 'date-fns';
 import { ActivatedRoute } from '@angular/router';
 import { MachineService } from '@core/hydra/service/machine.service';
@@ -37,6 +37,9 @@ export class MachineSummaryComponent implements OnInit {
   //#region Fields
   @ViewChild(ChartGaugeComponent)
   oeeGauge: ChartGaugeComponent;
+
+  @ViewChild(NzCarouselComponent)
+  warningComp: NzCarouselComponent;
 
   machine: Machine = new Machine();
   machineName = '';
@@ -304,6 +307,10 @@ export class MachineSummaryComponent implements OnInit {
         messages.push(`工夹具${kvp[0]}异常启动`);
       }
     });
+
+    if (messages.length > 0 && this.warningComp) {
+      this.warningComp.renderContent();
+    }
 
     return messages;
   }
