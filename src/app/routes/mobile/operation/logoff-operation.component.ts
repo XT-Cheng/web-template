@@ -208,7 +208,8 @@ export class LogoffOperationComponent extends BaseExtendForm {
   logoffOperation = () => {
     // Interrupt Operation
     return this._bapiService.logoffOperation(this.operationData,
-      this.machineData, this.operatorData, 0, this.form.value.scrapQtyData, this.form.value.reasonCodeData.codeNbr);
+      this.machineData, this.operatorData, 0, this.form.value.scrapQtyData,
+      (this.form.value.reasonCodeData ? this.form.value.reasonCodeData.codeNbr : 0));
   }
 
   //#endregion

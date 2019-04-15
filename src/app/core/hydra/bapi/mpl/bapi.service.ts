@@ -117,7 +117,7 @@ export class MPLBapiService {
   changeBatchQuantity(batch: MaterialBatch, newQuantity: number, operator: Operator): Observable<IActionResult> {
     return forkJoin(
       new GoodsMovementBatch(batch.name, newQuantity,
-        batch.materialType, batch.status, batch.class, operator.badge).execute(this._http),
+        batch.materialType, (batch.quantity === 0 ? `A` : batch.status), batch.class, operator.badge).execute(this._http),
       this._webAPIService.createLicenseTagInfo(batch.name, batch.material, newQuantity)
     ).pipe(
       map(_ => {
@@ -149,7 +149,7 @@ export class MPLBapiService {
             // 2. Adjust Batch Quantity
             return forkJoin(
               new GoodsMovementBatch(batch.name, batch.quantity,
-                batch.materialType, batch.status, batch.class, operator.badge).execute(this._http),
+                batch.materialType, `A`, batch.class, operator.badge).execute(this._http),
               this._webAPIService.createLicenseTagInfo(batch.name, batch.material, batch.quantity)
             ).pipe(
               map(_ => {

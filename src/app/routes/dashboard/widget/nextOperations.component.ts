@@ -23,6 +23,12 @@ export class NextOperationsComponent implements OnInit {
       }
     },
     {
+      title: 'Material', index: 'article', i18n: 'app.operation.material',
+      sort: {
+        compare: (a, b) => a.article > b.article ? 1 : -1,
+      }
+    },
+    {
       title: 'Lead Order', index: 'leadOrder', i18n: 'app.operation.leadOrder',
       sort: {
         compare: (a, b) => a.leadOrder > b.leadOrder ? 1 : -1,
@@ -84,7 +90,9 @@ export class NextOperationsComponent implements OnInit {
   //#region Event handlers
 
   opClick(event) {
-    this.selectedOperation = event.click.item.name;
+    if (event && event.click && event.click.item) {
+      this.selectedOperation = event.click.item.name;
+    }
   }
 
   //#endregion

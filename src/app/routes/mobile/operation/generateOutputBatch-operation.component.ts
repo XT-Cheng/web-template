@@ -274,7 +274,7 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
           outputBatchGeneration$ = outputBatchGeneration$.pipe(
             switchMap(_ => {
               return this._bapiService.partialConfirmOperation(this.operationData, this.machineData, this.operatorData
-                , 0, delta * -1, this.form.value.reasonCodeData.codeNbr);
+                , 0, delta * -1, (this.form.value.reasonCodeData ? this.form.value.reasonCodeData.codeNbr : 0));
             })
           );
         }
@@ -302,6 +302,9 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
     if (!this.form.value.quantityData) return false;
     if (!this.form.value.materialData) return false;
 
+    if (this.operationData.pendingYieldQty >= this.form.value.materialData.standardPackageQty) {
+      return false;
+    }
     if (this.form.value.quantityData > this.form.value.materialData.standardPackageQty) {
       return false;
     }

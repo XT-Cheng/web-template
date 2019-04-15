@@ -203,7 +203,7 @@ export class LogoffBatchComponent extends BaseExtendForm {
       }),
       switchMap(ret => {
         if (newQty > 0) {
-          return this._printService.printMaterialBatchLabel([componentToBeLoggedOff.batchName]);
+          return this._printService.printMaterialBatchLabel([componentToBeLoggedOff.batchName], this.machineData.machineName);
         }
         return of(ret);
       }),

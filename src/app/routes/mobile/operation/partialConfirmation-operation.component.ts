@@ -209,7 +209,8 @@ export class PartialConfirmationOperationComponent extends BaseExtendForm {
   partialConfirmOperation = () => {
     // Interrupt Operation
     return this._bapiService.partialConfirmOperation(this.operationData,
-      this.machineData, this.operatorData, 0, this.form.value.scrapQtyData, this.form.value.reasonCodeData.codeNbr);
+      this.machineData, this.operatorData, 0, this.form.value.scrapQtyData,
+      (this.form.value.reasonCodeData ? this.form.value.reasonCodeData.codeNbr : 0));
   }
 
   //#endregion

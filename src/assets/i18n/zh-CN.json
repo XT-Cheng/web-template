@@ -170,6 +170,7 @@
   "app.tool.loggedOnMachine": "当前设备",
   "app.tool.status": "状态",
   "app.operation.name": "工单",
+  "app.operation.material": "料号",
   "app.operation.leadOrder": "主工单",
   "app.operation.targetQty": "目标数量",
   "app.operation.targetCycleTime": "生产周期",

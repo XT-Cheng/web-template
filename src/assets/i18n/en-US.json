@@ -170,6 +170,7 @@
   "app.tool.loggedOnMachine": "LoggedOn At",
   "app.tool.status": "Status",
   "app.operation.name": "Operation",
+  "app.operation.material": "Material",
   "app.operation.leadOrder": "Lead Order",
   "app.operation.targetQty": "Target Qty.",
   "app.operation.targetCycleTime": "Target Cycle",

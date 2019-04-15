@@ -282,6 +282,35 @@ export class BatchService {
       batchInfo.dateCode = ret[4];
       batchInfo.SAPBatch = ret[1];
       batchInfo.quantity = batchInfo.startQty = parseInt(ret[2], 10);
+    } else if (barCodeOf2D.startsWith(`[)>06`)) {
+      // [)>06 LT3SDE1B00990065 PN2137699-1 RVA QT72 PO2705416447 BT180902M BX38 DC18361
+      const special = barCodeOf2D.split(` `);
+      special.map(segment => {
+        if (segment.startsWith(`LT`)) {
+          batchInfo.name = segment.substring(2);
+        }
+
+        if (segment.startsWith(`PN`)) {
+          batchInfo.material = segment.substring(2);
+        }
+
+        if (segment.startsWith(`QT`)) {
+          batchInfo.quantity = parseInt(segment.substring(2), 10);
+        }
+
+        if (segment.startsWith(`BT`)) {
+          batchInfo.SAPBatch = segment.substring(2);
+        }
+
+        if (segment.startsWith(`DC`)) {
+          batchInfo.dateCode = segment.substring(2);
+        }
+
+        if (segment.startsWith(`LT`)) {
+          batchInfo.name = segment.substring(2);
+        }
+      });
+      batchInfo.barCode = barCodeOf2D;
     } else if (barCodeOf2D.startsWith(`3S`) && !requireFullData) {
       // Sample: 3SH53Y22001293
       batchInfo.name = barCodeOf2D;

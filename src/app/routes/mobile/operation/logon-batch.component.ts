@@ -38,6 +38,8 @@ export class LogonBatchComponent extends BaseExtendForm {
   componentStatus$: BehaviorSubject<ComponentStatus[]> = new BehaviorSubject<[]>([]);
   operations$: BehaviorSubject<Operation[]> = new BehaviorSubject<[]>([]);
 
+  lastOperationSelected = ``;
+
   //#endregion
 
   //#region Constructor
@@ -70,8 +72,13 @@ export class LogonBatchComponent extends BaseExtendForm {
 
   requestMachineDataSuccess = (machine: Machine) => {
     this.operations$.next(machine.nextOperations);
-    if (machine.nextOperations.length > 0) {
+    if (this.lastOperationSelected) {
+      this.form.controls.operation.setValue(this.lastOperationSelected);
+    } else if (machine.nextOperations.length > 0) {
       this.form.controls.operation.setValue(machine.nextOperations[0].name);
+    }
+
+    if (this.form.value.operation) {
       this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
         (null, null, `operation`);
     }
@@ -192,6 +199,8 @@ export class LogonBatchComponent extends BaseExtendForm {
   }
 
   logonBatch = () => {
+    this.lastOperationSelected = this.form.value.operation;
+
     // LogOn Batch
     const compStatus = this.form.value.compStatusData as ComponentStatus;
     if (compStatus.isReady) {
