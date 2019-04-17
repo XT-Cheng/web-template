@@ -9,6 +9,7 @@ import {
 import { format } from 'date-fns';
 import { dateFormat, dateFormatOracle, replaceAll, leftPad } from '@core/utils/helpers';
 import { BUFFER_SAP, BUFFER_PLANT } from 'app/routes/mobile/material/constants';
+import { ComponentToBeChangeQty } from '../utils/operationHelper';
 
 @Injectable()
 export class BatchService {
@@ -22,6 +23,9 @@ export class BatchService {
   static batchNamesTBR = '$batchNames';
 
   //#region SQL
+  static batchRunningContextSql = `SELECT SUBKEY5 AS POS, SUBKEY2 AS OPERATION, SUBKEY1 AS MACHINE FROM HYBUCH
+   WHERE SUBKEY3 = '${BatchService.batchNameTBR}' AND KEY_TYPE = 'C' AND TYP = 'E'`;
+
   static allMaterialNameSql =
     `SELECT DISTINCT(ARTIKEL) AS ARTIKEL FROM LOS_BESTAND WHERE ARTIKEL LIKE '${BatchService.materialNameTBR}%' `;
 
@@ -111,14 +115,14 @@ export class BatchService {
      FROM LOS_ZUORDNUNG START WITH EL_NR = '${BatchService.batchNameTBR}'
      CONNECT BY PRIOR AL_NR = EL_NR ORDER BY LEVEL DESC`;
 
-  static batchInputRecentlyUpdatedSql = `SELECT BATCHNAME,DESCRIPTION, MATTYPE,UNIT, STATUS, CLASS, LASTCHANGED, BUFFERNAME,
+  static batchRecentlyUpdatedSql = `SELECT BATCHNAME,DESCRIPTION, MATTYPE,UNIT, STATUS, CLASS, LASTCHANGED, BUFFERNAME,
    PARENT_BUFFERNAME, MATERIAL, QUANTITY, SAPBATCH,DATECODE
    FROM (SELECT BATCH.LOSNR AS BATCHNAME, BUFFER.BEZ AS DESCRIPTION, BATCH.HZ_TYP AS MATTYPE, BATCH.EINHEIT AS UNIT, BATCH.STATUS AS STATUS,
    BATCH.KLASSE AS CLASS, (BATCH.STAT_UPD_DAT + BATCH.STAT_UPD_ZEIT / 24 / 3600) AS LASTCHANGED,
    BATCH.MAT_PUF AS BUFFERNAME,
    BUFFER.H_MAT_PUF AS PARENT_BUFFERNAME, BATCH.ARTIKEL AS MATERIAL, BATCH.RESTMENGE AS QUANTITY, SAP_CHARGE AS SAPBATCH,
    LOT_NR AS DATECODE FROM LOS_BESTAND BATCH, MAT_PUFFER BUFFER
-   WHERE STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF AND HZ_TYP = '${BatchService.INPUT_BATCH_MAT_TYPE}'
+   WHERE STATUS IN ('F','L','A') AND BATCH.MAT_PUF = BUFFER.MAT_PUF
    AND PUFFER_TYP IN ('F','H') AND SUBSTR(KFG_KZ01,1,1) = 'N' ORDER BY (STAT_UPD_DAT + STAT_UPD_ZEIT / 24 / 3600) DESC)
    WHERE ROWNUM < ${BatchService.MAX_RECENTLY_CREATED_COUNT}`;
 
@@ -343,8 +347,8 @@ export class BatchService {
     );
   }
 
-  getRecentlyCreatedMaterialBatch(): Observable<MaterialBatch[]> {
-    return this._fetchService.query(BatchService.batchInputRecentlyUpdatedSql).pipe(
+  getRecentlyUpdatedBatch(onlyComponent: boolean = true): Observable<MaterialBatch[]> {
+    return this._fetchService.query(BatchService.batchRecentlyUpdatedSql).pipe(
       map((batches) => {
         const ret: MaterialBatch[] = [];
         batches.forEach(rec => {
@@ -362,7 +366,14 @@ export class BatchService {
           batch.dateCode = rec.DATECODE;
           batch.materialType = rec.MATTYPE;
           batch.unit = rec.UNIT;
-          ret.push(batch);
+
+          if (onlyComponent) {
+            if (batch.materialType === BatchService.INPUT_BATCH_MAT_TYPE) {
+              ret.push(batch);
+            }
+          } else {
+            ret.push(batch);
+          }
         });
 
         return ret;
@@ -598,6 +609,28 @@ export class BatchService {
         return this.getBatchConnection(batch.name, sql);
       }
       ));
+  }
+
+  getBatchLoggedOnContext(batch: MaterialBatch): Observable<ComponentToBeChangeQty> {
+    let batchRunningContext: ComponentToBeChangeQty = null;
+    return this._fetchService.query(BatchService.batchRunningContextSql.replace(BatchService.batchNameTBR, batch.name)).pipe(
+      map((ret) => {
+        ret.forEach(item => {
+          if (batchRunningContext) {
+            batchRunningContext.operations.push({ name: item.OPERATION, pos: item.POS });
+          } else {
+            batchRunningContext = {
+              batchName: batch.name,
+              allowLogoff: false,
+              material: batch.material,
+              batchQty: batch.quantity,
+              machine: item.MACHINE,
+              operations: [{ name: item.OPERATION, pos: item.POS }]
+            };
+          }
+        });
+        return batchRunningContext;
+      }));
   }
 
   //#endregion

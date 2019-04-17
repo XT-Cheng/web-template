@@ -2,6 +2,11 @@ form {
   padding-top: 1px;
 }
 
+form input[type="checkbox"] {
+  width: 52px;
+  height: 32px;
+}
+
 :host {
   ::ng-deep {
     .weui-search-bar {

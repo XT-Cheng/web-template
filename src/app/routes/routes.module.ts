@@ -65,6 +65,9 @@ import { MobileBatchListComponent } from './mobile/batch.list.component';
 import { PackingComponent } from './mobile/operation/packing.component';
 import { MobileReasonCodeListComponent } from './mobile/reasonCode.list.component';
 import { PartialConfirmationOperationComponent } from './mobile/operation/partialConfirmation-operation.component';
+import { SetupFunctionsComponent } from './mobile/setup/setup-functions.component';
+import { SetupPrinterComponent } from './mobile/setup/setup-printer.component';
+import { MobilePrinterListComponent } from './mobile/printer.list.component';
 
 const BAPI = [
   BAPITestComponent
@@ -109,6 +112,7 @@ const COMPONENTS = [
   MobileOperatorListComponent,
   MobileBatchListComponent,
   MobileReasonCodeListComponent,
+  MobilePrinterListComponent,
   // Material
   MaterialFunctionsComponent,
   CreateBatchComponent,
@@ -143,6 +147,9 @@ const COMPONENTS = [
   // Machine
   ChangeMachineStatusComponent,
   MachineFunctionsComponent,
+  // Setup
+  SetupPrinterComponent,
+  SetupFunctionsComponent,
 ];
 const COMPONENTS_NOROUNT = [];
 

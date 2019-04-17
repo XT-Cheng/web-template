@@ -243,7 +243,7 @@ export class CombineBatchComponent extends BaseExtendForm {
       this._bapiService.splitBatch(this.form.value.batch2Data, 1, this.form.value.quantity2, this.operatorData)
     ).pipe(
       switchMap(ret => {
-        return this._printService.printMaterialBatchLabel(ret[0].context.concat(ret[1].context)).pipe(
+        return this._printService.printoutBatchLabel(ret[0].context.concat(ret[1].context)).pipe(
           map((_) => {
             return {
               isSuccess: true,

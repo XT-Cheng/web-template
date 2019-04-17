@@ -6,10 +6,12 @@ export interface ComponentToBeLoggedOff {
   allowLogoff: boolean;
   material: string;
   batchQty: number;
+  machine: string;
   operations: { name: string, pos: number }[];
 }
 
 export type ComponentToBeReplenish = ComponentToBeLoggedOff;
+export type ComponentToBeChangeQty = ComponentToBeLoggedOff;
 
 export function getComponentToBeReplenish(machine: Machine): ComponentToBeLoggedOff[] {
   const componentToBeLoggedOff: ComponentToBeLoggedOff[] = [];
@@ -26,6 +28,7 @@ export function getComponentToBeReplenish(machine: Machine): ComponentToBeLogged
         allowLogoff: item.allowLogoff,
         material: item.material,
         batchQty: item.batchQty,
+        machine: machine.machineName,
         operations: [{ name: item.operation, pos: item.pos }]
       });
     }
@@ -48,6 +51,7 @@ export function getComponentToBeLoggedOff(machine: Machine): ComponentToBeLogged
         allowLogoff: item.allowLogoff,
         material: item.material,
         batchQty: item.batchQty,
+        machine: machine.machineName,
         operations: [{ name: item.operation, pos: item.pos }]
       });
     }

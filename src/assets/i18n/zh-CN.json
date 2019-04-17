@@ -120,6 +120,7 @@
   "app.common.cancel": "取消",
   "app.common.confirm": "确定",
   "app.common.childQty": "子批数量",
+  "app.common.remainQty": "剩余数量",
   "app.common.component.require": "物料需求",
   "app.common.tool.require": "模具需求",
   "app.common.miss": "缺失",
@@ -260,6 +261,8 @@
   "app.mobile.material.split.batch.placeholder": "请输入批号",
   "app.mobile.material.split.numberOfSplits": "拆分个数",
   "app.mobile.material.split.numberOfSplits.placeholder": "请输入拆分个数",
+  "app.mobile.material.split.childQty": "子批数量",
+  "app.mobile.material.split.childQty.placeholder": "请输入子批数量",
   "app.mobile.material.split.action": "拆分",
 
   "app.mobile.material.combine": "合并输出",
@@ -339,6 +342,7 @@
   "app.mobile.material.reprint": "批次标签重打印",
   "app.mobile.material.reprint.batch": "批号",
   "app.mobile.material.reprint.batch.placeholder": "请输入批号",
+  "app.mobile.material.reprint.onlyComp": "仅物料",
   "app.mobile.material.reprint.action": "重打印",
 
   "app.mobile.material.replenish": "物料补充",
@@ -395,9 +399,14 @@
   "app.mobile.operation.generateOutputBatch.quantity.placeholder": "请输入数量",
   "app.mobile.operation.generateOutputBatch.action": "生成输出批次",
 
+  "app.mobile.setup.printer": "设定打印机",
+  "app.mobile.setup.printer.selected": "当前选择",
+  "app.mobile.setup.printer.action": "设定打印机",
+
   "app.mobile.material.functions": "物料相关功能",
   "app.mobile.tool.functions": "工夹具相关功能",
   "app.mobile.machine.functions": "设备相关功能",
   "app.mobile.operation.functions": "工单相关功能",
-  "app.mobile.operator.functions": "人员相关功能"
+  "app.mobile.operator.functions": "人员相关功能",
+  "app.mobile.setup.functions": "系统设定"
 }

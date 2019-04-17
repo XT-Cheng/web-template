@@ -120,6 +120,7 @@
   "app.common.cancel": "Cancel",
   "app.common.confirm": "OK",
   "app.common.childQty": "childQty",
+  "app.common.remainQty": "remainQty",
   "app.common.component.require": "Mat. Require",
   "app.common.tool.require": "Tool Require",
   "app.common.miss": "Miss",
@@ -260,6 +261,8 @@
   "app.mobile.material.split.batch.placeholder": "Pls input Batch Nr.",
   "app.mobile.material.split.numberOfSplits": "Nr. of Splits",
   "app.mobile.material.split.numberOfSplits.placeholder": "Pls input Nr. of Splits",
+  "app.mobile.material.split.childQty": "Child Qty",
+  "app.mobile.material.split.childQty.placeholder": "Pls input Child Qty",
   "app.mobile.material.split.action": "Split",
 
   "app.mobile.material.combine": "Combine Batch",
@@ -339,6 +342,7 @@
   "app.mobile.material.reprint": "Reprint Batch",
   "app.mobile.material.reprint.batch": "Batch",
   "app.mobile.material.reprint.batch.placeholder": "Pls input Batch Nr.",
+  "app.mobile.material.reprint.onlyComp": "Only Comp.",
   "app.mobile.material.reprint.action": "Reprint Batch",
 
   "app.mobile.material.replenish": "Replenish Batch",
@@ -395,9 +399,14 @@
   "app.mobile.operation.generateOutputBatch.quantity.placeholder": "Pls input quantity",
   "app.mobile.operation.generateOutputBatch.action": "Generate Output Batch",
 
+  "app.mobile.setup.printer": "Setup Printer",
+  "app.mobile.setup.printer.selected": "Curr. Selected",
+  "app.mobile.setup.printer.action": "Setup Printer",
+
   "app.mobile.material.functions": "Material Functions",
   "app.mobile.tool.functions": "Tool Functions",
   "app.mobile.machine.functions": "Machine Functions",
   "app.mobile.operation.functions": "Operation Functions",
-  "app.mobile.operator.functions": "Operator Functions"
+  "app.mobile.operator.functions": "Operator Functions",
+  "app.mobile.setup.functions": "Setup Functions"
 }

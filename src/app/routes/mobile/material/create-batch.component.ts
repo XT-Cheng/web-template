@@ -267,7 +267,7 @@ export class CreateBatchComponent extends BaseExtendForm {
       }),
       switchMap(ret => {
         if (ret.context) {
-          return this._printService.printMaterialBatchLabel(ret.context).pipe(
+          return this._printService.printoutBatchLabel(ret.context).pipe(
             map((_) => {
               return {
                 isSuccess: true,

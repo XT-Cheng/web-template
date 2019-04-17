@@ -171,6 +171,13 @@ const mobileMenuInfo: Menu[] = [{
     icon: `anticon anticon-area-chart`,
     i18n: `app.mobile.operator.functions`,
     link: `/operator/list`,
+  },
+  {
+    text: '配置',
+    group: false,
+    icon: `anticon anticon-area-chart`,
+    i18n: `app.mobile.setup.functions`,
+    link: `/setup/list`,
   }]
 }];
 

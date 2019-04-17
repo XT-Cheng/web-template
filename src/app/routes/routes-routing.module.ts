@@ -49,6 +49,8 @@ import { ToolFunctionsComponent } from './mobile/tool/tool-functions.component';
 import { ReprintBatchComponent } from './mobile/material/reprint-batch.component';
 import { PackingComponent } from './mobile/operation/packing.component';
 import { PartialConfirmationOperationComponent } from './mobile/operation/partialConfirmation-operation.component';
+import { SetupFunctionsComponent } from './mobile/setup/setup-functions.component';
+import { SetupPrinterComponent } from './mobile/setup/setup-printer.component';
 
 const routes: Routes = [
   {
@@ -90,7 +92,9 @@ const routes: Routes = [
       { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },
       { path: 'material/find', component: FindBatchComponent },
       { path: 'machine/changeStatus', component: ChangeMachineStatusComponent },
+      { path: 'setup/printer', component: SetupPrinterComponent },
       { path: 'machine/list', component: MachineFunctionsComponent },
+      { path: 'setup/list', component: SetupFunctionsComponent },
       // 业务子模块
       // { path: 'widgets', loadChildren: './widgets/widgets.module#WidgetsModule' }
     ]

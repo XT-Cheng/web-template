@@ -206,7 +206,7 @@ export class BDEBapiService {
       }),
       switchMap(ret => {
         if (qty > 0) {
-          return this._printService.printOutputBatchLabel([currentBatch], machine.machineName);
+          return this._printService.printoutBatchLabel([currentBatch], machine.machineName);
         }
         return of(ret);
       }),

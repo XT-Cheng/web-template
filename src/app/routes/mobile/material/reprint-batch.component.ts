@@ -4,7 +4,7 @@ import { Validators } from '@angular/forms';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { requestBatchData } from './request.common';
 import { BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { PopupComponent } from 'ngx-weui';
 import { PrintService } from '@core/hydra/service/print.service';
@@ -46,6 +46,17 @@ export class ReprintBatchComponent extends BaseExtendForm {
     super(injector);
     this.addControls({
       batch: [null, [Validators.required], 'batchData'],
+      onlyComp: [false, []]
+    });
+
+    this.form.controls.onlyComp.valueChanges.pipe(
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      setTimeout(() => {
+        this.storedData = Object.assign(this.storedData, this.form.value);
+        this.init();
+      }, 0);
     });
   }
 
@@ -103,7 +114,6 @@ export class ReprintBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Event Handler
-
   batchSelected(batch: MaterialBatch) {
     this.batchListPopup.close();
     this.form.controls.batch.setValue(batch.name);
@@ -124,14 +134,16 @@ export class ReprintBatchComponent extends BaseExtendForm {
 
   reprintBatch = () => {
     // Reprint Batch
-    return this._printService.printMaterialBatchLabel([this.batchData.name]);
+    return this._printService.printoutBatchLabel([this.batchData.name]);
   }
 
   //#endregion
 
   //#region Override methods
   protected init() {
-    this._batchService.getRecentlyCreatedMaterialBatch().subscribe(batches => {
+    this.form.controls.onlyComp.setValue(this.storedData.onlyComp);
+
+    this._batchService.getRecentlyUpdatedBatch(this.form.value.onlyComp).subscribe(batches => {
       this.materialBatches$.next(batches);
       if (batches.length > 0) {
         this.form.controls.batch.setValue(batches[0].name);
@@ -145,10 +157,6 @@ export class ReprintBatchComponent extends BaseExtendForm {
 
   protected afterReset() {
     this.document.getElementById(`batch`).focus();
-
-    this._batchService.getRecentlyCreatedMaterialBatch().subscribe(batches => {
-      this.materialBatches$.next(batches);
-    });
 
     this.init();
   }

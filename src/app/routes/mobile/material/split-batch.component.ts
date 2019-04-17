@@ -2,9 +2,9 @@ import { Component, Injector } from '@angular/core';
 import { toNumber } from 'ng-zorro-antd';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
-import { of, throwError, Observable, forkJoin } from 'rxjs';
+import { of, throwError, Observable } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
-import { deepExtend, IActionResult } from '@core/utils/helpers';
+import { deepExtend } from '@core/utils/helpers';
 import { PrintService } from '@core/hydra/service/print.service';
 import { requestBatchData } from './request.common';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
@@ -45,18 +45,36 @@ export class SplitBatchComponent extends BaseExtendForm {
     this.addControls({
       batch: [null, [Validators.required], 'batchData'],
       numberOfSplits: [2, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(2)], 'numberOfSplitsData'],
+      childQty: [``, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)], 'childQtyData'],
     });
   }
 
   //#endregion
 
   //#region Public methods
+  hasNumberOfSplitsData() {
+    if (!this.batchData) return false;
+
+    if (!this.form.value.numberOfSplitsData) return false;
+
+    return true;
+  }
+
   getSplitInfo() {
     if (!this.batchData) return ` `;
 
-    if (this.form.value.numberOfSplits === '') return ` `;
+    if (!this.form.value.numberOfSplitsData) return ` `;
 
-    return `${this.i18n.fanyi('app.common.childQty')}: ${this.batchData.quantity / this.form.value.numberOfSplits}`;
+    if (!this.form.value.childQtyData) return ` `;
+
+    let ret = `${this.i18n.fanyi('app.common.childQty')}: ${this.form.value.childQtyData}`;
+
+    if (this.batchData.quantity > (this.form.value.numberOfSplitsData * this.form.value.childQtyData)) {
+      const remainQty = this.batchData.quantity - (this.form.value.numberOfSplitsData * this.form.value.childQtyData);
+      ret += `, ${this.i18n.fanyi('app.common.remainQty')}: ${remainQty}`;
+    }
+
+    return ret;
   }
   //#endregion
 
@@ -83,6 +101,12 @@ export class SplitBatchComponent extends BaseExtendForm {
         [this.batchData.material]: this.form.value.numberOfSplitsData
       }
     });
+
+    const remainQty = this.batchData.quantity % this.form.value.numberOfSplitsData;
+    const childQty = (this.batchData.quantity - remainQty) / this.form.value.numberOfSplitsData;
+
+    this.form.controls.childQty.setValue(childQty);
+    this.form.controls.childQtyData.setValue(childQty);
   }
 
   requestNumberOfSplitsDataFailed = () => {
@@ -100,6 +124,34 @@ export class SplitBatchComponent extends BaseExtendForm {
     }
 
     return of(numberOfSplits);
+  }
+
+  //#endregion
+
+  //#region Child Qty Reqeust
+  requestChildQtyDataSuccess = () => {
+    this.storedData = deepExtend(this.storedData, {
+      materialSplits: {
+        [this.batchData.material]: this.form.value.numberOfSplitsData
+      }
+    });
+  }
+
+  requestChildQtyDataFailed = () => {
+  }
+
+  requestChildQtyData = () => {
+    if (!/^[0-9]*$/.test(this.form.value.childQty)) {
+      return throwError('Incorrect Child Qty');
+    }
+
+    const childQty = toNumber(this.form.value.childQty, 1);
+
+    if (this.batchData.quantity < (this.form.value.numberOfSplitsData * childQty)) {
+      return throwError('Not Enough Qty');
+    }
+
+    return of(childQty);
   }
 
   //#endregion
@@ -136,9 +188,9 @@ export class SplitBatchComponent extends BaseExtendForm {
     // Split Batch
     const children = toNumber(this.form.value.numberOfSplitsData, 1);
     return this._bapiService.splitBatch(this.batchData, children,
-      this.batchData.quantity / children, this.operatorData).pipe(
+      this.form.value.childQtyData, this.operatorData).pipe(
         switchMap(ret => {
-          return this._printService.printMaterialBatchLabel(ret.context).pipe(
+          return this._printService.printoutBatchLabel(ret.context).pipe(
             map((_) => {
               return {
                 isSuccess: true,

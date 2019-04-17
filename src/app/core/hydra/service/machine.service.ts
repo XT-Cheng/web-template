@@ -42,8 +42,8 @@ export class MachineService {
    VALUE = '${MachineService.timeStampTBR}' AND NAME = 'INUSE' AND DATATYPE = 'ATTRIBUTE'`;
 
   static availableStatusToChangeSql = `SELECT MACHINE.MASCH_NR AS MACHINE,STATUSASSIGN.STOERNR AS STATUS, TEXT.STOER_TEXT AS TEXT
-  FROM STOER_TABELLE STATUSASSIGN, STOERTEXTE TEXT, MASCHINEN MACHINE
-  WHERE STATUSASSIGN.MASCH_NR = MACHINE.MASCH_NR AND STATUSASSIGN.MANUELL = 'J' AND STATUSASSIGN.STOERTXT_NR = TEXT.STOERTXT_NR
+  , STATUSASSIGN.MANUELL AS MANUALMODE FROM STOER_TABELLE STATUSASSIGN, STOERTEXTE TEXT, MASCHINEN MACHINE
+  WHERE STATUSASSIGN.MASCH_NR = MACHINE.MASCH_NR AND STATUSASSIGN.STOERTXT_NR = TEXT.STOERTXT_NR
   AND MACHINE.MASCH_NR = '${MachineService.machineNameTBR}'`;
 
   static machineAlarmSql =
@@ -326,10 +326,14 @@ export class MachineService {
       );
   }
 
-  getAvailableStatusToChange(machineName: string): Observable<{ status: number, text: string }[]> {
+  getAvailableStatusToChange(machineName: string, manualOnly: boolean = true): Observable<{ status: number, text: string }[]> {
     return this._fetchService.query(replaceAll(MachineService.availableStatusToChangeSql,
       [MachineService.machineNameTBR], [machineName])).pipe(
         map(rows => {
+          if (manualOnly) {
+            rows = rows.filter(row => row.MANUALMODE === 'J');
+          }
+
           return rows.map(row => {
             return {
               status: row.STATUS,
@@ -341,7 +345,7 @@ export class MachineService {
   }
 
   hasStatusAssigned(machineName: string, status: number): Observable<boolean> {
-    return this.getAvailableStatusToChange(machineName).pipe(
+    return this.getAvailableStatusToChange(machineName, false).pipe(
       map((arr: any[]) => {
         return arr.some((item) => item.status === status);
       })

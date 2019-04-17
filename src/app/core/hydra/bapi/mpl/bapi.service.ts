@@ -45,7 +45,7 @@ export class MPLBapiService {
       );
   }
 
-  logoffInputBatch(operation: Operation | { name: string }, machine: Machine, operator: Operator,
+  logoffInputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string }, operator: Operator,
     batch: MaterialBatch | { name: string }, pos: number) {
     return new LogoffInputBatch(operation.name, machine.machineName, operator.badge, batch.name, pos).execute(this._http).pipe(
       map((ret: IActionResult) => {
@@ -149,7 +149,7 @@ export class MPLBapiService {
             // 2. Adjust Batch Quantity
             return forkJoin(
               new GoodsMovementBatch(batch.name, batch.quantity,
-                batch.materialType, `A`, batch.class, operator.badge).execute(this._http),
+                batch.materialType, batch.quantity === 0 ? `A` : batch.status, batch.class, operator.badge).execute(this._http),
               this._webAPIService.createLicenseTagInfo(batch.name, batch.material, batch.quantity)
             ).pipe(
               map(_ => {

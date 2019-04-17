@@ -3,11 +3,12 @@ import { toNumber } from 'ng-zorro-antd';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { of, throwError, Observable } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap, map, tap } from 'rxjs/operators';
 import { PrintService } from '@core/hydra/service/print.service';
-import { requestBatchData } from './request.common';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
+import { MaterialBatch } from '@core/hydra/entity/batch';
+import { IActionResult } from '@core/utils/helpers';
 
 @Component({
   selector: 'fw-batch-adjust-qty',
@@ -28,8 +29,6 @@ export class AdjustBatchQuantityComponent extends BaseExtendForm {
 
   //#region Public member
 
-  requestBatchData = requestBatchData(this.form, this._batchService);
-
   //#endregion
 
   //#region Constructor
@@ -44,6 +43,7 @@ export class AdjustBatchQuantityComponent extends BaseExtendForm {
     this.addControls({
       batch: [null, [Validators.required], 'batchData'],
       newQty: [null, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)], 'newQtyData'],
+      componentToBeChangeData: [null, []],
     });
   }
 
@@ -61,6 +61,36 @@ export class AdjustBatchQuantityComponent extends BaseExtendForm {
   }
 
   requestBatchDataFailed = () => {
+  }
+
+  requestBatchData = () => {
+    let barCodeInfo: MaterialBatch;
+    return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch).pipe(
+      switchMap((barCodeData: MaterialBatch) => {
+        barCodeInfo = barCodeData;
+        return this._batchService.getBatchInformationWithRunning(barCodeData.name).pipe(
+          tap((batch: MaterialBatch) => {
+            if (!batch) {
+              throw Error(`${barCodeInfo.name} not exist!`);
+            }
+          }),
+          map((batch: MaterialBatch) => {
+            if (batch) {
+              batch.barCode = barCodeData.barCode;
+            }
+            return batch;
+          }),
+          switchMap((batch: MaterialBatch) => {
+            return this._batchService.getBatchLoggedOnContext(batch).pipe(
+              map(context => {
+                this.form.controls.componentToBeChangeData.setValue(context);
+
+                return batch;
+              })
+            );
+          })
+        );
+      }));
   }
 
   //#endregion
@@ -121,17 +151,55 @@ export class AdjustBatchQuantityComponent extends BaseExtendForm {
   adjustBatchQty = () => {
     // Adjust Batch Qty
     const newQty = toNumber(this.form.value.newQty, 0);
-    return this._bapiService.changeBatchQuantity(this.batchData, newQty, this.operatorData).pipe(
-      switchMap(_ => {
-        return this._printService.printMaterialBatchLabel([this.batchData.name]);
-      }),
-      map((_) => {
-        return {
-          isSuccess: true,
+    let adjustBatchQty$ = of(null);
+
+    // 1. Logoff first
+    if (this.form.value.componentToBeChangeData) {
+      this.form.value.componentToBeChangeData.operations.map((op) => {
+        adjustBatchQty$ = adjustBatchQty$.pipe(
+          switchMap(() => {
+            return this._bapiService.logoffInputBatch({ name: op.name },
+              { machineName: this.form.value.componentToBeChangeData.machine }, this.operatorData, { name: this.batchData.name }, op.pos);
+          })
+        );
+      });
+    }
+
+    // 2. Change Quantity
+    adjustBatchQty$ = adjustBatchQty$.pipe(
+      switchMap(() => {
+        return this._bapiService.changeBatchQuantity(this.batchData, newQty, this.operatorData).pipe(
+          switchMap(() => {
+            if (this.form.value.componentToBeChangeData) {
+              // If Batch is logged on, will not print out Label
+              return of(null);
+            } else {
+              return this._printService.printoutBatchLabel([this.batchData.name]);
+            }
+          }));
+      }));
+
+    // 3. Logon Again
+    if (this.form.value.componentToBeChangeData) {
+      this.form.value.componentToBeChangeData.operations.map((op) => {
+        adjustBatchQty$ = adjustBatchQty$.pipe(
+          switchMap(() => {
+            return this._bapiService.logonInputBatch({ name: op.name },
+              { machineName: this.form.value.componentToBeChangeData.machine },
+              this.operatorData, { name: this.batchData.name, material: this.batchData.material },
+              op.pos);
+          })
+        );
+      });
+    }
+
+    return adjustBatchQty$.pipe(
+      map((ret: IActionResult) => {
+        return Object.assign(ret, {
           description: `Batch ${this.form.value.batchData.name} Quantity Changed And Label Printed!`,
-        };
-      })
-    );
+        });
+      }
+      ));
   }
 
   //#endregion

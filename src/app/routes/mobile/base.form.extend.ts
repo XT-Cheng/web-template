@@ -1,15 +1,15 @@
 import { ViewChild, Injector, OnDestroy, HostListener } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter, tap, map, switchMap } from 'rxjs/operators';
-import { Observable, of, Subscription } from 'rxjs';
+import { filter, tap, map, switchMap, takeUntil } from 'rxjs/operators';
+import { Observable, of, Subject } from 'rxjs';
 import { TitleService, SettingsService } from '@delon/theme';
 import { MaskComponent, ToastService, ToptipsService, PopupComponent, DialogComponent, DialogConfig } from 'ngx-weui';
 import { I18NService } from '@core/i18n/i18n.service';
 import { IActionResult } from '@core/utils/helpers';
 import { OperatorService } from '@core/hydra/service/operator.service';
 import { Operator } from '@core/hydra/entity/operator';
-import { Operation, ComponentLoggedOn, ToolStatus, ComponentStatus } from '@core/hydra/entity/operation';
+import { Operation, ToolStatus, ComponentStatus } from '@core/hydra/entity/operation';
 import { DOCUMENT } from '@angular/common';
 import { Machine } from '@core/hydra/entity/machine';
 import { MaterialBatch } from '@core/hydra/entity/batch';
@@ -71,11 +71,10 @@ export abstract class BaseExtendForm implements OnDestroy {
 
   protected machineService: MachineService;
 
+  protected destroy$ = new Subject();
   //#endregion
 
   //#region Private member
-
-  private routerSubcription: Subscription;
 
   //#endregion
 
@@ -131,8 +130,11 @@ export abstract class BaseExtendForm implements OnDestroy {
       });
     }
     this.associatedControl.set(`badge`, `badgeData`);
-    this.routerSubcription = this.routeService.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+    this.routeService.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
       .subscribe(() => {
         this.titleService.setTitle(this.title);
 
@@ -171,6 +173,14 @@ export abstract class BaseExtendForm implements OnDestroy {
 
   get upperLevel(): string {
     return ``;
+  }
+
+  set printer(printer: string) {
+    this.settingService.setApp(Object.assign(this.settingService.app, { printer: printer }));
+  }
+
+  get printer(): string {
+    return this.settingService.app.printer;
   }
 
   //#endregion
@@ -272,7 +282,7 @@ export abstract class BaseExtendForm implements OnDestroy {
       })).subscribe((ret: IActionResult) => {
         this.end();
         this.genSuccess();
-        this.beforeActionSuccess(ret);
+        this.beforeActionSuccess();
         success(ret);
         this.afterActionSuccess(ret);
         if (this.resetFormAfterSuccessExecution) {
@@ -281,9 +291,9 @@ export abstract class BaseExtendForm implements OnDestroy {
       }, (err) => {
         this.end(err);
         this.genErrors(err);
-        this.beforeActionFailed(err);
+        this.beforeActionFailed();
         failed(err);
-        this.afterActionFailed(err);
+        this.afterActionFailed();
       });
   }
 
@@ -627,7 +637,7 @@ export abstract class BaseExtendForm implements OnDestroy {
     }
   }
 
-  private beforeActionSuccess(result: IActionResult) {
+  private beforeActionSuccess() {
   }
 
   private afterActionSuccess(ret: IActionResult) {
@@ -636,10 +646,10 @@ export abstract class BaseExtendForm implements OnDestroy {
     }
   }
 
-  private beforeActionFailed(err) {
+  private beforeActionFailed() {
   }
 
-  private afterActionFailed(err) {
+  private afterActionFailed() {
   }
 
   private genSuccess() {
@@ -670,7 +680,7 @@ export abstract class BaseExtendForm implements OnDestroy {
   ngOnDestroy(): void {
     this.deleteMachineUsed();
 
-    this.routerSubcription.unsubscribe();
+    this.destroy$.next();
   }
 
   @HostListener('window:beforeunload')

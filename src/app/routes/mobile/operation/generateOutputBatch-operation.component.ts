@@ -1,6 +1,6 @@
 import { Component, ViewChild, Injector } from '@angular/core';
 import { PopupComponent } from 'ngx-weui';
-import { Validators, FormControl } from '@angular/forms';
+import { Validators } from '@angular/forms';
 import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
@@ -10,10 +10,9 @@ import { toNumber } from '@delon/util';
 import { switchMap, map, tap } from 'rxjs/operators';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 import { MasterService } from '@core/hydra/service/master.service';
-import { IActionResult } from '@core/utils/helpers';
 import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
 import { ReasonCode } from '@core/hydra/entity/reasonCode';
-import { MaterialMaster } from '@core/hydra/entity/materialMaster';
+import { Operation } from '@core/hydra/entity/operation';
 
 @Component({
   selector: 'fw-operation-generate-output-batch',
@@ -159,56 +158,64 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
 
   //#region Operation Reqeust
   requestOperationDataSuccess = (_) => {
-    this._masterService.getMaterialMaster(this.operationData.article).subscribe(material => {
-      this.form.controls.materialData.setValue(material);
-      if (this.operationData.pendingYieldQty === 0) {
-        this.form.controls.quantity.setValue(material.standardPackageQty);
-      } else {
-        if (material) {
-          if (material.standardPackageQty > this.operationData.pendingYieldQty) {
-            this.form.controls.quantity.setValue(this.operationData.pendingYieldQty);
-          } else {
-            this.form.controls.quantity.setValue(material.standardPackageQty);
-          }
-        }
-      }
-      this.document.getElementById(`quantity`).focus();
-    });
+    this.document.getElementById(`quantity`).focus();
   }
 
   requestOperationDataFailed = () => {
   }
 
   requestOperationData = (): Observable<any> => {
-    return this._operationService.getOperation(this.form.value.operation);
+    return this._operationService.getOperation(this.form.value.operation).pipe(
+      tap((operation: Operation) => {
+        if (operation.pendingProblemQty > 0) {
+          throw Error('There are pending Qty, call IT please!');
+        }
+      }),
+      switchMap((operation: Operation) => {
+        return this._masterService.getMaterialMaster(operation.article).pipe(
+          map(material => {
+            if (!material) {
+              throw Error(`Material ${operation.article} not exist`);
+            }
+            if (!material.standardPackageQty || material.standardPackageQty === 0) {
+              throw Error(`Material ${operation.article} has no std. Qty setup`);
+            }
+
+            this.form.controls.materialData.setValue(material);
+            if (this.operationData.pendingYieldQty === 0) {
+              this.form.controls.quantity.setValue(material.standardPackageQty);
+            } else {
+              if (material) {
+                if (material.standardPackageQty > this.operationData.pendingYieldQty) {
+                  this.form.controls.quantity.setValue(this.operationData.pendingYieldQty);
+                }
+              }
+            }
+
+            return operation;
+          })
+        );
+      }),
+      tap((operation: Operation) => {
+        if (operation.pendingYieldQty >= this.form.value.materialData.standardPackageQty) {
+          throw Error('There are pending Yield larger than standard packing Qty, call IT please!');
+        }
+      }),
+    );
   }
 
   //#endregion
 
   //#region Number of Quantity Reqeust
   requestQuantityDataSuccess = () => {
-    this.form.controls.reasonCodeData.setValue(null);
   }
 
   requestQuantityDataFailed = () => {
-    this.form.controls.reasonCodeData.setValue(null);
-    if (this.form.value.materialData) {
-      const material = this.form.value.materialData as MaterialMaster;
-      if (this.operationData.pendingYieldQty === 0) {
-        this.form.controls.quantity.setValue(material.standardPackageQty);
-      } else {
-        if (material) {
-          if (material.standardPackageQty > this.operationData.pendingYieldQty) {
-            this.form.controls.quantity.setValue(this.operationData.pendingYieldQty);
-          } else {
-            this.form.controls.quantity.setValue(material.standardPackageQty);
-          }
-        }
-      }
-    }
   }
 
   requestQuantityData = () => {
+    this.form.controls.reasonCodeData.setValue(null);
+
     if (!/^[0-9]*$/.test(this.form.value.quantity)) {
       return throwError('Invalid Quantity');
     }
@@ -247,46 +254,35 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   generateOutputBatch = () => {
     let outputBatchGeneration$ = of(null);
     const quantity = toNumber(this.form.value.quantityData, 0);
-    const standardQty = this.form.value.materialData.standardPackageQty;
 
-    if (this.operationData.pendingYieldQty >= standardQty && quantity === standardQty) {
-      // TODO: Request Web API to Change Output Batch
-      return outputBatchGeneration$.pipe(
-        map((ret: IActionResult) => {
-          return Object.assign(ret, {
-            description: `Batch Generated And Print!`
-          });
-        })
-      );
-    } else {
-      // Partial Confirm if required
-      if (this.operationData.pendingYieldQty !== quantity) {
-        const delta = quantity - this.operationData.pendingYieldQty;
+    // Partial Confirm if required
+    if (this.operationData.pendingYieldQty !== quantity) {
+      const delta = quantity - this.operationData.pendingYieldQty;
 
-        if (delta > 0) {
-          outputBatchGeneration$ = outputBatchGeneration$.pipe(
-            switchMap(_ => {
-              return this._bapiService.partialConfirmOperation(this.operationData, this.machineData, this.operatorData
-                , delta);
-            })
-          );
-        } else {
-          outputBatchGeneration$ = outputBatchGeneration$.pipe(
-            switchMap(_ => {
-              return this._bapiService.partialConfirmOperation(this.operationData, this.machineData, this.operatorData
-                , 0, delta * -1, (this.form.value.reasonCodeData ? this.form.value.reasonCodeData.codeNbr : 0));
-            })
-          );
-        }
+      if (delta > 0) {
+        outputBatchGeneration$ = outputBatchGeneration$.pipe(
+          switchMap(_ => {
+            return this._bapiService.partialConfirmOperation(this.operationData, this.machineData, this.operatorData
+              , delta);
+          })
+        );
+      } else {
+        outputBatchGeneration$ = outputBatchGeneration$.pipe(
+          switchMap(_ => {
+            return this._bapiService.partialConfirmOperation(this.operationData, this.machineData, this.operatorData
+              , 0, delta * -1, (this.form.value.reasonCodeData ? this.form.value.reasonCodeData.codeNbr : 0));
+          })
+        );
       }
-      // Change Output Batch
-      return outputBatchGeneration$.pipe(
-        switchMap(_ => {
-          return this._bapiService.changeOutputBatch(this.operationData, this.machineData, this.operationData.currentOutputBatch,
-            quantity, this.operatorData);
-        })
-      );
     }
+
+    // Change Output Batch
+    return outputBatchGeneration$.pipe(
+      switchMap(_ => {
+        return this._bapiService.changeOutputBatch(this.operationData, this.machineData, this.operationData.currentOutputBatch,
+          quantity, this.operatorData);
+      })
+    );
   }
 
   //#endregion
