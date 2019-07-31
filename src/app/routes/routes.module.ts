@@ -68,6 +68,7 @@ import { PartialConfirmationOperationComponent } from './mobile/operation/partia
 import { SetupFunctionsComponent } from './mobile/setup/setup-functions.component';
 import { SetupPrinterComponent } from './mobile/setup/setup-printer.component';
 import { MobilePrinterListComponent } from './mobile/printer.list.component';
+import { ImportSqlComponent } from './import/import.sql.exec.component';
 
 const BAPI = [
   BAPITestComponent
@@ -82,6 +83,7 @@ const IMPORT = [
   ImportBufferComponent,
   ImportPersonComponent,
   ImportBapiComponent,
+  ImportSqlComponent,
 ];
 
 const COMPONENTS = [

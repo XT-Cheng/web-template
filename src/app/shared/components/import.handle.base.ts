@@ -18,6 +18,9 @@ export abstract class ImportHandleBase implements OnInit {
 
   _recordPerTurn = 50;
 
+  _fileContent: { [key: string]: any[][] } = null;
+  _sheets: string[] = [];
+  _selectedSheet: string;
   _tableRecords: any[] = [];
   _allRecords: any[] = [];
 
@@ -40,18 +43,25 @@ export abstract class ImportHandleBase implements OnInit {
 
   //#endregion
 
-  //#region Public fields
-
-
-  //#endregion
-
   //#region Constructor
 
   constructor(protected xlsx: XlsxService) { }
 
   //#endregion
 
-  //#region Protected properties
+  //#region Public properties
+  public get sheets(): string[] {
+    return this._sheets;
+  }
+
+  public get selectedSheet(): string {
+    return this._selectedSheet;
+  }
+
+  public set selectedSheet(value: string) {
+    this._selectedSheet = value;
+  }
+
   public get showProgress(): boolean {
     return this._showProgress;
   }
@@ -104,6 +114,37 @@ export abstract class ImportHandleBase implements OnInit {
   //#endregion
 
   //#region Protected methods
+
+  protected sheetSelected(sheetName) {
+    const output = <Array<any>>this._fileContent[sheetName];
+    const fields = output[0];
+    const values = output.slice(1);
+
+    this._allRecords = [];
+    this._tableRecords = [];
+
+    // Generate records
+
+
+    values.forEach(value => {
+      const element = {};
+      element['status'] = 0;
+      element['error'] = '';
+
+      for (let index = 0; index < fields.length; index++) {
+        element[fields[index]] = isUndefined(value[index]) ? `` : value[index];
+      }
+
+      if (element[this.key]) {
+        this._allRecords.push(element);
+      }
+    });
+
+    this._tableRecords = this._allRecords.filter((rec) => {
+      return rec.status === 0 || rec.status === 2;
+    });
+  }
+
   protected stopExecuting() {
     this._stopExecuting = true;
   }
@@ -220,33 +261,13 @@ export abstract class ImportHandleBase implements OnInit {
   }
 
   private prepareRecords(res) {
-    // Only care first Sheet
-    const sheetName = Object.keys(res)[0];
-
-    const output = <Array<any>>res[sheetName];
-    const fields = output[0];
-    const values = output.slice(1);
-
-    // Generate records
     this._allRecords = [];
+    this._tableRecords = [];
 
-    values.forEach(value => {
-      const element = {};
-      element['status'] = 0;
-      element['error'] = '';
+    this._selectedSheet = null;
 
-      for (let index = 0; index < fields.length; index++) {
-        element[fields[index]] = isUndefined(value[index]) ? `` : value[index];
-      }
-
-      if (element[this.key]) {
-        this._allRecords.push(element);
-      }
-    });
-
-    this._tableRecords = this._allRecords.filter((rec) => {
-      return rec.status === 0 || rec.status === 2;
-    });
+    this._sheets = Object.keys(res);
+    this._fileContent = res;
   }
 
   //#endregion

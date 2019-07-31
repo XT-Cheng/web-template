@@ -1,14 +1,15 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { XlsxService, STColumn } from '@delon/abc';
 import { ImportHandleBase } from '@shared/components/import.handle.base';
-import { BapiService } from '@core/hydra/bapi/bapi.service';
+import { FetchService } from '@core/hydra/service/fetch.service';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-import-bapi',
-  templateUrl: './import.bapi.exec.component.html',
-  styleUrls: [`./import.bapi.exec.component.less`]
+  selector: 'app-import-sql',
+  templateUrl: './import.sql.exec.component.html',
+  styleUrls: [`./import.sql.exec.component.less`]
 })
-export class ImportBapiComponent extends ImportHandleBase {
+export class ImportSqlComponent extends ImportHandleBase {
   //#region Private fields
 
   @ViewChild(`uploader`) uploaderElem: ElementRef;
@@ -17,7 +18,7 @@ export class ImportBapiComponent extends ImportHandleBase {
 
   //#region Constructor
 
-  constructor(_xlsx: XlsxService, private _bapiService: BapiService) {
+  constructor(_xlsx: XlsxService, private _fetchService: FetchService) {
     super(_xlsx);
   }
 
@@ -38,7 +39,11 @@ export class ImportBapiComponent extends ImportHandleBase {
     this.execute((records) => {
       const rec = records[0];
 
-      return this._bapiService.test(rec.dialog, rec.content);
+      return this._fetchService.query(rec.delete).pipe(
+        switchMap(() => {
+          return this._fetchService.query(rec.insert);
+        })
+      );
     });
   }
 
@@ -67,8 +72,8 @@ export class ImportBapiComponent extends ImportHandleBase {
   protected get dataFields(): STColumn[] {
     return [
       { title: 'Seq', index: 'seq' },
-      { title: 'Dialog', index: 'dialog' },
-      { title: 'Content', index: 'content' },
+      { title: 'Delete', index: 'delete' },
+      { title: 'Insert', index: 'insert' },
     ];
   }
   //#endregion

@@ -51,6 +51,7 @@ import { PackingComponent } from './mobile/operation/packing.component';
 import { PartialConfirmationOperationComponent } from './mobile/operation/partialConfirmation-operation.component';
 import { SetupFunctionsComponent } from './mobile/setup/setup-functions.component';
 import { SetupPrinterComponent } from './mobile/setup/setup-printer.component';
+import { ImportSqlComponent } from './import/import.sql.exec.component';
 
 const routes: Routes = [
   {
@@ -62,6 +63,7 @@ const routes: Routes = [
       { path: 'bapi/test', component: BAPITestComponent, data: { title: 'BAPI 测试' } },
       { path: 'import/buffer', component: ImportBufferComponent, data: { title: '导入 Material Buffer' } },
       { path: 'import/bapi', component: ImportBapiComponent, data: { title: 'BAPI 批量执行' } },
+      { path: 'import/sql', component: ImportSqlComponent, data: { title: 'SQL 批量执行' } },
       { path: 'reports/batchSummary', component: BatchGeneralComponent, data: { title: '物料批次概览' } },
       { path: 'reports/batchTrace', component: BatchTraceabilityComponent, data: { title: '物料批次追溯' } },
       { path: 'material/create', component: CreateBatchComponent },
