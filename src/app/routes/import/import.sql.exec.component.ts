@@ -3,6 +3,7 @@ import { XlsxService, STColumn } from '@delon/abc';
 import { ImportHandleBase } from '@shared/components/import.handle.base';
 import { FetchService } from '@core/hydra/service/fetch.service';
 import { switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-import-sql',
@@ -39,7 +40,13 @@ export class ImportSqlComponent extends ImportHandleBase {
     this.execute((records) => {
       const rec = records[0];
 
-      return this._fetchService.query(rec.delete).pipe(
+      return of(1).pipe(
+        switchMap(() => {
+          if (rec.delete) {
+            return this._fetchService.query(rec.delete)
+          }
+          return of([]);
+        }),
         switchMap(() => {
           return this._fetchService.query(rec.insert);
         })
