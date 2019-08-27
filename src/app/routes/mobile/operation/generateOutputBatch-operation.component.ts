@@ -182,12 +182,12 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
             }
 
             this.form.controls.materialData.setValue(material);
-            if (this.operationData.pendingYieldQty === 0) {
+            if (operation.pendingYieldQty === 0) {
               this.form.controls.quantity.setValue(material.standardPackageQty);
             } else {
               if (material) {
-                if (material.standardPackageQty > this.operationData.pendingYieldQty) {
-                  this.form.controls.quantity.setValue(this.operationData.pendingYieldQty);
+                if (material.standardPackageQty > operation.pendingYieldQty) {
+                  this.form.controls.quantity.setValue(operation.pendingYieldQty);
                 }
               }
             }

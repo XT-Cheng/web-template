@@ -8,21 +8,21 @@ export class Machine {
 
   //#region Fields
 
-  machineName = '';
-  description = '';
-  currentStatus = '';
-  currentStatusNr = -1;
+  machineName = ''; //checked
+  description = '';//checked
+  currentStatus = '';//checked
+  currentStatusNr = -1;//checked
 
-  numberOfOperationAllowed = -1;
+  numberOfOperationAllowed = -1;//checked
 
-  currentShift = -1;
-  currentShiftDate = new Date();
+  currentShift = -1;//checked
+  currentShiftDate = new Date();//checked
 
-  lastOperation = '';
-  lastArticle = '';
+  lastOperation = '';//checked
+  lastArticle = '';//checked
 
-  currentShiftStart = new Date();
-  currentShiftEnd = new Date();
+  currentShiftStart = new Date();//checked
+  currentShiftEnd = new Date();//checked
 
   nextOperations: Operation[] = [];
   currentOperations: Operation[] = [];

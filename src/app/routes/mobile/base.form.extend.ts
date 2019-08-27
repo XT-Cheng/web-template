@@ -16,6 +16,7 @@ import { MaterialBatch } from '@core/hydra/entity/batch';
 import { Tool } from '@core/hydra/entity/tool';
 import { toNumber } from '@delon/util';
 import { MachineService } from '@core/hydra/service/machine.service';
+import { OperatorWebApi } from '@core/webapi/operator.webapi';
 
 
 interface ITranError {
@@ -65,6 +66,8 @@ export abstract class BaseExtendForm implements OnDestroy {
   protected operatorService: OperatorService;
   protected document: Document;
 
+  protected operatorWebApi: OperatorWebApi;
+
   protected errors: ITranError[] = [];
   protected success: ITranSuccess[] = [];
   protected executionContext: any;
@@ -106,6 +109,8 @@ export abstract class BaseExtendForm implements OnDestroy {
     this.titleService = this.injector.get(TitleService);
     this.i18n = this.injector.get(I18NService);
     this.operatorService = this.injector.get(OperatorService);
+
+    this.operatorWebApi = this.injector.get(OperatorWebApi);
     this.document = this.injector.get(DOCUMENT);
 
     this.machineService = this.injector.get(MachineService);
@@ -315,7 +320,7 @@ export abstract class BaseExtendForm implements OnDestroy {
   resetForm() {
     this.form.reset();
 
-    let operator = null;
+    let operator: Operator = null;
     if (this.storedData && this.storedData.badgeData) {
       operator = new Operator();
       operator.badge = this.storedData.badgeData.badge;
@@ -515,12 +520,7 @@ export abstract class BaseExtendForm implements OnDestroy {
       return of(null);
     }
 
-    return this.operatorService.getOperatorByBadge(this.form.value.badge).pipe(
-      tap(operator => {
-        if (!operator) {
-          throw Error(`${this.form.value.badge} not exist!`);
-        }
-      }));
+    return this.operatorWebApi.getOperatorByBadge(this.form.value.badge);
   }
 
   //#endregion

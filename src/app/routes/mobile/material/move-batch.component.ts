@@ -1,7 +1,7 @@
 import { Component, Injector, ViewChild } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
-import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
+import { MaterialBatch, BatchBuffer } from '@core/hydra/entity/batch';
 import { requestBatchData } from './request.common';
 import { tap, map, filter, switchMap, delay } from 'rxjs/operators';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
@@ -173,7 +173,7 @@ export class MoveBatchComponent extends BaseExtendForm {
   }
 
   protected beforeStartCheck(): Observable<boolean> {
-    const buffer = this.form.value.materialBufferData as MaterialBuffer;
+    const buffer = this.form.value.materialBufferData as BatchBuffer;
     const materials = this.batches$.value.map(batch => batch.material).filter((value, index, self) => self.indexOf(value) === index);
     let check$ = of(true);
     materials.forEach(mat => {

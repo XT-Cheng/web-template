@@ -23,14 +23,12 @@ export class MaterialBatch {
   }
 }
 
-export class MaterialBuffer {
+export class BatchBuffer {
   name: string;
   description: string;
   bufferLevel: number;
   parentBuffer: string;
-  parentBuffers: string[] = [];
   allowedMaterials: string[] = [];
-  leadBuffer: string;
   get display(): string {
     return `${this.description}`;
   }

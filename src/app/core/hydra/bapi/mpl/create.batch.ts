@@ -13,7 +13,6 @@ export class CreateBatch extends DialogBase {
       `CNR=${this.batchNumber}|` +
       `CNR:ALT1=${this.batchNumber}|` +
       `HZTYP=${this.materialType}|` +
-      `CNR:ALT1=${this.batchNumber}|` +
       `ATK=${this.materialNumber}|` +
       `EGR:GUT=${this.batchQty}|` +
       `EGE:GUT=${this.unit}|` +

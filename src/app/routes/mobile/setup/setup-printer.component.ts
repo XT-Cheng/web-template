@@ -15,6 +15,8 @@ import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { IActionResult } from '@core/utils/helpers';
 import { PopupComponent } from 'ngx-weui';
 import { PrintService } from '@core/hydra/service/print.service';
+import { PrinterWebApi } from '@core/webapi/printer.webapi';
+import { Printer } from '@core/hydra/entity/printer';
 
 @Component({
   selector: 'fw-setup-printer',
@@ -39,7 +41,7 @@ export class SetupPrinterComponent extends BaseExtendForm implements OnInit {
 
   //#region Public member
 
-  printers$: BehaviorSubject<string[]> = new BehaviorSubject<[]>([]);
+  printers$: BehaviorSubject<Printer[]> = new BehaviorSubject<[]>([]);
 
   //#endregion
 
@@ -47,7 +49,7 @@ export class SetupPrinterComponent extends BaseExtendForm implements OnInit {
 
   constructor(
     injector: Injector,
-    private _printService: PrintService
+    private _printerWebApi: PrinterWebApi
   ) {
     super(injector, false, false);
     this.addControls({
@@ -63,7 +65,7 @@ export class SetupPrinterComponent extends BaseExtendForm implements OnInit {
     if (this.form.value.printerSelected) {
       return this.form.value.printerSelected;
     } else if (this.printers$.value.length > 0) {
-      return this.printers$.value[0];
+      return this.printers$.value[0].name;
     } else {
       return ``;
     }
@@ -99,7 +101,6 @@ export class SetupPrinterComponent extends BaseExtendForm implements OnInit {
 
   //#region Exeuction
   setupPrinterSuccess = () => {
-    this.printers$.next([]);
   }
 
   setupPrinterFailed = () => {
@@ -121,16 +122,12 @@ export class SetupPrinterComponent extends BaseExtendForm implements OnInit {
   ngOnInit(): void {
     this.form.controls.printerSelected.setValue(this.printer);
 
-    this._printService.getAvailablePrinterNames().subscribe(names => this.printers$.next(names));
+    this._printerWebApi.getPrinters().subscribe(printers => this.printers$.next(printers));
   }
 
   //#endregion
 
   //#region Override methods
-
-  protected afterReset() {
-    this.printers$.next([]);
-  }
 
   //#endregion
 

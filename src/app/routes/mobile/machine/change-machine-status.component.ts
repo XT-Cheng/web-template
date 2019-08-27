@@ -1,10 +1,9 @@
 import { Component, Injector } from '@angular/core';
 import { BaseExtendForm } from '../base.form.extend';
 import { Validators } from '@angular/forms';
-import { MachineService } from '@core/hydra/service/machine.service';
-import { MDEBapiService } from '@core/hydra/bapi/mde/bapi.service';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
 
 @Component({
   selector: 'fw-machine-change-status',
@@ -41,7 +40,7 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
 
   //#region Constructor
 
-  constructor(injector: Injector, private _machineService: MachineService, private _bapiService: MDEBapiService,
+  constructor(injector: Injector, private _machineWebApi: MachineWebApi
   ) {
     super(injector);
     this.addControls({
@@ -59,7 +58,7 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
   //#region Machine Reqeust
 
   requestMachineDataSuccess = (_) => {
-    this._machineService.getAvailableStatusToChange(this.form.value.machine).pipe(
+    this._machineWebApi.getAvailableStatusToChange(this.form.value.machine).pipe(
       map(allStatus => {
         return allStatus.filter(status => this.validStatus.includes(status.status) && this.machineData.currentStatusNr !== status.status);
       })
@@ -72,7 +71,7 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine).pipe(
+    return this._machineWebApi.getMachineLightWeight(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
@@ -104,7 +103,12 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
   }
 
   changeStatus = () => {
-    return this._bapiService.changeMachineStatus(this.machineData, this.form.value.statusNbr, this.operatorData);
+    return this._machineWebApi.changeMachineStatus({
+      MachineName: this.machineData.machineName,
+      NewStatus: this.form.value.statusNbr,
+      Badge: this.operatorData.badge
+    })
+    // return this._bapiService.changeMachineStatus(this.machineData, this.form.value.statusNbr, this.operatorData);
   }
 
   //#endregion

@@ -52,6 +52,8 @@ export enum DialogTypeEnum {
   MPL_CREATE_MATTYPE = 'MATTYP.INSERT',
   MPL_DELETE_MATTYPE = 'MATTYP.DELETE',
 
+  MPL_CREATE_PRT_LIST = 'MATLIST.INSERT',
+
   //#endregion
 
   //#region HLS

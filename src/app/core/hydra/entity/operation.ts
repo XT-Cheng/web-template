@@ -24,29 +24,29 @@ export class Operation {
 
   //#region Fields
 
-  order = '';
-  article = '';
-  sequence = '';
-  leadOrder = '';
-  targetQty = -1;
-  totalYield = -1;
-  totalScrap = -1;
-  targetCycleTime = -1;
+  order = '';//checked
+  article = '';//checked
+  sequence = '';//checked
+  leadOrder = '';//checked
+  targetQty = -1;//checked
+  totalYield = -1;//checked
+  totalScrap = -1;//checked
+  targetCycleTime = -1;//checked
 
   currentOutputBatch = '';
 
   //#region Date fields
 
-  earliestStart: Date = null;
-  earliestEnd: Date = null;
-  latestStart: Date = null;
-  latestEnd: Date = null;
-  planStart: Date = null;
-  planEnd: Date = null;
-  scheduleStart: Date = null;
-  scheduleEnd: Date = null;
+  earliestStart: Date = null;//checked
+  earliestEnd: Date = null;//checked
+  latestStart: Date = null;//checked
+  latestEnd: Date = null;//checked
+  planStart: Date = null;//checked
+  planEnd: Date = null;//checked
+  scheduleStart: Date = null;//checked
+  scheduleEnd: Date = null;//checked
 
-  lastLoggedOn: Date = null;
+  lastLoggedOn: Date = null;//checked
 
   //#endregion
 
@@ -139,13 +139,12 @@ export class BomItem {
 }
 
 export class ComponentLoggedOn {
-  operation = '';
-  batchName = '';
-  material = '';
-  allowLogoff = true;
-
-  batchQty = -1;
-  pos = -1;
+  public operation = '';
+  public batchName = '';
+  public material = '';
+  public allowLogoff = true;
+  public batchQty = -1;
+  public pos = -1;
 }
 
 export interface ComponentStatus {
@@ -165,10 +164,7 @@ export class ToolItem {
 }
 
 export class ToolLoggedOn {
-  requiredMaterial = '';
-
   loggedOnOperation = '';
-  targetOperation = '';
   loggedOnMachine = '';
   toolName = '';
   toolId = '';

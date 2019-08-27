@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { FetchService } from './fetch.service';
-import { map, switchMap, filter } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 import {
-  MaterialBatch, MaterialBuffer, BatchConnection,
+  MaterialBatch, BatchBuffer, BatchConnection,
   BatchConnectionNode, BatchConsumeConnectionNode, BatchMergeConnectionNode, BatchSplitConnectionNode
 } from '@core/hydra/entity/batch';
 import { format } from 'date-fns';
@@ -130,7 +130,7 @@ export class BatchService {
 
   //#region Private members
 
-  private buffers: MaterialBuffer[];
+  private buffers: BatchBuffer[];
 
   //#endregion
 
@@ -179,7 +179,7 @@ export class BatchService {
     );
   }
 
-  getBatches(materialName: string = '', buffer: MaterialBuffer = null, lastChanged: Date = null)
+  getBatches(materialName: string = '', buffer: BatchBuffer = null, lastChanged: Date = null)
     : Observable<MaterialBatch[]> {
     let sql = BatchService.batchSql;
     if (materialName) {
@@ -189,11 +189,12 @@ export class BatchService {
     }
 
     if (buffer) {
-      const buffers = this.getLowerLevelBuffers(buffer);
-      buffers.push(buffer.name);
-      sql = sql.replace(BatchService.buffersTBR, `AND BATCH.MAT_PUF IN (${buffers.map(b => `'${b}'`).join(',')})`);
-    } else {
-      sql = sql.replace(BatchService.buffersTBR, ``);
+      //TODO: Parent Buffers is removed!
+      //   const buffers = this.getLowerLevelBuffers(buffer);
+      //   buffers.push(buffer.name);
+      //   sql = sql.replace(BatchService.buffersTBR, `AND BATCH.MAT_PUF IN (${buffers.map(b => `'${b}'`).join(',')})`);
+      // } else {
+      //   sql = sql.replace(BatchService.buffersTBR, ``);
     }
 
     if (lastChanged) {
@@ -241,14 +242,14 @@ export class BatchService {
       }));
   }
 
-  getMaterialBuffers(): Observable<MaterialBuffer[]> {
+  getMaterialBuffers(): Observable<BatchBuffer[]> {
     if (this.buffers) return of(this.buffers);
 
     return this._fetchService.query(BatchService.batchBufferSql).pipe(
       map((records) => {
         this.buffers = [];
         records.forEach(rec => {
-          const data = Object.assign(new MaterialBuffer(), {
+          const data = Object.assign(new BatchBuffer(), {
             name: rec.BUFFER_NAME,
             description: rec.BUFFER_DESC,
             bufferLevel: rec.BUFFER_LEVEL,
@@ -260,10 +261,11 @@ export class BatchService {
         });
 
         this.buffers.forEach(buffer => {
-          buffer.parentBuffers = [];
-          if (buffer.parentBuffer) {
-            buffer.leadBuffer = this.findLeadBuffer(this.buffers, buffer, buffer).name;
-          }
+          //TODO: Parent Buffers is removed!
+          // buffer.parentBuffers = [];
+          // if (buffer.parentBuffer) {
+          //   buffer.leadBuffer = this.findLeadBuffer(this.buffers, buffer, buffer).name;
+          // }
         });
 
         return this.buffers;
@@ -556,7 +558,7 @@ export class BatchService {
       }));
   }
 
-  getMaterialBuffer(bufferName: string): Observable<MaterialBuffer> {
+  getMaterialBuffer(bufferName: string): Observable<BatchBuffer> {
     return this.getMaterialBuffers().pipe(
       map(buffers => {
         const ret = buffers.find(b => b.name === bufferName);
@@ -694,29 +696,30 @@ export class BatchService {
       }));
   }
 
-  private findLeadBuffer(buffers: MaterialBuffer[], buffer: MaterialBuffer, source: MaterialBuffer) {
-    const found = buffers.find(target => {
-      return target.name === buffer.parentBuffer;
-    });
+  //TODO: Parent Buffers is removed!
+  // private findLeadBuffer(buffers: BatchBuffer[], buffer: BatchBuffer, source: BatchBuffer) {
+  //   const found = buffers.find(target => {
+  //     return target.name === buffer.parentBuffer;
+  //   });
 
-    if (found) {
-      source.parentBuffers.unshift(found.name);
-      return this.findLeadBuffer(buffers, found, source);
-    }
+  //   if (found) {
+  //     source.parentBuffers.unshift(found.name);
+  //     return this.findLeadBuffer(buffers, found, source);
+  //   }
 
-    return buffer;
-  }
+  //   return buffer;
+  // }
 
-  private getLowerLevelBuffers(buffer: MaterialBuffer): string[] {
-    const bufferNames: string[] = [];
-    this.buffers.map(b => {
-      if (b.parentBuffers.some(name => name === buffer.name)) {
-        bufferNames.push(b.name);
-      }
-    });
+  // private getLowerLevelBuffers(buffer: BatchBuffer): string[] {
+  //   const bufferNames: string[] = [];
+  //   this.buffers.map(b => {
+  //     if (b.parentBuffers.some(name => name === buffer.name)) {
+  //       bufferNames.push(b.name);
+  //     }
+  //   });
 
-    return bufferNames;
-  }
+  //   return bufferNames;
+  // }
 
   //#endregion
 }

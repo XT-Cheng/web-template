@@ -4,12 +4,16 @@ import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { of, throwError, Observable, forkJoin } from 'rxjs';
 import { switchMap, tap, map } from 'rxjs/operators';
-import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
+import { MaterialBatch, BatchBuffer } from '@core/hydra/entity/batch';
 import { deepExtend, IActionResult } from '@core/utils/helpers';
 import { PrintService } from '@core/hydra/service/print.service';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
 import { BUFFER_SAP, BUFFER_914 } from './constants';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
+import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
+import { PrinterWebApi } from '@core/webapi/printer.webapi';
+import { Printer } from '@core/hydra/entity/printer';
 
 @Component({
   selector: 'fw-batch-create',
@@ -39,6 +43,9 @@ export class CreateBatchComponent extends BaseExtendForm {
     private _batchService: BatchService,
     private _bapiService: MPLBapiService,
     private _printService: PrintService,
+    private _batchWebApi: BatchWebApi,
+    private _materialMasterWebApi: MaterialMasterWebApi,
+
   ) {
     super(injector);
     this.addControls({
@@ -79,38 +86,29 @@ export class CreateBatchComponent extends BaseExtendForm {
   requestBatchData = () => {
     let batch: MaterialBatch;
 
-    return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch, true).pipe(
+    return this._batchWebApi.getBatchInfoFrom2DBarCode(this.form.value.batch, true).pipe(
       switchMap((barCodeData: MaterialBatch) => {
         batch = barCodeData;
-        return this._batchService.isBatchNameExist(barCodeData.name);
+        return this._batchWebApi.isBatchNameExist(barCodeData.name);
       }),
       switchMap((exist: boolean) => {
         if (exist) {
           return throwError(`Batch ${batch.name} exist！`);
         }
-        return forkJoin(this._batchService.getMaterialType(batch.material),
-          this._batchService.getMaterialUnit(batch.material), this._batchService.getBatchInSAPformation(batch.name));
+        return forkJoin(this._materialMasterWebApi.getPartMaster(batch.material),
+          this._batchWebApi.isBatchInSAP(batch.name));
       }),
       switchMap((array: Array<any>) => {
         let [
-          matType,
-          unit,
+          materialMaster,
           // tslint:disable-next-line:prefer-const
           batchInSAP] = array;
         this.form.controls.isReturnedFromSAP.setValue(!!batchInSAP);
         if (batchInSAP) {
           return of(batchInSAP);
         } else {
-          if (!matType) {
-            matType = 'Comp';
-          }
-
-          if (!unit) {
-            unit = 'PC';
-          }
-
-          batch.materialType = matType;
-          batch.unit = unit;
+          batch.materialType = materialMaster.materialType;
+          batch.unit = materialMaster.unit;
           return of(batch);
         }
       }));
@@ -125,7 +123,7 @@ export class CreateBatchComponent extends BaseExtendForm {
   }
 
   requestMaterialBufferData = () => {
-    return this._batchService.getMaterialBuffer(this.form.value.materialBuffer).pipe(
+    return this._batchWebApi.getMaterialBuffer(this.form.value.materialBuffer).pipe(
       tap(buffer => {
         if (!buffer) {
           throw Error(`${this.form.value.materialBuffer} not exist!`);
@@ -135,7 +133,7 @@ export class CreateBatchComponent extends BaseExtendForm {
           throw Error(`SAP Buffer not allowed`);
         }
 
-        if (!buffer.parentBuffers.some((bufferName) => bufferName === BUFFER_914)) {
+        if (buffer.parentBuffer !== BUFFER_914) {
           throw Error(`Must be 914 Buffer`);
         }
       })
@@ -200,12 +198,27 @@ export class CreateBatchComponent extends BaseExtendForm {
   }
 
   protected beforeStartCheck(): Observable<boolean> {
-    const buffer = this.form.value.materialBufferData as MaterialBuffer;
+    const buffer = this.form.value.materialBufferData as BatchBuffer;
     if (buffer.allowedMaterials.length > 0 && !buffer.allowedMaterials.includes(this.batchData.material)) {
       return this.showDialog(`Buffer ${buffer.name} not allow material ${this.batchData.material}<br/>are you sure?`);
     } else {
       return of(true);
     }
+  }
+
+  protected init() {
+    let printer: Printer = null;
+    if (this.storedData && this.storedData.printerData) {
+      printer = new Printer();
+
+      printer.name = this.storedData.printerData.badge;
+      printer.description = this.storedData.printerData.description;
+    }
+
+    this.form.patchValue(Object.assign(this.form.value, {
+      printer: printer ? printer.name : ``,
+      printerData: printer,
+    }));
   }
 
   //#endregion
@@ -222,66 +235,17 @@ export class CreateBatchComponent extends BaseExtendForm {
   }
 
   createBatch = () => {
-    let firstAction$: Observable<IActionResult>;
-    if (this.form.value.isReturnedFromSAP) {
-      firstAction$ = this._bapiService
-        .moveBatch(this.batchData, this.form.value.materialBufferData, this.operatorData).pipe(
-          switchMap(_ => {
-            return this._bapiService.changeBatchQuantity(this.batchData,
-              this.batchData.quantity, this.operatorData);
-          }),
-          map((_) => {
-            return {
-              isSuccess: true,
-              description: `Batch ${this.batchData.name} Moved to ${this.form.value.materialBuffer}!`,
-            };
-          })
-        );
-    } else {
-      firstAction$ = this._bapiService
-        .createBatch(
-          this.batchData.name,
-          this.batchData.material,
-          this.batchData.materialType,
-          this.batchData.unit,
-          this.batchData.quantity,
-          this.form.value.materialBufferData,
-          this.operatorData,
-          this.batchData.SAPBatch,
-          this.batchData.dateCode
-        );
-    }
-    return firstAction$.pipe(
-      switchMap(ret => {
-        const children = toNumber(this.form.value.numberOfSplitsData, 1);
-        if (children > 1) {
-          return this._batchService.getBatchInformation(this.batchData.name).pipe(
-            switchMap(batch => {
-              return this._bapiService.splitBatch(batch,
-                children, this.batchData.quantity / children,
-                this.operatorData);
-            })
-          );
-        }
-        return of(ret);
-      }),
-      switchMap(ret => {
-        if (ret.context) {
-          return this._printService.printoutBatchLabel(ret.context).pipe(
-            map((_) => {
-              return {
-                isSuccess: true,
-                error: ``,
-                content: ``,
-                description: `Batch ${this.batchData.name} Split to ${ret.context.join(`,`)} and Label Printed!`,
-                context: ret.context
-              };
-            })
-          );
-        }
-        return of(ret);
-      })
-    );
+    return this._batchWebApi.createBatch(this.batchData, this.form.value.materialBufferData, this.form.value.numberOfSplitsData,
+      this.form.value.isReturnedFromSAP, this.operatorData).pipe(
+        switchMap((_) => {
+          return of({
+            isSuccess: true,
+            error: ``,
+            content: ``,
+            description: `Batch ${this.batchData.name} Created and Label Printed!`,
+          });
+        })
+      );
   }
 
   //#endregion

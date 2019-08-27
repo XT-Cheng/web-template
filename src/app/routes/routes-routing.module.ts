@@ -52,6 +52,7 @@ import { PartialConfirmationOperationComponent } from './mobile/operation/partia
 import { SetupFunctionsComponent } from './mobile/setup/setup-functions.component';
 import { SetupPrinterComponent } from './mobile/setup/setup-printer.component';
 import { ImportSqlComponent } from './import/import.sql.exec.component';
+import { RecordToolCycleComponent } from './mobile/tool/record-tool-cycle.component';
 
 const routes: Routes = [
   {
@@ -81,6 +82,7 @@ const routes: Routes = [
       { path: 'tool/logon', component: LogonToolComponent },
       { path: 'tool/logoff', component: LogoffToolComponent },
       { path: 'tool/reset', component: ResetToolMaintenanceComponent },
+      { path: 'tool/recordCycle', component: RecordToolCycleComponent },
       { path: 'tool/list', component: ToolFunctionsComponent },
       { path: 'operation/logon', component: LogonOperationComponent },
       { path: 'operator/logon', component: LogonOperatorComponent },

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NzMessageService, toNumber } from 'ng-zorro-antd';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { STColumn } from '@delon/abc';
-import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/Batch';
+import { MaterialBatch, BatchBuffer } from '@core/hydra/entity/Batch';
 import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
 import { format } from 'date-fns';
 
@@ -77,7 +77,7 @@ export class BatchGeneralComponent implements OnInit {
   level = 0;
 
   matList = [];
-  buffers: MaterialBuffer[] = [];
+  buffers: BatchBuffer[] = [];
 
   loading = false;
 
@@ -164,7 +164,7 @@ export class BatchGeneralComponent implements OnInit {
   }
 
   barClicked(item) {
-    let directChildren: MaterialBuffer[];
+    let directChildren: BatchBuffer[];
 
     if (this.level === 0) {
       this.currentMaterial = item.x;
@@ -212,7 +212,7 @@ export class BatchGeneralComponent implements OnInit {
     if (bufferName) {
       intervalData = intervalData.filter(batch => {
         const buffer = this.buffers.find(b => b.name === batch.bufferName);
-        if (buffer.parentBuffers.includes(bufferName)) return true;
+        // if (buffer.parentBuffers.includes(bufferName)) return true;
         return false;
       });
     }
@@ -256,15 +256,15 @@ export class BatchGeneralComponent implements OnInit {
 
       if (directChildren.length === 0) return;
 
-      let toAddBuffer: MaterialBuffer;
+      let toAddBuffer: BatchBuffer;
       this.tableData.forEach(batch => {
         // 1. Find Batch Buffer's Parents
         const buffer = this.buffers.find(b => b.name === batch.bufferName);
         directChildren.some(c => {
-          if (buffer.parentBuffers.find(p => p === c.name)) {
-            toAddBuffer = c;
-            return true;
-          }
+          // if (buffer.parentBuffers.find(p => p === c.name)) {
+          //   toAddBuffer = c;
+          //   return true;
+          // }
 
           if (buffer.name === c.name) {
             toAddBuffer = c;

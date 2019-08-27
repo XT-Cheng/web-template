@@ -415,9 +415,7 @@ export class MachineService {
             //#region Setup Logged On Tools
             loggedOnTools.forEach(tool => {
               machineRet.toolsLoggedOn.push({
-                requiredMaterial: ``,
                 loggedOnOperation: tool.OPERATION,
-                targetOperation: tool.OPERATIONNAME,
                 loggedOnMachine: tool.MACHINE,
                 toolName: tool.TOOLNAME,
                 toolId: tool.RESOURCEID,
@@ -659,9 +657,7 @@ export class MachineService {
               map(loggedOnTools => {
                 loggedOnTools.forEach(tool => {
                   machineRet.toolsLoggedOn.push({
-                    requiredMaterial: ``,
                     loggedOnOperation: tool.OPERATION,
-                    targetOperation: tool.OPERATIONNAME,
                     loggedOnMachine: tool.MACHINE,
                     toolName: tool.TOOLNAME,
                     toolId: tool.RESOURCEID,

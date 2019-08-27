@@ -1,5 +1,5 @@
 import { of, MonoTypeOperatorFunction } from 'rxjs';
-import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
+import { MaterialBatch, BatchBuffer } from '@core/hydra/entity/batch';
 import { switchMap, map, tap } from 'rxjs/operators';
 import { FormGroup } from '@angular/forms';
 import { BatchService } from '@core/hydra/service/batch.service';
@@ -38,7 +38,7 @@ export const requestMaterialBufferData = (form: FormGroup, batchService: BatchSe
     const check = operator ? operator : tap(_ => _);
 
     return batchService.getMaterialBuffer(form.value.materialBuffer).pipe(
-      tap((buffer: MaterialBuffer) => {
+      tap((buffer: BatchBuffer) => {
         if (!buffer) {
           throw Error(`${form.value.materialBuffer} not exist!`);
         }

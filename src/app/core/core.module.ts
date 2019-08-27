@@ -21,6 +21,11 @@ import { BDEMasterBapiService } from './hydra/bapi/bde/master/bapi.service';
 import { MasterService } from './hydra/service/master.service';
 import { MDEBapiService } from './hydra/bapi/mde/bapi.service';
 import { UtilityService } from './utils/utility.service';
+import { MachineWebApi } from './webapi/machine.webapi';
+import { OperatorWebApi } from './webapi/operator.webapi';
+import { BatchWebApi } from './webapi/batch.webapi';
+import { MaterialMasterWebApi } from './webapi/materialMaster.webapi';
+import { PrinterWebApi } from './webapi/printer.webapi';
 
 @NgModule({
   providers: [
@@ -44,6 +49,11 @@ import { UtilityService } from './utils/utility.service';
     BDEBapiService,
     WRMBapiService,
     UtilityService,
+    MachineWebApi,
+    OperatorWebApi,
+    BatchWebApi,
+    MaterialMasterWebApi,
+    PrinterWebApi
   ]
 })
 export class CoreModule {

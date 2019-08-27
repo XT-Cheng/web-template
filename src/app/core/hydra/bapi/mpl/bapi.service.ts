@@ -5,7 +5,7 @@ import { IActionResult } from '@core/utils/helpers';
 import { Operation } from '@core/hydra/entity/operation';
 import { Machine } from '@core/hydra/entity/machine';
 import { Operator } from '@core/hydra/entity/operator';
-import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
+import { MaterialBatch, BatchBuffer } from '@core/hydra/entity/batch';
 import { LogonInputBatch } from './logon.inputBatch';
 import { Observable, of, forkJoin } from 'rxjs';
 import { GoodsMovementBatch } from './goodsMovement.batch';
@@ -57,7 +57,7 @@ export class MPLBapiService {
   }
 
   createBatch(batchName: string, materialNumber: string, matType: string, unit: string, batchQty: number,
-    materialBuffer: MaterialBuffer | { name: string }, operator: Operator,
+    materialBuffer: BatchBuffer | { name: string }, operator: Operator,
     batchSAP: string = '', dateCode: string = ''): Observable<IActionResult> {
     return forkJoin(
       new CreateBatch(batchName, materialNumber, matType, unit, batchQty, materialBuffer.name, operator.badge, batchSAP, dateCode)
@@ -131,7 +131,7 @@ export class MPLBapiService {
     );
   }
 
-  moveBatch(batch: MaterialBatch, destination: MaterialBuffer | { name: string }, operator: Operator): Observable<IActionResult> {
+  moveBatch(batch: MaterialBatch, destination: BatchBuffer | { name: string }, operator: Operator): Observable<IActionResult> {
     return new MoveBatch(batch.name, batch.materialType, destination.name, operator.badge).execute(this._http).pipe(
       map((ret: IActionResult) => {
         return Object.assign(ret, {

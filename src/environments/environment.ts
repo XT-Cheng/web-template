@@ -3,7 +3,8 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  SERVER_URL: `http://202.0.226.51:3000`,
+  // SERVER_URL: `http://202.0.226.51:3000`,
+  SERVER_URL: `http://localhost:14683`,
   PRINTER_SERVICE_URL: `http://202.0.226.51:8952/api/Print/Print3SLabelV3`,
   CREATE_LT_URL: `http://202.0.226.51:8952/api/BatchSplit/CreateBatch`,
   GET_LT_URL: `http://202.0.226.51:8952/api/BatchSplit/CreateSerialNumber`,

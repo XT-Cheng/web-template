@@ -10,6 +10,7 @@ import { Machine } from '@core/hydra/entity/machine';
 import { Tool } from '@core/hydra/entity/tool';
 import { LogoffTool } from './logoff.tool';
 import { ResetTool } from './reset.tool';
+import { RecordToolCycle } from './recordCycle.tool';
 
 @Injectable()
 export class WRMBapiService {
@@ -52,6 +53,16 @@ export class WRMBapiService {
       map((ret: IActionResult) => {
         return Object.assign(ret, {
           description: `Tool ${tool.toolName} Reset!`
+        });
+      })
+    );
+  }
+
+  recordToolCycle(machine: Machine | { machineName: string }, cycles: number, operator: Operator): Observable<IActionResult> {
+    return new RecordToolCycle(machine.machineName, cycles, operator.badge).execute(this._http).pipe(
+      map((ret: IActionResult) => {
+        return Object.assign(ret, {
+          description: `Tool Cycles Recorded!`
         });
       })
     );

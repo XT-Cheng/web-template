@@ -15,15 +15,69 @@ const menuInfo: Menu[] = [{
     icon: `anticon anticon-dashboard`,
     children: [{
       text: '产线概况',
-      i18n: `app.route.line-summary`,
+      // i18n: `app.route.line-summary`,
       group: true,
       /** 图标 */
       icon: `anticon anticon-rocket`,
       children: [{
-        text: '成品线',
+        text: '潍柴',
         group: false,
         /** 路由 */
-        link: `/dashboard/lineGeneral/SG-00001`,
+        link: `/dashboard/lineGeneral/SG-00001`
+      },
+      {
+        text: 'LCC-01',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/SG-00002`,
+      },
+      {
+        text: 'LCC-02',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/SG-00003`,
+      },
+      {
+        text: 'LCC-03',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/SG-00004`,
+      },
+      {
+        text: 'LCC-04',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/SG-00005`,
+      },
+      {
+        text: 'LCC-05',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/SG-00006`,
+      },
+      {
+        text: 'LCC-06',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/SG-00007`,
+      },
+      {
+        text: 'LCC-07',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/SG-00008`,
+      },
+      {
+        text: 'LCC-08',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/SG-00009`,
+      },
+      {
+        text: 'LCC-09',
+        group: false,
+        /** 路由 */
+        link: `/dashboard/lineGeneral/SG-00010`,
       },
       {
         text: '流量单元',
@@ -130,6 +184,8 @@ const menuInfo: Menu[] = [{
     }]
   }]
 }];
+
+// }];
 
 const mobileMenuInfo: Menu[] = [{
   text: '主导航',

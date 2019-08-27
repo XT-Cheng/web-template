@@ -1,0 +1,58 @@
+<form autocomplete="off" [formGroup]="form">
+  <div class="weui-cells">
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.tool.recordCycle.tool' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='tool' formControlName="tool" fwShareAutoFocus
+          [fwShareKeyHandler]='{controlName: "tool", inputing: Inputing, nextInputId: "added", req: request(requestToolData, requestToolDataSuccess, requestToolDataFailed)}'
+          [placeholder]="'app.mobile.tool.recordCycle.tool.placeholder' | translate">
+      </div>
+    </div>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.tool.recordCycle.increase' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='added' formControlName="added"
+          [fwShareKeyHandler]='{controlName: "added", inputing: Inputing, nextInputId: "badge", req: request(requestCycleData, requestCycleDataSuccess, requestCycleDataFailed)}'
+          [placeholder]="'app.mobile.tool.recordCycle.increase.placeholder' | translate">
+      </div>
+    </div>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.tool.recordCycle.current' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='current' formControlName="current" [readOnly]='true'>
+      </div>
+    </div>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.tool.recordCycle.next' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='next' formControlName="next" [readOnly]='true'>
+      </div>
+    </div>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.tool.recordCycle.interval' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='interval' formControlName="interval" [readOnly]='true'>
+      </div>
+    </div>
+    <div class="mobile-fill">
+      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute"
+        (click)='doAction(recordCycleTool, recordCycleToolSuccess, recordCycleToolFailed)'>{{'app.mobile.tool.recordCycle.action'
+        | translate}}</button>
+    </div>
+    <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText'
+      [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
+      [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'>
+    </fw-mobile-bottom>
+  </div>
+</form>
+<weui-mask #mask [backdrop]="false"></weui-mask>

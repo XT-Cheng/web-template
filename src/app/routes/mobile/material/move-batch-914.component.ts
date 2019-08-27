@@ -2,7 +2,7 @@ import { Component, Injector, ViewChild } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { tap, map, switchMap, filter, delay } from 'rxjs/operators';
-import { MaterialBatch, MaterialBuffer } from '@core/hydra/entity/batch';
+import { MaterialBatch, BatchBuffer } from '@core/hydra/entity/batch';
 import { BUFFER_914 } from './constants';
 import { requestBatchData } from './request.common';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
@@ -97,9 +97,10 @@ export class MoveBatchTo914Component extends BaseExtendForm {
         if (!buffer) {
           throw Error(`${this.form.value.materialBuffer} not exist!`);
         }
-        if (!buffer.parentBuffers.some((bufferName) => bufferName === BUFFER_914)) {
-          throw Error(`Must be 914 Buffer`);
-        }
+        //TODO: Parent Buffers is removed!
+        // if (!buffer.parentBuffers.some((bufferName) => bufferName === BUFFER_914)) {
+        //   throw Error(`Must be 914 Buffer`);
+        // }
       })
     );
   }
@@ -170,7 +171,7 @@ export class MoveBatchTo914Component extends BaseExtendForm {
   }
 
   protected beforeStartCheck(): Observable<boolean> {
-    const buffer = this.form.value.materialBufferData as MaterialBuffer;
+    const buffer = this.form.value.materialBufferData as BatchBuffer;
     const materials = this.batches$.value.map(batch => batch.material).filter((value, index, self) => self.indexOf(value) === index);
     let check$ = of(true);
     materials.forEach(mat => {

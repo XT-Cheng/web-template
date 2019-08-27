@@ -69,6 +69,7 @@ import { SetupFunctionsComponent } from './mobile/setup/setup-functions.componen
 import { SetupPrinterComponent } from './mobile/setup/setup-printer.component';
 import { MobilePrinterListComponent } from './mobile/printer.list.component';
 import { ImportSqlComponent } from './import/import.sql.exec.component';
+import { RecordToolCycleComponent } from './mobile/tool/record-tool-cycle.component';
 
 const BAPI = [
   BAPITestComponent
@@ -142,6 +143,7 @@ const COMPONENTS = [
   LogoffToolComponent,
   ResetToolMaintenanceComponent,
   ToolFunctionsComponent,
+  RecordToolCycleComponent,
   // Operator
   LogonOperatorComponent,
   LogoffOperatorComponent,
