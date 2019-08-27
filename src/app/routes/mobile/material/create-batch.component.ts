@@ -14,6 +14,8 @@ import { BatchWebApi } from '@core/webapi/batch.webapi';
 import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
 import { PrinterWebApi } from '@core/webapi/printer.webapi';
 import { Printer } from '@core/hydra/entity/printer';
+import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
+import { MaterialMaster } from '@core/hydra/entity/materialMaster';
 
 @Component({
   selector: 'fw-batch-create',
@@ -36,6 +38,12 @@ export class CreateBatchComponent extends BaseExtendForm {
 
   //#endregion
 
+  //#region Private member
+
+  private materialMaster: MaterialMaster;
+
+  //#endregion
+
   //#region Constructor
 
   constructor(
@@ -44,6 +52,7 @@ export class CreateBatchComponent extends BaseExtendForm {
     private _bapiService: MPLBapiService,
     private _printService: PrintService,
     private _batchWebApi: BatchWebApi,
+    private _printLabelWebApi: PrintLabelWebApi,
     private _materialMasterWebApi: MaterialMasterWebApi,
 
   ) {
@@ -103,6 +112,7 @@ export class CreateBatchComponent extends BaseExtendForm {
           materialMaster,
           // tslint:disable-next-line:prefer-const
           batchInSAP] = array;
+        this.materialMaster = materialMaster;
         this.form.controls.isReturnedFromSAP.setValue(!!batchInSAP);
         if (batchInSAP) {
           return of(batchInSAP);
@@ -206,21 +216,6 @@ export class CreateBatchComponent extends BaseExtendForm {
     }
   }
 
-  protected init() {
-    let printer: Printer = null;
-    if (this.storedData && this.storedData.printerData) {
-      printer = new Printer();
-
-      printer.name = this.storedData.printerData.badge;
-      printer.description = this.storedData.printerData.description;
-    }
-
-    this.form.patchValue(Object.assign(this.form.value, {
-      printer: printer ? printer.name : ``,
-      printerData: printer,
-    }));
-  }
-
   //#endregion
 
   //#region Event Handler
@@ -237,12 +232,15 @@ export class CreateBatchComponent extends BaseExtendForm {
   createBatch = () => {
     return this._batchWebApi.createBatch(this.batchData, this.form.value.materialBufferData, this.form.value.numberOfSplitsData,
       this.form.value.isReturnedFromSAP, this.operatorData).pipe(
-        switchMap((_) => {
+        switchMap((ltsToPrint: string[]) => {
+          return this._printLabelWebApi.printLabel(ltsToPrint, this.materialMaster.tagTypeName, this.batchData.SAPBatch, this.batchData.dateCode)
+        }),
+        switchMap((ltsToPrint: string[]) => {
           return of({
             isSuccess: true,
             error: ``,
             content: ``,
-            description: `Batch ${this.batchData.name} Created and Label Printed!`,
+            description: `Batch ${this.batchData.name} Split to ${ltsToPrint.join(`,`)} and Label Printed!`,
           });
         })
       );

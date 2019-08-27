@@ -3,9 +3,8 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { MaterialBatch, BatchBuffer } from "@core/hydra/entity/batch";
 import { Observable, throwError, of } from "rxjs";
-import { map, switchMap } from "rxjs/operators";
+import { map } from "rxjs/operators";
 import { Operator } from "@core/hydra/entity/operator";
-import { IActionResult } from "@core/utils/helpers";
 
 @Injectable()
 export class BatchWebApi {
@@ -95,7 +94,7 @@ export class BatchWebApi {
     }
 
     createBatch(batch: MaterialBatch, batchBuffer: BatchBuffer, numberOfSplits: number,
-        isReturnFromSAP: boolean, operator: Operator): Observable<any> {
+        isReturnFromSAP: boolean, operator: Operator): Observable<string[]> {
         return this._http.post(`/api/batchService/createBatch`, {
             BatchName: batch.name,
             MaterialName: batch.material,
@@ -109,7 +108,7 @@ export class BatchWebApi {
             NumberOfSplit: numberOfSplits,
             Badge: operator.badge
         }).pipe(
-            map((ltsToPrint: any) => {
+            map((ltsToPrint: string[]) => {
                 return ltsToPrint;
             })
         )
