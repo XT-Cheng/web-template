@@ -10,6 +10,10 @@ import { requestBatchData } from './request.common';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
 import { MaterialBatch } from '@core/hydra/entity/batch';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
+import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
+import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
+import { MaterialMaster } from '@core/hydra/entity/materialMaster';
 
 @Component({
   selector: 'fw-batch-combine',
@@ -36,9 +40,9 @@ export class CombineBatchComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _batchService: BatchService,
-    private _bapiService: MPLBapiService,
-    private _printService: PrintService,
+    private _batchWebApi: BatchWebApi,
+    private _printLabelWebApi: PrintLabelWebApi,
+    private _materialMasterWebApi: MaterialMasterWebApi,
   ) {
     super(injector);
     this.addControls({
@@ -69,10 +73,10 @@ export class CombineBatchComponent extends BaseExtendForm {
 
   requestBatch1Data = () => {
     let barCodeInfo: MaterialBatch;
-    return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch1).pipe(
+    return this._batchWebApi.getBatchInfoFrom2DBarCode(this.form.value.batch1).pipe(
       switchMap((barCodeData: MaterialBatch) => {
         barCodeInfo = barCodeData;
-        return this._batchService.getBatchInformation(barCodeData.name).pipe(
+        return this._batchWebApi.getBatch(barCodeData.name).pipe(
           map((batch: MaterialBatch) => {
             if (batch) {
               batch.barCode = barCodeData.barCode;
@@ -104,10 +108,10 @@ export class CombineBatchComponent extends BaseExtendForm {
 
   requestBatch2Data = () => {
     let barCodeInfo: MaterialBatch;
-    return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch2).pipe(
+    return this._batchWebApi.getBatchInfoFrom2DBarCode(this.form.value.batch2).pipe(
       switchMap((barCodeData: MaterialBatch) => {
         barCodeInfo = barCodeData;
-        return this._batchService.getBatchInformation(barCodeData.name).pipe(
+        return this._batchWebApi.getBatch(barCodeData.name).pipe(
           map((batch: MaterialBatch) => {
             if (batch) {
               batch.barCode = barCodeData.barCode;
@@ -239,18 +243,57 @@ export class CombineBatchComponent extends BaseExtendForm {
   combineBatch = () => {
     // Split Batch And Print
     return forkJoin(
-      this._bapiService.splitBatch(this.form.value.batch1Data, 1, this.form.value.quantity1, this.operatorData),
-      this._bapiService.splitBatch(this.form.value.batch2Data, 1, this.form.value.quantity2, this.operatorData)
+      this._batchWebApi.splitBatch(this.form.value.batch1Data, 1, this.form.value.quantity1, this.operatorData),
+      this._batchWebApi.splitBatch(this.form.value.batch2Data, 1, this.form.value.quantity2, this.operatorData)
     ).pipe(
-      switchMap(ret => {
-        return this._printService.printoutBatchLabel(ret[0].context.concat(ret[1].context)).pipe(
-          map((_) => {
-            return {
-              isSuccess: true,
-              description: `Batch ${this.form.value.batch1Data.name},  ${this.form.value.batch2Data.name} Split And Label Printed!`,
-            };
-          }));
+      switchMap((array: [string[], string[]]) => {
+        let child1 = array[0][0];
+        let child2 = array[1][0];
+        return forkJoin(this._materialMasterWebApi.getPartMaster(this.form.value.batch1Data.material),
+          this._materialMasterWebApi.getPartMaster(this.form.value.batch2Data.material)).pipe(
+            switchMap((array: [MaterialMaster, MaterialMaster]) => {
+              let matMaster1 = array[0];
+              let matMaster2 = array[1];
+              return this._printLabelWebApi.printLabel([child1], matMaster1.tagTypeName,
+                this.form.value.batch1Data.SAPBatch, this.form.value.batch1Data.dateCode).pipe(
+                  switchMap(_ => {
+                    return this._printLabelWebApi.printLabel([child2], matMaster2.tagTypeName,
+                      this.form.value.batch1Data.SAPBatch, this.form.value.batch1Data.dateCode)
+                  })
+                );
+            }));
+      }),
+      map(_ => {
+        return {
+          isSuccess: true,
+          description: `Batch ${this.form.value.batch1Data.name},  ${this.form.value.batch2Data.name} Split And Label Printed!`,
+        };
       }));
+
+    // return forkJoin(
+    //   this._batchWebApi.splitBatch(this.form.value.batch1Data, 1, this.form.value.quantity1, this.operatorData).pipe(
+    //     switchMap((ltToPrint: string[]) => {
+    //       return this._materialMasterWebApi.getPartMaster(this.form.value.batch1Data.material).pipe(
+    //         switchMap((materialMaster: MaterialMaster) => {
+    //           return this._printLabelWebApi.printLabel(ltToPrint, materialMaster.tagTypeName,
+    //             this.form.value.batch1Data.SAPBatch, this.form.value.batch1Data.dateCode);
+    //         }));
+    //     })),
+    //   this._batchWebApi.splitBatch(this.form.value.batch2Data, 1, this.form.value.quantity2, this.operatorData).pipe(
+    //     switchMap((ltToPrint: string[]) => {
+    //       return this._materialMasterWebApi.getPartMaster(this.form.value.batch2Data.material).pipe(
+    //         switchMap((materialMaster: MaterialMaster) => {
+    //           return this._printLabelWebApi.printLabel(ltToPrint, materialMaster.tagTypeName,
+    //             this.form.value.batch2Data.SAPBatch, this.form.value.batch2Data.dateCode);
+    //         }));
+    //     }))
+    // ).pipe(
+    //   map(_ => {
+    //     return {
+    //       isSuccess: true,
+    //       description: `Batch ${this.form.value.batch1Data.name},  ${this.form.value.batch2Data.name} Split And Label Printed!`,
+    //     };
+    //   }));
   }
 
   //#endregion
