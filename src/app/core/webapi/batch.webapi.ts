@@ -108,6 +108,14 @@ export class BatchWebApi {
         )
     }
 
+    getRecentlyUpdatedBatch(onlyComponent: boolean): Observable<MaterialBatch[]> {
+        return this._http.get(`/api/batchService/recentlyUpdatedBatch/${onlyComponent}`).pipe(
+            map((batches: []) => {
+                return batches.map(batch => BatchWebApi.translateBatch(batch))
+            })
+        )
+    }
+
     splitBatch(batch: MaterialBatch, childCount: number, childQty: number, operator: Operator) {
         return this._http.post(`/api/batchService/splitBatch`, {
             BatchName: batch.name,

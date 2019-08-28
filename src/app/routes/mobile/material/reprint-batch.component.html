@@ -1,11 +1,11 @@
 <form autocomplete="off" [formGroup]="form">
   <div class="weui-cells">
-    <ng-container *ngIf='getCurrentBatchDisplay() as display'>
+    <ng-container>
       <div class="weui-cell weui-cell_access">
         <div class="weui-panel__bd" (click)="showBatchList()">
           <div class="weui-media-box weui-media-box_text">
-            <h4 class="weui-media-box__title">{{display.title}}</h4>
-            <p class="weui-media-box__desc">{{display.description}}</p>
+            <h4 class="weui-media-box__title">{{getCurrentBatchDisplay()?.title}}</h4>
+            <p class="weui-media-box__desc">{{getCurrentBatchDisplay()?.description}}</p>
           </div>
         </div>
         <div class="weui-cell__ft"></div>

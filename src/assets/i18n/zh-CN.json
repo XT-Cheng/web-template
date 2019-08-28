@@ -125,6 +125,7 @@
   "app.common.miss": "缺失",
   "app.common.component.material": "物料",
   "app.common.component.batch": "批次",
+  "app.common.component.selectBatch": "选择批次",
   "app.common.component.qty": "数量",
   "app.common.reasonCode": "原因",
   "app.route.line-summary": "产线概览",

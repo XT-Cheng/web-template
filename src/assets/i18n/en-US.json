@@ -125,6 +125,7 @@
   "app.common.miss": "Miss",
   "app.common.component.material": "Material",
   "app.common.component.batch": "Batch",
+  "app.common.component.selectBatch": "Select Batch",
   "app.common.component.qty": "Qty",
   "app.common.reasonCode": "Reason",
   "app.route.line-summary": "Line Summary",
