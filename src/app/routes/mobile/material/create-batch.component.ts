@@ -48,9 +48,6 @@ export class CreateBatchComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _batchService: BatchService,
-    private _bapiService: MPLBapiService,
-    private _printService: PrintService,
     private _batchWebApi: BatchWebApi,
     private _printLabelWebApi: PrintLabelWebApi,
     private _materialMasterWebApi: MaterialMasterWebApi,
@@ -194,6 +191,9 @@ export class CreateBatchComponent extends BaseExtendForm {
 
   protected beforeRequestCheck(srcElement): Observable<boolean> {
     if (!srcElement) return of(true);
+
+    if (!this.printer)
+      return throwError(`Setup Printer first`);
 
     switch (srcElement.id) {
       case 'materialBuffer':

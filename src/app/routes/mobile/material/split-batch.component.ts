@@ -2,13 +2,17 @@ import { Component, Injector } from '@angular/core';
 import { toNumber } from 'ng-zorro-antd';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
-import { of, throwError, Observable } from 'rxjs';
+import { of, throwError, Observable, forkJoin } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { deepExtend } from '@core/utils/helpers';
 import { PrintService } from '@core/hydra/service/print.service';
 import { requestBatchData } from './request.common';
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
+import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
+import { MaterialMaster } from '@core/hydra/entity/materialMaster';
+import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
 
 @Component({
   selector: 'fw-batch-split',
@@ -29,7 +33,7 @@ export class SplitBatchComponent extends BaseExtendForm {
 
   //#region Public member
 
-  requestBatchData = requestBatchData(this.form, this._batchService);
+  requestBatchData = requestBatchData(this.form, this._batchWebApi);
 
   //#endregion
 
@@ -37,9 +41,12 @@ export class SplitBatchComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _batchService: BatchService,
-    private _bapiService: MPLBapiService,
-    private _printService: PrintService,
+    private _batchWebApi: BatchWebApi,
+    private _printLabelWebApi: PrintLabelWebApi,
+    private _materialMasterWebApi: MaterialMasterWebApi,
+    // private _batchService: BatchService,
+    //private _bapiService: MPLBapiService,
+    //private _printService: PrintService,
   ) {
     super(injector);
     this.addControls({
@@ -165,6 +172,9 @@ export class SplitBatchComponent extends BaseExtendForm {
   protected beforeRequestCheck(srcElement): Observable<boolean> {
     if (!srcElement) return of(true);
 
+    if (!this.printer)
+      return throwError(`Setup Printer first`);
+
     if (srcElement.id === 'numberOfSplits' && !this.batchData) {
       return throwError(`Input Batch First`);
     }
@@ -185,22 +195,22 @@ export class SplitBatchComponent extends BaseExtendForm {
   }
 
   splitBatch = () => {
-    // Split Batch
-    const children = toNumber(this.form.value.numberOfSplitsData, 1);
-    return this._bapiService.splitBatch(this.batchData, children,
-      this.form.value.childQtyData, this.operatorData).pipe(
-        switchMap(ret => {
-          return this._printService.printoutBatchLabel(ret.context).pipe(
-            map((_) => {
-              return {
-                isSuccess: true,
-                error: ``,
-                content: ``,
-                description: `Batch ${this.batchData.name} Split to ${ret.context.join(`,`)} And Label Printed!`,
-                context: ret.context
-              };
-            })
-          );
+    return forkJoin(this._batchWebApi.splitBatch(this.batchData, this.form.value.numberOfSplitsData,
+      this.form.value.childQtyData, this.operatorData), this._materialMasterWebApi.getPartMaster(this.batchData.material)).pipe(
+        switchMap((array: Array<any>) => {
+          let [
+            ltsToPrint,
+            // tslint:disable-next-line:prefer-const
+            materialMaster] = array;
+          return this._printLabelWebApi.printLabel(ltsToPrint, materialMaster.tagTypeName, this.batchData.SAPBatch, this.batchData.dateCode)
+        }),
+        switchMap((ltsToPrint: string[]) => {
+          return of({
+            isSuccess: true,
+            error: ``,
+            content: ``,
+            description: `Batch ${this.batchData.name} Split to ${ltsToPrint.join(`,`)} and Label Printed!`,
+          });
         })
       );
   }

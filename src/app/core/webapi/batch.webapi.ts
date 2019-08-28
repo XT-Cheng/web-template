@@ -93,6 +93,37 @@ export class BatchWebApi {
         )
     }
 
+    getBatch(batchName: string): Observable<MaterialBatch> {
+        return this._http.get(`/api/batchService/batch//${batchName}`).pipe(
+            map((batch: any) => {
+                if (!batch) {
+                    throw Error(`${batchName} not exist!`);
+                }
+
+                return BatchWebApi.translateBatch(batch);
+            })
+        )
+    }
+
+    splitBatch(batch: MaterialBatch, childCount: number, childQty: number, operator: Operator) {
+        return this._http.post(`/api/batchService/splitBatch`, {
+            BatchName: batch.name,
+            MaterialName: batch.material,
+            MaterialType: batch.materialType,
+            Quantity: batch.quantity,
+            MaterialBuffer: batch.bufferName,
+            SAPBatch: batch.SAPBatch,
+            DateCode: batch.dateCode,
+            NumberOfSplit: childCount,
+            ChildQty: childQty,
+            Badge: operator.badge
+        }).pipe(
+            map((ltsToPrint: string[]) => {
+                return ltsToPrint;
+            })
+        )
+    }
+
     createBatch(batch: MaterialBatch, batchBuffer: BatchBuffer, numberOfSplits: number,
         isReturnFromSAP: boolean, operator: Operator): Observable<string[]> {
         return this._http.post(`/api/batchService/createBatch`, {
@@ -122,6 +153,26 @@ export class BatchWebApi {
         ret.bufferLevel = batchBuffer.BufferLevel;
         ret.parentBuffer = batchBuffer.ParentBuffer;
         ret.allowedMaterials = batchBuffer.AllowedMaterials.map(x => x);
+
+        return ret;
+    }
+
+    public static translateBatch(batch: any): MaterialBatch {
+        let ret = new MaterialBatch();
+
+        ret.name = batch.Name;
+        ret.bufferName = batch.BufferName;
+        ret.parentBuffer = batch.ParentBuffer;
+        ret.startQty = batch.StartQty;
+        ret.quantity = batch.Quantity;
+        ret.material = batch.Material;
+        ret.materialType = batch.MaterialType;
+        ret.status = batch.Status;
+        ret.class = batch.BatchClass;
+        ret.unit = batch.Unit;
+        ret.SAPBatch = batch.SapBatch;
+        ret.dateCode = batch.DateCode;
+        ret.lastChanged = new Date(batch.LastChanged);
 
         return ret;
     }

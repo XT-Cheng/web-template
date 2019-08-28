@@ -3,17 +3,18 @@ import { MaterialBatch, BatchBuffer } from '@core/hydra/entity/batch';
 import { switchMap, map, tap } from 'rxjs/operators';
 import { FormGroup } from '@angular/forms';
 import { BatchService } from '@core/hydra/service/batch.service';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
 
-export const requestBatchData = (form: FormGroup, batchService: BatchService) => () => {
+export const requestBatchData = (form: FormGroup, batchWebApi: BatchWebApi) => () => {
   if (!form.value.batch) {
     return of(null);
   }
 
   let barCodeInfo: MaterialBatch;
-  return batchService.getBatchInfoFrom2DBarCode(form.value.batch).pipe(
+  return batchWebApi.getBatchInfoFrom2DBarCode(form.value.batch).pipe(
     switchMap((barCodeData: MaterialBatch) => {
       barCodeInfo = barCodeData;
-      return batchService.getBatchInformation(barCodeData.name).pipe(
+      return batchWebApi.getBatch(barCodeData.name).pipe(
         map((batch: MaterialBatch) => {
           if (batch) {
             batch.barCode = barCodeData.barCode;

@@ -68,11 +68,13 @@ export class DefaultInterceptor implements HttpInterceptor {
       case 401: // 未登录状态码
         this.goTo(this.authConfig.login_url);
         return throwError({});
-      case 403:
+      case 400:
       case 404:
       case 500:
-        this.goTo(`/${event.status}`);
-        return throwError({});
+        if ((event as any).error.Message)
+          return throwError((event as any).error.Message);
+
+        return throwError((event as any).error);
       default:
         if (event instanceof HttpErrorResponse) {
           console.warn(
