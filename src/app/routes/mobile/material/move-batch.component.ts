@@ -40,8 +40,6 @@ export class MoveBatchComponent extends BaseExtendForm {
   constructor(
     injector: Injector,
     private _batchWebApi: BatchWebApi,
-    //private _batchService: BatchService,
-    //private _bapiService: MPLBapiService,
   ) {
     super(injector);
     this.addControls({

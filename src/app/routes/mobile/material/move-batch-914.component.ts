@@ -9,6 +9,7 @@ import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
 import { forkJoin, BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { PopupComponent } from 'ngx-weui';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
 
 @Component({
   selector: 'fw-batch-move-914',
@@ -30,7 +31,7 @@ export class MoveBatchTo914Component extends BaseExtendForm {
   //#region Public member
   batches$: BehaviorSubject<MaterialBatch[]> = new BehaviorSubject<[]>([]);
 
-  requestBatchData = requestBatchData(this.form, this._batchService);
+  requestBatchData = requestBatchData(this.form, this._batchWebApi);
 
   //#endregion
 
@@ -38,8 +39,7 @@ export class MoveBatchTo914Component extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _batchService: BatchService,
-    private _bapiService: MPLBapiService,
+    private _batchWebApi: BatchWebApi,
   ) {
     super(injector);
     this.addControls({
@@ -92,15 +92,15 @@ export class MoveBatchTo914Component extends BaseExtendForm {
   }
 
   requestMaterialBufferData = () => {
-    return this._batchService.getMaterialBuffer(this.form.value.materialBuffer).pipe(
+    return this._batchWebApi.getMaterialBuffer(this.form.value.materialBuffer).pipe(
       tap(buffer => {
         if (!buffer) {
           throw Error(`${this.form.value.materialBuffer} not exist!`);
         }
-        //TODO: Parent Buffers is removed!
-        // if (!buffer.parentBuffers.some((bufferName) => bufferName === BUFFER_914)) {
-        //   throw Error(`Must be 914 Buffer`);
-        // }
+
+        if (buffer.parentBuffer != BUFFER_914) {
+          throw Error(`${this.form.value.materialBuffer} not belongs to 914!`);
+        }
       })
     );
   }
@@ -143,17 +143,12 @@ export class MoveBatchTo914Component extends BaseExtendForm {
 
   moveBatch = () => {
     // Move Batch
-    const batchMove$ = [];
-    this.batches$.value.forEach(batch => {
-      batchMove$.push(this._bapiService.moveBatch(batch, this.form.value.materialBufferData, this.operatorData));
-    });
-
-    return forkJoin(batchMove$).pipe(
-      map(_ => {
-        return {
+    return this._batchWebApi.moveBatchs(this.batches$.value, this.form.value.materialBufferData, this.operatorData).pipe(
+      switchMap((moved: string[]) => {
+        return of({
           isSuccess: true,
-          description: `Batch Moved to ${this.form.value.materialBufferData.name}!`,
-        };
+          description: `Batch ${moved.join(`,`)} Moved to ${this.form.value.materialBufferData.name}`,
+        });
       })
     );
   }
