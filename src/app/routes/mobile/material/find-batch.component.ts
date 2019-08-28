@@ -5,6 +5,7 @@ import { of, BehaviorSubject, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { BaseExtendForm } from '../base.form.extend';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
 
 @Component({
   selector: 'fw-batch-find',
@@ -58,7 +59,7 @@ export class FindBatchComponent extends BaseExtendForm implements OnInit {
 
   searchMaterial = (material: string) => {
     if (material) {
-      return this._batchService.searchBatchMaterial(material);
+      return this._batchWebApi.searchBatchMaterial(material);
     } else {
       return of([]);
     }
@@ -69,7 +70,7 @@ export class FindBatchComponent extends BaseExtendForm implements OnInit {
 
   constructor(
     injector: Injector,
-    private _batchService: BatchService,
+    private _batchWebApi: BatchWebApi,
   ) {
     super(injector, false, false);
   }
@@ -102,7 +103,7 @@ export class FindBatchComponent extends BaseExtendForm implements OnInit {
 
   //#region Exeuction
   searchBatch = () => {
-    return this._batchService.searchBatch(
+    return this._batchWebApi.searchBatch(
       this.searchBar._q).pipe(
         map(ret => {
           this.batches$.next(ret);

@@ -8,6 +8,7 @@ import { Operator } from "@core/hydra/entity/operator";
 import { ComponentToBeChangeQty } from "@core/hydra/utils/operationHelper";
 import { ComponentLoggedOn, Operation } from "@core/hydra/entity/operation";
 import { Machine } from "@core/hydra/entity/machine";
+import { format } from "date-fns";
 
 @Injectable()
 export class BatchWebApi {
@@ -94,6 +95,35 @@ export class BatchWebApi {
                 return BatchWebApi.translateBatchBuffer(batchBuffer);
             })
         )
+    }
+
+    searchBatchMaterial(materialName: string): Observable<string[]> {
+        return this._http.get(`/api/batchService/material/${materialName}`).pipe(
+            map((mats: string[]) => {
+                return mats;
+            })
+        )
+    }
+
+    searchBatch(materialName: string, bufferName: string = '', lastChangedDateTime: Date = null): Observable<MaterialBatch[]> {
+        let params = {
+            materialName: materialName
+        };
+
+        if (bufferName != '') {
+            params[`bufferName`] = bufferName;
+        }
+
+        if (lastChangedDateTime != null) {
+            params[`lastChangedDateTime`] = format(lastChangedDateTime, 'YYYY-MM-DD HH:mm:ss');
+        }
+
+        return this._http.get(`/api/batchService/searchBatchs`, {
+            params: params
+        }).pipe(
+            map((batches: []) => {
+                return batches.map(batch => BatchWebApi.translateBatch(batch));
+            }));
     }
 
     getBatch(batchName: string): Observable<MaterialBatch> {
@@ -281,7 +311,7 @@ export class BatchWebApi {
         ret.SAPBatch = batch.SapBatch;
         ret.dateCode = batch.DateCode;
         ret.lastChanged = new Date(batch.LastChanged);
-
+        ret.bufferDescription = batch.BufferDescription;
         return ret;
     }
 }
