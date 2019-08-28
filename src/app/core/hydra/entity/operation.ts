@@ -139,12 +139,12 @@ export class BomItem {
 }
 
 export class ComponentLoggedOn {
-  public operation = '';
-  public batchName = '';
-  public material = '';
-  public allowLogoff = true;
-  public batchQty = -1;
-  public pos = -1;
+  batchName: string;
+  allowLogoff: boolean;
+  material: string;
+  batchQty: number;
+  machine: string;
+  operations: { name: string, pos: number }[];
 }
 
 export interface ComponentStatus {

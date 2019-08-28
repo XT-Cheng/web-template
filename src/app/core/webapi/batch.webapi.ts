@@ -5,6 +5,9 @@ import { MaterialBatch, BatchBuffer } from "@core/hydra/entity/batch";
 import { Observable, throwError, of } from "rxjs";
 import { map } from "rxjs/operators";
 import { Operator } from "@core/hydra/entity/operator";
+import { ComponentToBeChangeQty } from "@core/hydra/utils/operationHelper";
+import { ComponentLoggedOn, Operation } from "@core/hydra/entity/operation";
+import { Machine } from "@core/hydra/entity/machine";
 
 @Injectable()
 export class BatchWebApi {
@@ -162,6 +165,84 @@ export class BatchWebApi {
                 return moved;
             })
         )
+    }
+
+    logoffInputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string }, operator: Operator,
+        batch: MaterialBatch | { name: string }, pos: number) {
+        return this._http.post(`/api/batchService/logoffInputBatch`, {
+            Badge: operator.badge,
+            OperationName: operation.name,
+            MachineName: machine.machineName,
+            BatchName: batch.name,
+            Position: pos
+        }).pipe(
+            map((loggedOff: string) => {
+                return loggedOff;
+            })
+        );
+    }
+
+    logonInputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string }, operator: Operator,
+        batch: MaterialBatch | { name: string, material: string }, pos: number) {
+        return this._http.post(`/api/batchService/logonInputBatch`, {
+            Badge: operator.badge,
+            OperationName: operation.name,
+            MachineName: machine.machineName,
+            BatchMaterial: batch.material,
+            BatchName: batch.name,
+            Position: pos
+        }).pipe(
+            map((loggedOn: string) => {
+                return loggedOn;
+            })
+        );
+    }
+
+    changeBatchQuantity(batch: MaterialBatch, newQuantity: number, operator: Operator) {
+        return this._http.post(`/api/batchService/changeBatchQuantity`, {
+            Badge: operator.badge,
+            BatchName: batch.name,
+            MaterialType: batch.materialType,
+            Quantity: newQuantity,
+            Status: batch.status,
+            Class: batch.class,
+            SAPBatch: batch.SAPBatch,
+            DateCode: batch.dateCode,
+        }).pipe(
+            map((changed: string) => {
+                return changed;
+            })
+        );
+    }
+
+    getBatchLoggedOnContext(batch: MaterialBatch): Observable<ComponentToBeChangeQty> {
+        return this._http.get(`/api/batchService/batchLoggedOn/${batch.name}`).pipe(
+            map((batchLoggedOn: any) => {
+                if (!batchLoggedOn) {
+                    return null;
+                }
+
+                return BatchWebApi.translateComponentLoggedOn(batchLoggedOn);
+            })
+        );
+    }
+
+    public static translateComponentLoggedOn(batchLoggedOn: any): ComponentLoggedOn {
+        let ret: ComponentLoggedOn = {
+            batchName: batchLoggedOn.BatchName,
+            material: batchLoggedOn.Material,
+            allowLogoff: batchLoggedOn.AllowLogoff,
+            batchQty: batchLoggedOn.BatchQty,
+            machine: batchLoggedOn.Machine,
+            operations: batchLoggedOn.OperationPos.map(op => {
+                return {
+                    name: op.Operation,
+                    pos: op.Pos
+                }
+            })
+        };
+
+        return ret;
     }
 
     public static translateBatchBuffer(batchBuffer: any): BatchBuffer {

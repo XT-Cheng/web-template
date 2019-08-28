@@ -113,7 +113,7 @@ export class LogonBatchComponent extends BaseExtendForm {
   }
 
   requestBatchData = () => {
-    return requestBatchData(this.form, this._batchService)().pipe(
+    return requestBatchData(this.form, null)().pipe(
       switchMap((batch: MaterialBatch) => {
         const found = this.componentStatus$.value.find(cs => cs.material === batch.material);
         if (!found) {

@@ -78,13 +78,19 @@ export class MachineWebApi {
 
         Object.keys(machine.ComponentsLoggedOn).forEach((key) => {
             var c = machine.ComponentsLoggedOn[key];
+
             ret.componentsLoggedOn.push({
-                operation: c.Operation,
+                operations: c.OperationPos.map(op => {
+                    return {
+                        name: op.Operation,
+                        pos: op.Pos
+                    }
+                }),
                 batchName: c.BatchName,
                 material: c.Material,
-                allowLogoff: true,
+                machine: c.Machine,
+                allowLogoff: c.AllowLogoff,
                 batchQty: c.BatchQty,
-                pos: c.Pos
             });
         })
 

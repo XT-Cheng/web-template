@@ -520,10 +520,11 @@ export class MachineService {
           loggedOnComponent.map(component => {
             machineRet.componentsLoggedOn.push({
               allowLogoff: true,
-              operation: component.OPERATION,
+              machine: '',
+              operations: component.OPERATION,
               batchName: component.BATCHID,
               batchQty: component.REMAINQTY,
-              pos: component.POS,
+              // pos: component.POS,
               material: component.MATERIAL,
             });
           });
@@ -681,19 +682,20 @@ export class MachineService {
                   op$.push(this._operationService.getOperation(op.NAME));
                 });
                 if (op$.length > 0) {
-                  return forkJoin(op$).pipe(
-                    map((operations: Operation[]) => {
-                      operations.forEach(op => {
-                        op.toolsLoggedOn = deepCopy(machineRet.toolsLoggedOn);
-                        machineRet.currentOperations.push(op);
-                        machineRet.componentsLoggedOn.forEach((comp) => {
-                          if (comp.operation === op.name) {
-                            comp.allowLogoff = false;
-                          }
-                        });
-                      });
-                      machineRet.currentOperations.sort((a, b) => a.lastLoggedOn > b.lastLoggedOn ? 1 : -1);
-                    }));
+                  return of(null);
+                  // return forkJoin(op$).pipe(
+                  //   map((operations: Operation[]) => {
+                  //     operations.forEach(op => {
+                  //       op.toolsLoggedOn = deepCopy(machineRet.toolsLoggedOn);
+                  //       machineRet.currentOperations.push(op);
+                  //       machineRet.componentsLoggedOn.forEach((comp) => {
+                  //         if (comp.operation === op.name) {
+                  //           comp.allowLogoff = false;
+                  //         }
+                  //       });
+                  //     });
+                  //     machineRet.currentOperations.sort((a, b) => a.lastLoggedOn > b.lastLoggedOn ? 1 : -1);
+                  //   }));
                 } else {
                   return of(null);
                 }

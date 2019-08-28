@@ -1,19 +1,14 @@
 import { Component, Injector } from '@angular/core';
 import { toNumber } from 'ng-zorro-antd';
-import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { of, throwError, Observable, forkJoin } from 'rxjs';
-import { switchMap, tap, map } from 'rxjs/operators';
+import { switchMap, tap } from 'rxjs/operators';
 import { MaterialBatch, BatchBuffer } from '@core/hydra/entity/batch';
-import { deepExtend, IActionResult } from '@core/utils/helpers';
-import { PrintService } from '@core/hydra/service/print.service';
-import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
+import { deepExtend } from '@core/utils/helpers';
 import { BaseExtendForm } from '../base.form.extend';
 import { BUFFER_SAP, BUFFER_914 } from './constants';
 import { BatchWebApi } from '@core/webapi/batch.webapi';
 import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
-import { PrinterWebApi } from '@core/webapi/printer.webapi';
-import { Printer } from '@core/hydra/entity/printer';
 import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
 import { MaterialMaster } from '@core/hydra/entity/materialMaster';
 
@@ -238,8 +233,6 @@ export class CreateBatchComponent extends BaseExtendForm {
         switchMap((ltsToPrint: string[]) => {
           return of({
             isSuccess: true,
-            error: ``,
-            content: ``,
             description: `Batch ${this.batchData.name} Split to ${ltsToPrint.join(`,`)} and Label Printed!`,
           });
         })

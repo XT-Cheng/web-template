@@ -614,25 +614,26 @@ export class BatchService {
   }
 
   getBatchLoggedOnContext(batch: MaterialBatch): Observable<ComponentToBeChangeQty> {
-    let batchRunningContext: ComponentToBeChangeQty = null;
-    return this._fetchService.query(BatchService.batchRunningContextSql.replace(BatchService.batchNameTBR, batch.name)).pipe(
-      map((ret) => {
-        ret.forEach(item => {
-          if (batchRunningContext) {
-            batchRunningContext.operations.push({ name: item.OPERATION, pos: item.POS });
-          } else {
-            batchRunningContext = {
-              batchName: batch.name,
-              allowLogoff: false,
-              material: batch.material,
-              batchQty: batch.quantity,
-              machine: item.MACHINE,
-              operations: [{ name: item.OPERATION, pos: item.POS }]
-            };
-          }
-        });
-        return batchRunningContext;
-      }));
+    return of(null);
+    // let batchRunningContext: ComponentToBeChangeQty = null;
+    // return this._fetchService.query(BatchService.batchRunningContextSql.replace(BatchService.batchNameTBR, batch.name)).pipe(
+    //   map((ret) => {
+    //     ret.forEach(item => {
+    //       if (batchRunningContext) {
+    //         batchRunningContext.operations.push({ name: item.OPERATION, pos: item.POS });
+    //       } else {
+    //         batchRunningContext = {
+    //           batchName: batch.name,
+    //           allowLogoff: false,
+    //           material: batch.material,
+    //           batchQty: batch.quantity,
+    //           machine: item.MACHINE,
+    //           operations: [{ name: item.OPERATION, pos: item.POS }]
+    //         };
+    //       }
+    //     });
+    //     return batchRunningContext;
+    //   }));
   }
 
   //#endregion

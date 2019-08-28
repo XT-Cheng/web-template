@@ -189,10 +189,11 @@ export class OperationService {
           loggedOnComponent.map(component => {
             operationRet.componentsLoggedOn.set(component.POS, {
               allowLogoff: false,
-              operation: component.OPERATION,
+              operations: component.OPERATION,
               batchName: component.BATCHID,
               batchQty: component.REMAINQTY,
-              pos: component.POS,
+              machine: ``,
+              // pos: component.POS,
               material: component.MATERIAL,
             });
           });

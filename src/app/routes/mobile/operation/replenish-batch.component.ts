@@ -121,7 +121,7 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   }
 
   requestBatchData = () => {
-    return requestBatchData(this.form, this._batchService)().pipe(
+    return requestBatchData(this.form, null)().pipe(
       tap((batch: MaterialBatch) => {
         if (batch.status !== 'F') {
           throw Error(`Batch ${batch.name} status in-correct!`);

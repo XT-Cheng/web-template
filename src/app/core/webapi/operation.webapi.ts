@@ -62,12 +62,12 @@ export class OperationWebApi {
         Object.keys(operation.ComponentsLoggedOn).forEach((key) => {
             var c = operation.ComponentsLoggedOn[key];
             ret.componentsLoggedOn.set(Number.parseInt(c.key), {
-                operation: c.Operation,
+                operations: [{ name: c.OperationPos[0].Operation, pos: c.OperationPos[0].Pos }],
                 batchName: c.BatchName,
                 material: c.Material,
-                allowLogoff: false,
+                allowLogoff: c.AllowLogoff,
+                machine: c.Machine,
                 batchQty: c.BatchQty,
-                pos: c.Pos
             });
         })
 

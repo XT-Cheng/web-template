@@ -97,7 +97,7 @@ export class ReprintBatchComponent extends BaseExtendForm {
   }
 
   requestBatchData = () => {
-    return requestBatchData(this.form, this._batchService)().pipe(
+    return requestBatchData(this.form, null)().pipe(
       tap((batch: MaterialBatch) => {
         if (!batch)
           throw Error(`Batch ${this.form.value.batch} not exist!`);
