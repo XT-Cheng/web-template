@@ -1,14 +1,13 @@
 import { Component, Injector, ViewChild } from '@angular/core';
-import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { BUFFER_SAP } from './constants';
 import { requestBatchData } from './request.common';
-import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
-import { forkJoin, BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { BehaviorSubject, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { PopupComponent } from 'ngx-weui';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
 
 @Component({
   selector: 'fw-batch-move-sap',
@@ -30,7 +29,7 @@ export class MoveBatchToSAPComponent extends BaseExtendForm {
   //#region Public member
   batches$: BehaviorSubject<MaterialBatch[]> = new BehaviorSubject<[]>([]);
 
-  requestBatchData = requestBatchData(this.form, this._batchService);
+  requestBatchData = requestBatchData(this.form, this._batchWebApi);
 
   //#endregion
 
@@ -38,8 +37,7 @@ export class MoveBatchToSAPComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _batchService: BatchService,
-    private _bapiService: MPLBapiService,
+    private _batchWebApi: BatchWebApi,
   ) {
     super(injector);
     this.addControls({
@@ -111,18 +109,13 @@ export class MoveBatchToSAPComponent extends BaseExtendForm {
   }
 
   moveBatch = () => {
-    // Move Batch
-    const batchMove$ = [];
-    this.batches$.value.forEach(batch => {
-      batchMove$.push(this._bapiService.moveBatch(batch, { name: this.form.value.materialBuffer }, this.operatorData));
-    });
-
-    return forkJoin(batchMove$).pipe(
-      map(_ => {
-        return {
+    // Move Batchs
+    return this._batchWebApi.moveBatchs(this.batches$.value, { name: this.form.value.materialBuffer }, this.operatorData).pipe(
+      switchMap((moved: string[]) => {
+        return of({
           isSuccess: true,
-          description: `Batch Moved to SAP!`,
-        };
+          description: `Batch ${moved.join(`,`)} Moved to ${this.form.value.materialBuffer}`,
+        });
       })
     );
   }
