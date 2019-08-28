@@ -1,17 +1,13 @@
 import { Component, Injector } from '@angular/core';
 import { toNumber } from 'ng-zorro-antd';
-import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { of, throwError, Observable, forkJoin } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { deepExtend } from '@core/utils/helpers';
-import { PrintService } from '@core/hydra/service/print.service';
 import { requestBatchData } from './request.common';
-import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { BaseExtendForm } from '../base.form.extend';
 import { BatchWebApi } from '@core/webapi/batch.webapi';
 import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
-import { MaterialMaster } from '@core/hydra/entity/materialMaster';
 import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
 
 @Component({
@@ -44,9 +40,6 @@ export class SplitBatchComponent extends BaseExtendForm {
     private _batchWebApi: BatchWebApi,
     private _printLabelWebApi: PrintLabelWebApi,
     private _materialMasterWebApi: MaterialMasterWebApi,
-    // private _batchService: BatchService,
-    //private _bapiService: MPLBapiService,
-    //private _printService: PrintService,
   ) {
     super(injector);
     this.addControls({

@@ -55,7 +55,7 @@ export class BatchWebApi {
                 }
             });
             batchInfo.barCode = barCodeOf2D;
-        } else if (barCodeOf2D.startsWith(`3S`) && !requireFullData) {
+        } else if ((barCodeOf2D.startsWith(`3S`) || barCodeOf2D.startsWith(`MT`)) && !requireFullData) {
             // Sample: 3SH53Y22001293
             batchInfo.name = barCodeOf2D;
             batchInfo.barCode = barCodeOf2D;
@@ -141,6 +141,25 @@ export class BatchWebApi {
         }).pipe(
             map((ltsToPrint: string[]) => {
                 return ltsToPrint;
+            })
+        )
+    }
+
+    moveBatchs(batchs: MaterialBatch[], destination: BatchBuffer | { name: string }, operator: Operator): Observable<string[]> {
+        let reqs = batchs.map(batch => {
+            return {
+                BatchName: batch.name,
+                Destination: destination.name,
+                Status: batch.status,
+                Class: batch.class,
+                MaterialType: batch.materialType,
+                Badge: operator.badge
+            }
+        });
+
+        return this._http.post(`/api/batchService/moveBatchs`, reqs).pipe(
+            map((moved: string[]) => {
+                return moved;
             })
         )
     }

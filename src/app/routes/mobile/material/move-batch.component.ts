@@ -9,6 +9,7 @@ import { BaseExtendForm } from '../base.form.extend';
 import { BehaviorSubject, forkJoin, Observable, of, throwError } from 'rxjs';
 import { PopupComponent } from 'ngx-weui';
 import { BUFFER_SAP } from './constants';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
 
 @Component({
   selector: 'fw-batch-move',
@@ -30,7 +31,7 @@ export class MoveBatchComponent extends BaseExtendForm {
   //#region Public member
   batches$: BehaviorSubject<MaterialBatch[]> = new BehaviorSubject<[]>([]);
 
-  requestBatchData = requestBatchData(this.form, this._batchService);
+  requestBatchData = requestBatchData(this.form, this._batchWebApi);
 
   //#endregion
 
@@ -38,8 +39,9 @@ export class MoveBatchComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _batchService: BatchService,
-    private _bapiService: MPLBapiService,
+    private _batchWebApi: BatchWebApi,
+    //private _batchService: BatchService,
+    //private _bapiService: MPLBapiService,
   ) {
     super(injector);
     this.addControls({
@@ -92,7 +94,7 @@ export class MoveBatchComponent extends BaseExtendForm {
   }
 
   requestMaterialBufferData = () => {
-    return this._batchService.getMaterialBuffer(this.form.value.materialBuffer).pipe(
+    return this._batchWebApi.getMaterialBuffer(this.form.value.materialBuffer).pipe(
       tap(buffer => {
         if (!buffer) {
           throw Error(`${this.form.value.materialBuffer} not exist!`);
@@ -144,18 +146,13 @@ export class MoveBatchComponent extends BaseExtendForm {
   }
 
   moveBatch = () => {
-    // Move Batch
-    const batchMove$ = [];
-    this.batches$.value.forEach(batch => {
-      batchMove$.push(this._bapiService.moveBatch(batch, this.form.value.materialBufferData, this.operatorData));
-    });
-
-    return forkJoin(batchMove$).pipe(
-      map(_ => {
-        return {
+    // Move Batchs
+    return this._batchWebApi.moveBatchs(this.batches$.value, this.form.value.materialBufferData, this.operatorData).pipe(
+      switchMap((moved: string[]) => {
+        return of({
           isSuccess: true,
-          description: `Batch Moved to ${this.form.value.materialBufferData.name}!`,
-        };
+          description: `Batch ${moved.join(`,`)} Moved to ${this.form.value.materialBufferData.name}`,
+        });
       })
     );
   }
