@@ -48,9 +48,6 @@ export class LogonOperationComponent extends BaseExtendForm {
     injector: Injector,
     private _machineWebApi: MachineWebApi,
     private _operationWebApi: OperationWebApi,
-    // private _machineService: MachineService,
-    // private _operationService: OperationService,
-    // private _bapiService: BDEBapiService,
   ) {
     super(injector);
     this.addControls({

@@ -11,6 +11,8 @@ import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 import { ReasonCode } from '@core/hydra/entity/reasonCode';
 import { toNumber } from '@delon/util';
 import { PopupComponent } from 'ngx-weui';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { OperationWebApi } from '@core/webapi/operation.webapi';
 
 @Component({
   selector: 'fw-operation-interrupt',
@@ -46,9 +48,11 @@ export class InterruptOperationComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _machineService: MachineService,
-    private _operationService: OperationService,
-    private _bapiService: BDEBapiService,
+    // private _machineService: MachineService,
+    // private _operationService: OperationService,
+    // private _bapiService: BDEBapiService,
+    private _machineWebApi: MachineWebApi,
+    private _operationWebApi: OperationWebApi,
   ) {
     super(injector);
     this.addControls({
@@ -124,14 +128,14 @@ export class InterruptOperationComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine).pipe(
+    return this._machineWebApi.getMachine(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
         }
       }),
       switchMap(machine => {
-        return this._machineService.getScrapReasonByMachine(machine.machineName).pipe(
+        return this._machineWebApi.getScrapReasonByMachine(machine.machineName).pipe(
           map(reasonCodes => {
             this.reasonCodes$.next(reasonCodes);
             return machine;
@@ -173,7 +177,7 @@ export class InterruptOperationComponent extends BaseExtendForm {
   }
 
   requestOperationData = (): Observable<any> => {
-    return this._operationService.getOperation(this.form.value.operation).pipe(
+    return this._operationWebApi.getOperation(this.form.value.operation).pipe(
       map(operation => {
         if (operation.leadOrder && operation.pendingYieldQty !== 0) {
           throw Error(`Please Generate Output Batch first!`);
@@ -208,9 +212,15 @@ export class InterruptOperationComponent extends BaseExtendForm {
 
   interruptOperation = () => {
     // Interrupt Operation
-    return this._bapiService.interruptOperation(this.operationData,
+    return this._operationWebApi.interruptOperation(this.operationData,
       this.machineData, this.operatorData, 0, this.form.value.scrapQtyData,
-      (this.form.value.reasonCodeData ? this.form.value.reasonCodeData.codeNbr : 0));
+      (this.form.value.reasonCodeData ? this.form.value.reasonCodeData.codeNbr : 0)).pipe(
+        map(_ => {
+          return {
+            isSuccess: true,
+            description: `Operation ${this.operationData.name} Logged On!`,
+          }
+        }));
   }
 
   //#endregion

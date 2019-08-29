@@ -6,6 +6,7 @@ import { BaseRequest } from "./base.request";
 import { Machine } from "@core/hydra/entity/machine";
 import { Injectable } from "@angular/core";
 import { OperationWebApi } from "./operation.webapi";
+import { ReasonCode } from "@core/hydra/entity/reasonCode";
 
 @Injectable()
 export class MachineWebApi {
@@ -28,6 +29,19 @@ export class MachineWebApi {
                     return {
                         status: status.Number,
                         text: status.Description
+                    }
+                });
+            })
+        )
+    }
+
+    public getScrapReasonByMachine(machineName: string): Observable<ReasonCode[]> {
+        return this._http.get(`/api/machineService/scrapReason/${machineName}`).pipe(
+            map((ret: []) => {
+                return ret.map((reason: any) => {
+                    return {
+                        codeNbr: reason.Number,
+                        description: reason.Description
                     }
                 });
             })
