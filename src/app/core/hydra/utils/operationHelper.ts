@@ -24,32 +24,32 @@ export function getComponentToBeLoggedOff(machine: Machine): ComponentLoggedOn[]
 export function getToolStatus(operation: Operation, machine: Machine): ToolStatus[] {
   const toolStatus: ToolStatus[] = [];
 
-  operation.toolItems.forEach((toolItem, key) => {
-    let loggedOnFound: ToolLoggedOn;
-    toolItem.availableTools.some(available => {
-      loggedOnFound = machine.toolsLoggedOn.find(loggedOn => {
-        return loggedOn.toolName === available;
-      });
+  // operation.toolItems.forEach((toolItem, key) => {
+  //   let loggedOnFound: ToolLoggedOn;
+  //   toolItem.availableTools.some(available => {
+  //     loggedOnFound = machine.toolsLoggedOn.find(loggedOn => {
+  //       return loggedOn.toolName === available;
+  //     });
 
-      return loggedOnFound ? true : false;
-    });
+  //     return loggedOnFound ? true : false;
+  //   });
 
-    if (loggedOnFound) {
-      toolStatus.push({
-        requiredMaterial: key,
-        loggedOnMachine: loggedOnFound.loggedOnMachine,
-        loggedOnOperation: loggedOnFound.loggedOnOperation,
-        toolId: loggedOnFound.toolId,
-        toolName: loggedOnFound.toolName,
-        isReady: true,
-      });
-    } else {
-      toolStatus.push({
-        requiredMaterial: key,
-        isReady: false,
-      });
-    }
-  });
+  //   if (loggedOnFound) {
+  //     toolStatus.push({
+  //       requiredMaterial: key,
+  //       loggedOnMachine: loggedOnFound.loggedOnMachine,
+  //       deputyOperation: loggedOnFound.loggedOnOperation,
+  //       toolId: loggedOnFound.toolId,
+  //       toolName: loggedOnFound.toolName,
+  //       isReady: true,
+  //     });
+  //   } else {
+  //     toolStatus.push({
+  //       requiredMaterial: key,
+  //       isReady: false,
+  //     });
+  //   }
+  // });
 
   return toolStatus.sort((a) => a.isReady ? 1 : -1);
 }

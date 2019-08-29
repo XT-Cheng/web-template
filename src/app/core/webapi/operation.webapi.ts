@@ -1,18 +1,40 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Operation, ComponentStatus } from "@core/hydra/entity/operation";
+import { Operation, ComponentStatus, ToolStatus } from "@core/hydra/entity/operation";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
+import { Operator } from "@core/hydra/entity/operator";
+import { Machine } from "@core/hydra/entity/machine";
 
 @Injectable()
 export class OperationWebApi {
     constructor(protected _http: HttpClient) {
     }
 
+    public logonOperation(operation: Operation, machine: Machine, operator: Operator) {
+        return this._http.post(`/api/operationService/logon`, {
+            Badge: operator.badge,
+            OperationName: operation.name,
+            MachineName: machine.machineName,
+        }).pipe(
+            map((outputBatch: string) => {
+                return outputBatch;
+            })
+        );
+    }
+
     public getComponentStatus(operationName: string, machineName: string): Observable<ComponentStatus[]> {
         return this._http.get(`/api/operationService/componentStatus/${machineName}/${operationName}`).pipe(
             map((compStatus: []) => {
                 return compStatus.map(status => OperationWebApi.translateComponentStatus(status));
+            })
+        )
+    }
+
+    public getToolStatus(operationName: string, machineName: string): Observable<ToolStatus[]> {
+        return this._http.get(`/api/operationService/toolStatus/${machineName}/${operationName}`).pipe(
+            map((toolStatus: []) => {
+                return toolStatus.map(status => OperationWebApi.translateToolStatus(status));
             })
         )
     }
@@ -37,6 +59,17 @@ export class OperationWebApi {
             isReady: comp.IsReady,
             batchName: comp.BatchName,
             quantity: comp.Quantity,
+        }
+    }
+
+    public static translateToolStatus(tool: any): ToolStatus {
+        return {
+            requiredMaterial: tool.RequiredMaterial,
+            loggedOnMachine: tool.LoggedOnMachine,
+            deputyOperation: tool.DeputyOperation,
+            toolId: tool.ToolId,
+            toolName: tool.ToolName,
+            isReady: tool.IsReady,
         }
     }
 

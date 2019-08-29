@@ -46,6 +46,18 @@ export class MachineWebApi {
         )
     }
 
+    public getMachine(machineName: string): Observable<Machine> {
+        return this._http.get(`/api/machineService/machine/${machineName}`).pipe(
+            map((machine: any) => {
+                if (!machine) {
+                    throw Error(`${machineName} not exist!`);
+                }
+
+                return MachineWebApi.translate(machine);
+            })
+        )
+    }
+
     public static translate(machine: any): Machine {
         var ret = new Machine();
 
@@ -119,9 +131,13 @@ export class MachineWebApi {
             })
         }
 
+        ret.changeShiftCheckListFinished = machine.ChangeShiftCheckListFinished;
+
         //#endregion
 
-        //#region Some logic
+        //#region CheckList
+
+
 
         //#endregion
 

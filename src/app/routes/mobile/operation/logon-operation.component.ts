@@ -1,15 +1,17 @@
 import { Component, Injector } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, forkJoin } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation, ComponentStatus, ToolStatus } from '@core/hydra/entity/operation';
 import { OperationService } from '@core/hydra/service/operation.service';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, switchMap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { getComponentStatus, getToolStatus } from '@core/hydra/utils/operationHelper';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 import { MACHINE_STATUS_NOORDER, MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { OperationWebApi } from '@core/webapi/operation.webapi';
 
 @Component({
   selector: 'fw-operation-logon',
@@ -44,9 +46,11 @@ export class LogonOperationComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _machineService: MachineService,
-    private _operationService: OperationService,
-    private _bapiService: BDEBapiService,
+    private _machineWebApi: MachineWebApi,
+    private _operationWebApi: OperationWebApi,
+    // private _machineService: MachineService,
+    // private _operationService: OperationService,
+    // private _bapiService: BDEBapiService,
   ) {
     super(injector);
     this.addControls({
@@ -78,7 +82,7 @@ export class LogonOperationComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine).pipe(
+    return this._machineWebApi.getMachine(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
@@ -101,11 +105,16 @@ export class LogonOperationComponent extends BaseExtendForm {
   }
 
   requestOperationData = (): Observable<any> => {
-    return this._operationService.getOperation(this.form.value.operation).pipe(
-      map(operation => {
-        this.componentStatus$.next(getComponentStatus(operation, this.machineData));
-        this.toolStatus$.next(getToolStatus(operation, this.machineData));
-        return operation;
+    return this._operationWebApi.getOperation(this.form.value.operation).pipe(
+      switchMap(operation => {
+        return forkJoin(this._operationWebApi.getComponentStatus(operation.name, this.form.value.machineData.machineName),
+          this._operationWebApi.getToolStatus(operation.name, this.form.value.machineData.machineName)).pipe(
+            map((array: [ComponentStatus[], ToolStatus[]]) => {
+              this.componentStatus$.next(array[0]);
+              this.toolStatus$.next(array[1]);
+              return operation;
+            })
+          );
       }));
   }
 
@@ -139,8 +148,14 @@ export class LogonOperationComponent extends BaseExtendForm {
 
   logonOperation = () => {
     // LogOn Operation
-    return this._bapiService.logonOperation(this.form.value.operationData,
-      this.form.value.machineData, this.componentStatus$.value, this.form.value.badgeData);
+    return this._operationWebApi.logonOperation(this.form.value.operationData,
+      this.form.value.machineData, this.form.value.badgeData).pipe(
+        map(_ => {
+          return {
+            isSuccess: true,
+            description: `Operation ${this.operationData.name} Logged On!`,
+          }
+        }));
   }
 
   //#endregion

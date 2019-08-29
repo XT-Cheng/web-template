@@ -178,7 +178,7 @@ export interface ToolStatus {
   isReady: boolean;
   loggedOnMachine?: string;
   toolName?: string;
-  loggedOnOperation?: string;
+  deputyOperation?: string;
   toolId?: string;
 }
 
