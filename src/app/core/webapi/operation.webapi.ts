@@ -39,6 +39,22 @@ export class OperationWebApi {
         );
     }
 
+    public partialConfirmOperation(operation: Operation | { name: string }, machine: Machine | { machineName: string },
+        operator: Operator, yieldQty: number = 0, scrapQty: number = 0, scrapReason: number = 0) {
+        return this._http.post(`/api/operationService/partialConfirm`, {
+            Badge: operator.badge,
+            OperationName: operation.name,
+            MachineName: machine.machineName,
+            Yield: yieldQty,
+            Scrap: scrapQty,
+            ScrapReason: scrapReason
+        }).pipe(
+            map((operationName: string) => {
+                return operationName;
+            })
+        );
+    }
+
     public getComponentStatus(operationName: string, machineName: string): Observable<ComponentStatus[]> {
         return this._http.get(`/api/operationService/componentStatus/${machineName}/${operationName}`).pipe(
             map((compStatus: []) => {

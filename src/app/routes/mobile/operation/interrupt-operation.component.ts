@@ -48,9 +48,6 @@ export class InterruptOperationComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    // private _machineService: MachineService,
-    // private _operationService: OperationService,
-    // private _bapiService: BDEBapiService,
     private _machineWebApi: MachineWebApi,
     private _operationWebApi: OperationWebApi,
   ) {
