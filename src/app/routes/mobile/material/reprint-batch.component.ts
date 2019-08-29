@@ -136,7 +136,6 @@ export class ReprintBatchComponent extends BaseExtendForm {
   //#region Exeuction
   reprintBatchSuccess = () => {
     this.storedData = this.form.value;
-    this.init();
   }
 
   reprintBatchFailed = () => {

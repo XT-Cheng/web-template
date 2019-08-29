@@ -10,6 +10,9 @@ import { ComponentToBeReplenish, getComponentToBeReplenish } from '@core/hydra/u
 import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { requestBatchData } from '../material/request.common';
 import { MaterialBatch } from '@core/hydra/entity/batch';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
+import { ComponentLoggedOn } from '@core/hydra/entity/operation';
 
 @Component({
   selector: 'fw-batch-replenish',
@@ -32,7 +35,7 @@ export class ReplenishBatchComponent extends BaseExtendForm {
 
   //#region Public member
 
-  componentsToBeReplenish$: BehaviorSubject<ComponentToBeReplenish[]> = new BehaviorSubject<[]>([]);
+  componentsToBeReplenish$: BehaviorSubject<ComponentLoggedOn[]> = new BehaviorSubject<[]>([]);
 
   //#endregion
 
@@ -44,9 +47,11 @@ export class ReplenishBatchComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _machineService: MachineService,
-    private _bapiService: MPLBapiService,
-    private _batchService: BatchService
+    // private _machineService: MachineService,
+    // private _bapiService: MPLBapiService,
+    // private _batchService: BatchService,
+    private _machineWebApi: MachineWebApi,
+    private _batchWebApi: BatchWebApi,
   ) {
     super(injector, false);
     this.addControls({
@@ -63,7 +68,7 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   getMachineComponentLoggedOnDisplay() {
     if (!this.batchData || !this.machineData) return null;
 
-    const componentToBeReplenishData = this.form.value.componentToBeReplenishData as ComponentToBeReplenish;
+    const componentToBeReplenishData = this.form.value.componentToBeReplenishData as ComponentLoggedOn;
     if (componentToBeReplenishData) {
       return {
         material: componentToBeReplenishData.material,
@@ -94,14 +99,14 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine).pipe(
+    return this._machineWebApi.getMachine(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
         }
       }),
       map(machine => {
-        this.componentsToBeReplenish$.next(getComponentToBeReplenish(machine));
+        this.componentsToBeReplenish$.next(machine.componentsLoggedOn);
         return machine;
       }));
   }
@@ -121,9 +126,9 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   }
 
   requestBatchData = () => {
-    return requestBatchData(this.form, null)().pipe(
+    return requestBatchData(this.form, this._batchWebApi)().pipe(
       tap((batch: MaterialBatch) => {
-        if (batch.status !== 'F') {
+        if (batch.status !== 'Free') {
           throw Error(`Batch ${batch.name} status in-correct!`);
         }
 
@@ -177,55 +182,14 @@ export class ReplenishBatchComponent extends BaseExtendForm {
   }
 
   replenishBatch = (): Observable<IActionResult> => {
-    // Replenish Batch
-    const newBatch = this.form.value.batchData as MaterialBatch;
-    let replenishBatch$ = of(null);
-    const componentToBeReplenish = this.form.value.componentToBeReplenishData as ComponentToBeReplenish;
-    // 1. Logoff first
-    componentToBeReplenish.operations.forEach(op => {
-      replenishBatch$ = replenishBatch$.pipe(
-        switchMap(() => {
-          return this._bapiService.logoffInputBatch({ name: op.name },
-            this.machineData, this.operatorData, { name: componentToBeReplenish.batchName }, op.pos);
-        })
-      );
-    });
-    // 2. Adjust Batch if quantity < 0
-    if (componentToBeReplenish.batchQty < 0) {
-      replenishBatch$ = replenishBatch$.pipe(
-        switchMap(_ => {
-          return this._batchService.getBatchInformationAllowNegativeQuantity(componentToBeReplenish.batchName);
-        }),
-        switchMap((batch) => {
-          return this._bapiService.changeBatchQuantityAndStatus(batch, 0, 'F', this.operatorData);
-        })
-      );
-    }
-    // 3. Merge Batch
-    replenishBatch$ = replenishBatch$.pipe(
-      switchMap(_ => {
-        return this._bapiService.mergeBatch({ name: componentToBeReplenish.batchName }, [newBatch.name], this.operatorData);
-      })
-    );
-
-    // 4. Logon Again
-    componentToBeReplenish.operations.forEach(op => {
-      replenishBatch$ = replenishBatch$.pipe(
-        switchMap(() => {
-          return this._bapiService.logonInputBatch({ name: op.name },
-            this.machineData, this.operatorData, { name: componentToBeReplenish.batchName, material: componentToBeReplenish.material },
-            op.pos);
-        })
-      );
-    });
-
-    return replenishBatch$.pipe(
-      map((ret: IActionResult) => {
-        return Object.assign(ret, {
-          description: `Batch ${componentToBeReplenish.batchName} Replenished!`
-        });
-      }
-      ));
+    return this._batchWebApi.replenishInputBatch(this.form.value.machineData, this.form.value.batchData,
+      this.operatorData).pipe(
+        map(_ => {
+          return {
+            isSuccess: true,
+            description: `Batch ${this.batchData.name} Replenished!`,
+          }
+        }));
   }
 
   //#endregion

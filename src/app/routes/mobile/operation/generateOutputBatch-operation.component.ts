@@ -13,6 +13,13 @@ import { MasterService } from '@core/hydra/service/master.service';
 import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
 import { ReasonCode } from '@core/hydra/entity/reasonCode';
 import { Operation } from '@core/hydra/entity/operation';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { OperationWebApi } from '@core/webapi/operation.webapi';
+import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
+import { deepExtend } from '@core/utils/helpers';
+import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
+import { MaterialBatch } from '@core/hydra/entity/batch';
 
 @Component({
   selector: 'fw-operation-generate-output-batch',
@@ -47,10 +54,11 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _machineService: MachineService,
-    private _operationService: OperationService,
-    private _masterService: MasterService,
-    private _bapiService: BDEBapiService
+    private _machineWebApi: MachineWebApi,
+    private _operationWebApi: OperationWebApi,
+    private _materialMasterWebApi: MaterialMasterWebApi,
+    private _printLabelWebApi: PrintLabelWebApi,
+    private _batchWebApi: BatchWebApi,
   ) {
     super(injector);
     this.addControls({
@@ -134,7 +142,7 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine).pipe(
+    return this._machineWebApi.getMachine(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
@@ -145,7 +153,7 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
         }
       }),
       switchMap(machine => {
-        return this._machineService.getScrapReasonByMachine(machine.machineName).pipe(
+        return this._machineWebApi.getScrapReasonByMachine(machine.machineName).pipe(
           map(reasonCodes => {
             this.reasonCodes$.next(reasonCodes);
             return machine;
@@ -157,22 +165,27 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Operation Reqeust
-  requestOperationDataSuccess = (_) => {
-    this.document.getElementById(`quantity`).focus();
+  requestOperationDataSuccess = (operation: Operation) => {
+
+    if (this.storedData && this.storedData.outputBatchQtys && this.storedData.outputBatchQtys[operation.article]) {
+      this.form.controls.quantity.setValue(this.storedData.outputBatchQtys[operation.article]);
+    }
+
+    setTimeout(() => this.document.getElementById(`quantity`).focus(), 0);
   }
 
   requestOperationDataFailed = () => {
   }
 
   requestOperationData = (): Observable<any> => {
-    return this._operationService.getOperation(this.form.value.operation).pipe(
+    return this._operationWebApi.getOperation(this.form.value.operation).pipe(
       tap((operation: Operation) => {
         if (operation.pendingProblemQty > 0) {
           throw Error('There are pending Qty, call IT please!');
         }
       }),
       switchMap((operation: Operation) => {
-        return this._masterService.getMaterialMaster(operation.article).pipe(
+        return this._materialMasterWebApi.getPartMaster(operation.article).pipe(
           map(material => {
             if (!material) {
               throw Error(`Material ${operation.article} not exist`);
@@ -208,6 +221,11 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
 
   //#region Number of Quantity Reqeust
   requestQuantityDataSuccess = () => {
+    this.storedData = deepExtend(this.storedData, {
+      outputBatchQtys: {
+        [this.operationData.article]: this.form.value.quantity
+      }
+    });
   }
 
   requestQuantityDataFailed = () => {
@@ -252,37 +270,26 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   }
 
   generateOutputBatch = () => {
-    let outputBatchGeneration$ = of(null);
     const quantity = toNumber(this.form.value.quantityData, 0);
 
-    // Partial Confirm if required
-    if (this.operationData.pendingYieldQty !== quantity) {
-      const delta = quantity - this.operationData.pendingYieldQty;
-
-      if (delta > 0) {
-        outputBatchGeneration$ = outputBatchGeneration$.pipe(
-          switchMap(_ => {
-            return this._bapiService.partialConfirmOperation(this.operationData, this.machineData, this.operatorData
-              , delta);
-          })
-        );
-      } else {
-        outputBatchGeneration$ = outputBatchGeneration$.pipe(
-          switchMap(_ => {
-            return this._bapiService.partialConfirmOperation(this.operationData, this.machineData, this.operatorData
-              , 0, delta * -1, (this.form.value.reasonCodeData ? this.form.value.reasonCodeData.codeNbr : 0));
-          })
-        );
-      }
-    }
-
-    // Change Output Batch
-    return outputBatchGeneration$.pipe(
-      switchMap(_ => {
-        return this._bapiService.changeOutputBatch(this.operationData, this.machineData, this.operationData.currentOutputBatch,
-          quantity, this.operatorData);
-      })
-    );
+    return this._operationWebApi.changeOutputBatch(this.operationData, this.machineData,
+      this.operatorData, quantity, (this.form.value.reasonCodeData ? this.form.value.reasonCodeData.codeNbr : 0)).pipe(
+        switchMap(outputBatch => {
+          return this._batchWebApi.getBatch(outputBatch).pipe(
+            switchMap((batch: MaterialBatch) => {
+              return this._printLabelWebApi.printLabel([outputBatch], this.form.value.materialData.tagTypeName,
+                batch.SAPBatch, batch.dateCode)
+            }),
+            map(_ => outputBatch)
+          )
+        }),
+        map(outputBatch => {
+          return {
+            isSuccess: true,
+            description: `Batch ${outputBatch} Generated and Printed`,
+          }
+        })
+      );
   }
 
   //#endregion

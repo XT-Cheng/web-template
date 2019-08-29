@@ -55,6 +55,21 @@ export class OperationWebApi {
         );
     }
 
+    public changeOutputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string },
+        operator: Operator, quantity: number = 0, scrapReason: number = 0) {
+        return this._http.post(`/api/operationService/changeOutputBatch`, {
+            Badge: operator.badge,
+            OperationName: operation.name,
+            MachineName: machine.machineName,
+            Quantity: quantity,
+            ScrapReason: scrapReason
+        }).pipe(
+            map((outputBatch: string) => {
+                return outputBatch;
+            })
+        );
+    }
+
     public getComponentStatus(operationName: string, machineName: string): Observable<ComponentStatus[]> {
         return this._http.get(`/api/operationService/componentStatus/${machineName}/${operationName}`).pipe(
             map((compStatus: []) => {

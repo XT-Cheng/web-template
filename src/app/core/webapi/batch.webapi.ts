@@ -221,14 +221,30 @@ export class BatchWebApi {
     }
 
     logonInputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string }, operator: Operator,
-        batch: MaterialBatch | { name: string, material: string }, pos: number) {
+        batch: MaterialBatch, pos: number) {
         return this._http.post(`/api/batchService/logonInputBatch`, {
             Badge: operator.badge,
             OperationName: operation.name,
             MachineName: machine.machineName,
             BatchMaterial: batch.material,
             BatchName: batch.name,
+            Quantity: batch.quantity,
             Position: pos
+        }).pipe(
+            map((loggedOn: string) => {
+                return loggedOn;
+            })
+        );
+    }
+
+    replenishInputBatch(machine: Machine | { machineName: string },
+        batch: MaterialBatch, operator: Operator) {
+        return this._http.post(`/api/batchService/replenishInputBatch`, {
+            Badge: operator.badge,
+            MachineName: machine.machineName,
+            BatchMaterial: batch.material,
+            BatchName: batch.name,
+            Quantity: batch.quantity,
         }).pipe(
             map((loggedOn: string) => {
                 return loggedOn;
