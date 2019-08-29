@@ -27,6 +27,7 @@ import { BatchWebApi } from './webapi/batch.webapi';
 import { MaterialMasterWebApi } from './webapi/materialMaster.webapi';
 import { PrinterWebApi } from './webapi/printer.webapi';
 import { PrintLabelWebApi } from './webapi/printLabel.webapi';
+import { OperationWebApi } from './webapi/operation.webapi';
 
 @NgModule({
   providers: [
@@ -55,7 +56,8 @@ import { PrintLabelWebApi } from './webapi/printLabel.webapi';
     BatchWebApi,
     MaterialMasterWebApi,
     PrinterWebApi,
-    PrintLabelWebApi
+    PrintLabelWebApi,
+    OperationWebApi,
   ]
 })
 export class CoreModule {

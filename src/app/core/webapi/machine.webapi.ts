@@ -75,50 +75,53 @@ export class MachineWebApi {
         //#endregion
 
         //#region Machine
+        if (machine.ComponentsLoggedOn) {
+            Object.keys(machine.ComponentsLoggedOn).forEach((key) => {
+                var c = machine.ComponentsLoggedOn[key];
 
-        Object.keys(machine.ComponentsLoggedOn).forEach((key) => {
-            var c = machine.ComponentsLoggedOn[key];
+                ret.componentsLoggedOn.push({
+                    operations: c.OperationPos.map(op => {
+                        return {
+                            name: op.Operation,
+                            pos: op.Pos
+                        }
+                    }),
+                    batchName: c.BatchName,
+                    material: c.Material,
+                    machine: c.Machine,
+                    allowLogoff: c.AllowLogoff,
+                    batchQty: c.BatchQty,
+                });
+            })
+        }
 
-            ret.componentsLoggedOn.push({
-                operations: c.OperationPos.map(op => {
-                    return {
-                        name: op.Operation,
-                        pos: op.Pos
-                    }
-                }),
-                batchName: c.BatchName,
-                material: c.Material,
-                machine: c.Machine,
-                allowLogoff: c.AllowLogoff,
-                batchQty: c.BatchQty,
-            });
-        })
+        if (machine.ToolsLoggedOn) {
+            ret.toolsLoggedOn = machine.ToolsLoggedOn.map(tool => {
+                return {
+                    loggedOnOperation: tool.DeputyOperation,
+                    loggedOnMachine: tool.ToolMachine,
+                    toolName: tool.ToolName,
+                    toolId: tool.ToolId,
+                    toolStatus: tool.ToolStatus,
+                    currentCycle: tool.CurrentCycle,
+                };
+            })
+        }
 
-        ret.toolsLoggedOn = machine.ToolsLoggedOn.map(tool => {
-            return {
-                loggedOnOperation: tool.DeputyOperation,
-                loggedOnMachine: tool.ToolMachine,
-                toolName: tool.ToolName,
-                toolId: tool.ToolId,
-                toolStatus: tool.ToolStatus,
-                currentCycle: tool.CurrentCycle,
-            };
-        })
-
-        Object.keys(machine.OperatorsLoggedOn).forEach((key) => {
-            var c = machine.OperatorsLoggedOn[key];
-            ret.operatorsLoggedOn.push({
-                personNumber: c.PersonNumber,
-                name: c.Name,
-                badge: c.Badge
-            });
-        })
+        if (machine.OperatorsLoggedOn) {
+            Object.keys(machine.OperatorsLoggedOn).forEach((key) => {
+                var c = machine.OperatorsLoggedOn[key];
+                ret.operatorsLoggedOn.push({
+                    personNumber: c.PersonNumber,
+                    name: c.Name,
+                    badge: c.Badge
+                });
+            })
+        }
 
         //#endregion
 
         //#region Some logic
-
-
 
         //#endregion
 

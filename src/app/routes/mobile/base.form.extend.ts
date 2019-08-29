@@ -678,17 +678,17 @@ export abstract class BaseExtendForm implements OnDestroy {
   //#region Implemented Interface
 
   ngOnDestroy(): void {
-    this.deleteMachineUsed();
+    // this.deleteMachineUsed();
 
     this.destroy$.next();
   }
 
   @HostListener('window:beforeunload')
   deleteMachineUsed() {
-    if (this.storedData
-      && this.storedData.machine) {
-      this.machineService.deleteMachineUsed(this.storedData.machine).subscribe();
-    }
+    // if (this.storedData
+    //   && this.storedData.machine) {
+    //   this.machineService.deleteMachineUsed(this.storedData.machine).subscribe();
+    // }
   }
 
   //#endregion
