@@ -2,15 +2,13 @@ import { Component, Injector } from '@angular/core';
 import { Validators, FormControl } from '@angular/forms';
 import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
-import { MachineService } from '@core/hydra/service/machine.service';
 import { Operation } from '@core/hydra/entity/operation';
-import { OperationService } from '@core/hydra/service/operation.service';
 import { BaseExtendForm } from '../base.form.extend';
-import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
-import { MasterService } from '@core/hydra/service/master.service';
 import { toNumber } from '@delon/util';
 import { map, tap } from 'rxjs/operators';
-import { IActionResult } from '@core/utils/helpers';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { OperationWebApi } from '@core/webapi/operation.webapi';
+import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
 
 @Component({
   selector: 'fw-packing',
@@ -43,10 +41,9 @@ export class PackingComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _machineService: MachineService,
-    private _masterService: MasterService,
-    private _operationService: OperationService,
-    private _bapiService: BDEBapiService,
+    private _machineWebApi: MachineWebApi,
+    private _operationWebApi: OperationWebApi,
+    private _materialMasterWebApi: MaterialMasterWebApi
   ) {
     super(injector, false);
     this.addControls({
@@ -80,7 +77,7 @@ export class PackingComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine).pipe(
+    return this._machineWebApi.getMachine(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
@@ -93,7 +90,7 @@ export class PackingComponent extends BaseExtendForm {
 
   //#region Operation Reqeust
   requestOperationDataSuccess = (_) => {
-    this._masterService.getMaterialMaster(this.operationData.article).subscribe(material => {
+    this._materialMasterWebApi.getPartMaster(this.operationData.article).subscribe(material => {
       if (material) {
         this.form.controls.materialData.setValue(material);
         this.form.controls.quantity.setValue(material.standardPackageQty);
@@ -107,7 +104,13 @@ export class PackingComponent extends BaseExtendForm {
   }
 
   requestOperationData = (): Observable<Operation> => {
-    return this._operationService.getOperation(this.form.value.operation);
+    return this._operationWebApi.getOperation(this.form.value.operation).pipe(
+      tap(operation => {
+        if (operation.leadOrder) {
+          throw Error("Only Lead Order can be Packed!");
+        }
+      })
+    );
   }
 
   //#endregion
@@ -154,12 +157,13 @@ export class PackingComponent extends BaseExtendForm {
 
   packing = () => {
     // Packing
-    return this._bapiService.partialConfirmOperation(this.operationData,
+    return this._operationWebApi.partialConfirmOperation(this.operationData,
       this.machineData, this.operatorData, this.form.value.quantity).pipe(
-        map((ret: IActionResult) => {
-          return Object.assign(ret, {
-            description: `Operation ${this.operationData.name} Packed!`
-          });
+        map(_ => {
+          return {
+            isSuccess: true,
+            description: `Operation ${this.operationData.name} Packed`,
+          }
         })
       );
   }
