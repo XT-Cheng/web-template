@@ -47,9 +47,6 @@ export class ReplenishBatchComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    // private _machineService: MachineService,
-    // private _bapiService: MPLBapiService,
-    // private _batchService: BatchService,
     private _machineWebApi: MachineWebApi,
     private _batchWebApi: BatchWebApi,
   ) {

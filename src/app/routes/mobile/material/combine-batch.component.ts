@@ -269,31 +269,6 @@ export class CombineBatchComponent extends BaseExtendForm {
           description: `Batch ${this.form.value.batch1Data.name},  ${this.form.value.batch2Data.name} Split And Label Printed!`,
         };
       }));
-
-    // return forkJoin(
-    //   this._batchWebApi.splitBatch(this.form.value.batch1Data, 1, this.form.value.quantity1, this.operatorData).pipe(
-    //     switchMap((ltToPrint: string[]) => {
-    //       return this._materialMasterWebApi.getPartMaster(this.form.value.batch1Data.material).pipe(
-    //         switchMap((materialMaster: MaterialMaster) => {
-    //           return this._printLabelWebApi.printLabel(ltToPrint, materialMaster.tagTypeName,
-    //             this.form.value.batch1Data.SAPBatch, this.form.value.batch1Data.dateCode);
-    //         }));
-    //     })),
-    //   this._batchWebApi.splitBatch(this.form.value.batch2Data, 1, this.form.value.quantity2, this.operatorData).pipe(
-    //     switchMap((ltToPrint: string[]) => {
-    //       return this._materialMasterWebApi.getPartMaster(this.form.value.batch2Data.material).pipe(
-    //         switchMap((materialMaster: MaterialMaster) => {
-    //           return this._printLabelWebApi.printLabel(ltToPrint, materialMaster.tagTypeName,
-    //             this.form.value.batch2Data.SAPBatch, this.form.value.batch2Data.dateCode);
-    //         }));
-    //     }))
-    // ).pipe(
-    //   map(_ => {
-    //     return {
-    //       isSuccess: true,
-    //       description: `Batch ${this.form.value.batch1Data.name},  ${this.form.value.batch2Data.name} Split And Label Printed!`,
-    //     };
-    //   }));
   }
 
   //#endregion

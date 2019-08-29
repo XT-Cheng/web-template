@@ -179,7 +179,7 @@ export class OperationWebApi {
             Object.keys(operation.ComponentsLoggedOn).forEach((key) => {
                 var c = operation.ComponentsLoggedOn[key];
                 ret.componentsLoggedOn.set(Number.parseInt(c.key), {
-                    operations: [{ name: c.OperationPos[0].Operation, pos: c.OperationPos[0].Pos }],
+                    operations: [{ name: c.OperationPos[0].OperationName, pos: c.OperationPos[0].Pos }],
                     batchName: c.BatchName,
                     material: c.Material,
                     allowLogoff: c.AllowLogoff,

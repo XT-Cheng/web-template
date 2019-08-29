@@ -210,8 +210,9 @@ export class LogonBatchComponent extends BaseExtendForm {
   logonBatch = () => {
     this.lastOperationSelected = this.form.value.operation;
 
-    return this._batchWebApi.logonInputBatch(this.form.value.operationData, this.form.value.machineData,
-      this.operatorData, this.form.value.batchData, this.form.value.compStatusData.pos).pipe(
+    return this._batchWebApi.logonInputBatch(this.operationData, this.machineData,
+      this.batchData, this.form.value.compStatusData.pos,
+      this.operatorData).pipe(
         map(_ => {
           return {
             isSuccess: true,

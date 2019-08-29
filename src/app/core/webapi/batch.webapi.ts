@@ -205,14 +205,13 @@ export class BatchWebApi {
         )
     }
 
-    logoffInputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string }, operator: Operator,
-        batch: MaterialBatch | { name: string }, pos: number) {
+    logoffInputBatch(machine: Machine | { machineName: string },
+        batch: MaterialBatch | { name: string }, quantity: number, operator: Operator) {
         return this._http.post(`/api/batchService/logoffInputBatch`, {
             Badge: operator.badge,
-            OperationName: operation.name,
             MachineName: machine.machineName,
             BatchName: batch.name,
-            Position: pos
+            Quantity: quantity
         }).pipe(
             map((loggedOff: string) => {
                 return loggedOff;
@@ -220,8 +219,8 @@ export class BatchWebApi {
         );
     }
 
-    logonInputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string }, operator: Operator,
-        batch: MaterialBatch, pos: number) {
+    logonInputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string },
+        batch: MaterialBatch, pos: number, operator: Operator) {
         return this._http.post(`/api/batchService/logonInputBatch`, {
             Badge: operator.badge,
             OperationName: operation.name,

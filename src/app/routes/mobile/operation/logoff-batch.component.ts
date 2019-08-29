@@ -2,7 +2,7 @@ import { Component, Injector } from '@angular/core';
 import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { IActionResult } from '@core/utils/helpers';
-import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
+import { of, Observable, BehaviorSubject, throwError, forkJoin } from 'rxjs';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
@@ -11,6 +11,11 @@ import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { toNumber } from 'ng-zorro-antd';
 import { PrintService } from '@core/hydra/service/print.service';
 import { MaterialBatch } from '@core/hydra/entity/batch';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
+import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
+import { ComponentLoggedOn } from '@core/hydra/entity/operation';
+import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
 
 @Component({
   selector: 'fw-batch-logoff',
@@ -45,10 +50,14 @@ export class LogoffBatchComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _printService: PrintService,
-    private _machineService: MachineService,
-    private _bapiService: MPLBapiService,
-    private _batchService: BatchService
+    private _machineWebApi: MachineWebApi,
+    private _batchWebApi: BatchWebApi,
+    private _printLabelWebApi: PrintLabelWebApi,
+    private _materialMasterWebApi: MaterialMasterWebApi,
+    // private _printService: PrintService,
+    // private _machineService: MachineService,
+    // private _bapiService: MPLBapiService,
+    // private _batchService: BatchService
   ) {
     super(injector, false);
     this.addControls({
@@ -89,7 +98,6 @@ export class LogoffBatchComponent extends BaseExtendForm {
   requestMachineDataSuccess = (_) => {
     if (this.componentsToBeLoggedOff$.value.length > 0) {
       this.form.controls.componentToBeLoggedOffData.setValue(this.componentsToBeLoggedOff$.value[0]);
-      // setTimeout(() => this.document.getElementById(`newQty`).focus(), 0);
     }
   }
 
@@ -97,14 +105,14 @@ export class LogoffBatchComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine).pipe(
+    return this._machineWebApi.getMachine(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
         }
       }),
       map(machine => {
-        this.componentsToBeLoggedOff$.next(getComponentToBeLoggedOff(machine).filter(item => item.allowLogoff));
+        this.componentsToBeLoggedOff$.next(machine.componentsLoggedOn.filter(item => item.allowLogoff));
         return machine;
       }));
   }
@@ -157,7 +165,7 @@ export class LogoffBatchComponent extends BaseExtendForm {
 
   //#region Event Handler
 
-  componentSelected(componentSelected: ComponentToBeLoggedOff) {
+  componentSelected(componentSelected: ComponentLoggedOn) {
     this.componentStatusPopup.close();
     this.form.controls.componentToBeLoggedOffData.setValue(componentSelected);
     this.document.getElementById('newQty').focus();
@@ -180,39 +188,30 @@ export class LogoffBatchComponent extends BaseExtendForm {
   }
 
   logoffBatch = (): Observable<IActionResult> => {
-    // LogOff Batch
     const newQty = toNumber(this.form.value.newQtyData, 0);
-    let logoffBatch$ = of(null);
-    const componentToBeLoggedOff = this.form.value.componentToBeLoggedOffData as ComponentToBeLoggedOff;
-    componentToBeLoggedOff.operations.forEach(op => {
-      logoffBatch$ = logoffBatch$.pipe(
-        switchMap(() => {
-          return this._bapiService.logoffInputBatch({ name: op.name },
-            this.machineData, this.operatorData, { name: componentToBeLoggedOff.batchName }, op.pos);
+    const componentToBeLoggedOff = this.form.value.componentToBeLoggedOffData as ComponentLoggedOn;
+
+    return this._batchWebApi.logoffInputBatch(this.machineData, { name: componentToBeLoggedOff.batchName },
+      newQty, this.operatorData).pipe(
+        switchMap((batchLoggedOff: string) => {
+          return this._batchWebApi.getBatch(componentToBeLoggedOff.batchName).pipe(
+            switchMap(batch => {
+              return this._materialMasterWebApi.getPartMaster(batch.material).pipe(
+                switchMap(materialMaster => {
+                  return this._printLabelWebApi.printLabel([batchLoggedOff], materialMaster.tagTypeName,
+                    batch.SAPBatch, batch.dateCode);
+                })
+              )
+            })
+          )
+        }),
+        switchMap(_ => {
+          return of({
+            isSuccess: true,
+            description: `Batch ${componentToBeLoggedOff.batchName} Logged Off And Label Printed!`,
+          });
         })
-      );
-    });
-    let batchData: MaterialBatch;
-    return logoffBatch$.pipe(
-      switchMap(_ => {
-        return this._batchService.getBatchInformationAllowNegativeQuantity(componentToBeLoggedOff.batchName);
-      }),
-      switchMap(batch => {
-        batchData = batch;
-        return this._bapiService.changeBatchQuantityAndStatus(batch, newQty, newQty > 0 ? 'F' : 'A', this.operatorData);
-      }),
-      switchMap(ret => {
-        if (newQty > 0) {
-          return this._printService.printoutBatchLabel([componentToBeLoggedOff.batchName], this.machineData.machineName);
-        }
-        return of(ret);
-      }),
-      map((ret: IActionResult) => {
-        return Object.assign(ret, {
-          description: `Batch ${componentToBeLoggedOff.batchName} Logged Off!`
-        });
-      }
-      ));
+      )
   }
 
   //#endregion
