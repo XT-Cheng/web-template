@@ -252,6 +252,14 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
+
+    if (!this.printer)
+      return throwError(`Setup Printer first`);
+
+    return of(true);
+  }
 
   //#endregion
 

@@ -210,6 +210,9 @@ export class CombineBatchComponent extends BaseExtendForm {
   protected beforeRequestCheck(srcElement): Observable<boolean> {
     if (!srcElement) return of(true);
 
+    if (!this.printer)
+      return throwError(`Setup Printer first`);
+
     switch (srcElement.id) {
       case 'quantity1':
         if (!this.form.value.batch1Data) {

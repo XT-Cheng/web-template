@@ -137,6 +137,9 @@ export class AdjustBatchQuantityComponent extends BaseExtendForm {
   protected beforeRequestCheck(srcElement): Observable<boolean> {
     if (!srcElement) return of(true);
 
+    if (!this.printer)
+      return throwError(`Setup Printer first`);
+
     if (srcElement.id === 'newQty' && !this.batchData) {
       return throwError(`Input Batch First`);
     }

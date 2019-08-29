@@ -39,6 +39,22 @@ export class OperationWebApi {
         );
     }
 
+    public logoffOperation(operation: Operation | { name: string }, machine: Machine,
+        operator: Operator, yieldQty: number = 0, scrapQty: number = 0, scrapReason: number = 0) {
+        return this._http.post(`/api/operationService/logoff`, {
+            Badge: operator.badge,
+            OperationName: operation.name,
+            MachineName: machine.machineName,
+            Yield: yieldQty,
+            Scrap: scrapQty,
+            ScrapReason: scrapReason
+        }).pipe(
+            map((operationName: string) => {
+                return operationName;
+            })
+        );
+    }
+
     public partialConfirmOperation(operation: Operation | { name: string }, machine: Machine | { machineName: string },
         operator: Operator, yieldQty: number = 0, scrapQty: number = 0, scrapReason: number = 0) {
         return this._http.post(`/api/operationService/partialConfirm`, {

@@ -2,7 +2,7 @@ import { Component, Injector, ViewChild, ElementRef } from '@angular/core';
 import { Validators } from '@angular/forms';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { requestBatchData } from './request.common';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, Observable, throwError } from 'rxjs';
 import { tap, distinctUntilChanged, takeUntil, switchMap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { PopupComponent } from 'ngx-weui';
@@ -119,7 +119,14 @@ export class ReprintBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+  protected beforeRequestCheck(srcElement): Observable<boolean> {
+    if (!srcElement) return of(true);
 
+    if (!this.printer)
+      return throwError(`Setup Printer first`);
+
+    return of(true);
+  }
   //#endregion
 
   //#region Event Handler
