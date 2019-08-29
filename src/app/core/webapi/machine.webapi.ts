@@ -13,13 +13,10 @@ export class MachineWebApi {
     constructor(protected _http: HttpClient) {
     }
 
-    public changeMachineStatus(req: ChangeMachineStatusReq): Observable<IActionResult> {
+    public changeMachineStatus(req: ChangeMachineStatusReq): Observable<string> {
         return this._http.post(`/api/machineService/changeStatus`, req).pipe(
-            map(_ => {
-                return Object.assign({
-                    description: `Machine ${req.MachineName} Status Changed!`
-                });
-            }));
+            map((machineName: string) => machineName)
+        );
     }
 
     public getAvailableStatusToChange(machineName: string, manualOnly: boolean = true): Observable<{ status: number, text: string }[]> {

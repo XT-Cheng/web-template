@@ -42,7 +42,7 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
 
   constructor(injector: Injector, private _machineWebApi: MachineWebApi
   ) {
-    super(injector);
+    super(injector, false);
     this.addControls({
       machine: [null, [Validators.required], 'machineData'],
       statusNbr: [null, [Validators.required]]
@@ -97,6 +97,8 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
   //#region Exeuction
 
   changeStatusSuccess = () => {
+    this.request(this.requestMachineData, this.requestMachineDataSuccess, this.requestMachineDataFailed)
+      (null, null, `machine`);
   }
 
   changeStatusFailed = () => {
@@ -107,8 +109,14 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
       MachineName: this.machineData.machineName,
       NewStatus: this.form.value.statusNbr,
       Badge: this.operatorData.badge
-    })
-    // return this._bapiService.changeMachineStatus(this.machineData, this.form.value.statusNbr, this.operatorData);
+    }).pipe(
+      map(_ => {
+        return {
+          isSuccess: true,
+          description: `Machine ${this.machineData.machineName} Status Changed!`,
+        }
+      })
+    )
   }
 
   //#endregion
