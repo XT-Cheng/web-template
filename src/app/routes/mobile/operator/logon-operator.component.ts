@@ -10,6 +10,8 @@ import { BaseExtendForm } from '../base.form.extend';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 import { OperatorService } from '@core/hydra/service/operator.service';
 import { PopupComponent } from 'ngx-weui';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { OperatorWebApi } from '@core/webapi/operator.webapi';
 
 @Component({
   selector: 'fw-operator-logon',
@@ -44,9 +46,8 @@ export class LogonOperatorComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _machineService: MachineService,
-    private _operatorService: OperatorService,
-    private _bapiService: BDEBapiService,
+    private _machineWebApi: MachineWebApi,
+    private _operatorWebApi: OperatorWebApi,
   ) {
     super(injector, false, false);
     this.addControls({
@@ -87,6 +88,9 @@ export class LogonOperatorComponent extends BaseExtendForm {
   //#region Machine Reqeust
 
   requestMachineDataSuccess = (machine: Machine) => {
+    this.form.controls.operator.setValue(``);
+    this.form.controls.operatorData.setValue(null);
+
     this.operatorsLoggedOn$.next(machine.operatorsLoggedOn);
     setTimeout(() => {
       this.document.getElementById('operator').focus();
@@ -97,7 +101,7 @@ export class LogonOperatorComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine).pipe(
+    return this._machineWebApi.getMachine(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
@@ -123,7 +127,7 @@ export class LogonOperatorComponent extends BaseExtendForm {
   }
 
   requestOperatorData = () => {
-    return this._operatorService.getOperatorByBadge(this.form.value.operator).pipe(
+    return this._operatorWebApi.getOperatorByBadge(this.form.value.operator).pipe(
       map(operator => {
         if (operator === null) {
           throw Error(`Badge Id not exist`);
@@ -162,12 +166,12 @@ export class LogonOperatorComponent extends BaseExtendForm {
 
   logonOperator = () => {
     // LogOn Operator
-    return this._bapiService.logonOperator(this.machineData, this.form.value.operatorData).pipe(
-      map((ret: IActionResult) => {
-        return Object.assign(ret, {
-          description: `Operator ${this.form.value.operatorData.firstName} ${this.form.value.operatorData.lastName} ` +
-            `LoggedOn to ${this.machineData.machineName}`
-        });
+    return this._operatorWebApi.logonOperator(this.machineData.machineName, this.form.value.operator).pipe(
+      map((_) => {
+        return {
+          isSuccess: true,
+          description: `Opeartor ${this.form.value.operator} Logged On!`,
+        };
       })
     );
   }

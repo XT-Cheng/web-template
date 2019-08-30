@@ -10,6 +10,8 @@ import { BaseExtendForm } from '../base.form.extend';
 import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
 import { OperatorService } from '@core/hydra/service/operator.service';
 import { PopupComponent } from 'ngx-weui';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { OperatorWebApi } from '@core/webapi/operator.webapi';
 
 @Component({
   selector: 'fw-operator-logoff',
@@ -44,9 +46,8 @@ export class LogoffOperatorComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _machineService: MachineService,
-    private _operatorService: OperatorService,
-    private _bapiService: BDEBapiService,
+    private _machineWebApi: MachineWebApi,
+    private _operatorWebApi: OperatorWebApi,
   ) {
     super(injector, false, false);
     this.addControls({
@@ -91,6 +92,9 @@ export class LogoffOperatorComponent extends BaseExtendForm {
   //#region Machine Reqeust
 
   requestMachineDataSuccess = (machine: Machine) => {
+    this.form.controls.operator.setValue(``);
+    this.form.controls.operatorData.setValue(null);
+
     this.operatorsLoggedOn$.next(machine.operatorsLoggedOn);
     setTimeout(() => {
       this.document.getElementById('operator').focus();
@@ -101,7 +105,7 @@ export class LogoffOperatorComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine).pipe(
+    return this._machineWebApi.getMachine(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
@@ -123,12 +127,8 @@ export class LogoffOperatorComponent extends BaseExtendForm {
   }
 
   requestOperatorData = () => {
-    return this._operatorService.getOperatorByBadge(this.form.value.operator).pipe(
+    return this._operatorWebApi.getOperatorByBadge(this.form.value.operator).pipe(
       map(operator => {
-        if (operator === null) {
-          throw Error(`Badge Id not exist`);
-        }
-
         if (!this.operatorsLoggedOn$.value.find(op => op.badge === operator.badge)) {
           throw Error(`Badge Id not logged on`);
         }
@@ -163,12 +163,12 @@ export class LogoffOperatorComponent extends BaseExtendForm {
 
   logoffOperator = () => {
     // LogOff Operator
-    return this._bapiService.logoffOperator(this.machineData, this.form.value.operatorData).pipe(
-      map((ret: IActionResult) => {
-        return Object.assign(ret, {
-          description: `Operator ${this.form.value.operatorData.firstName} ${this.form.value.operatorData.lastName} ` +
-            `LoggedOn to ${this.machineData.machineName}`
-        });
+    return this._operatorWebApi.logoffOperator(this.machineData.machineName, this.form.value.operator).pipe(
+      map((_) => {
+        return {
+          isSuccess: true,
+          description: `Opeartor ${this.form.value.operator} Logged Off!`,
+        };
       })
     );
   }

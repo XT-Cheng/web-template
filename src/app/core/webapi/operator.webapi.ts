@@ -21,6 +21,28 @@ export class OperatorWebApi {
         )
     }
 
+    public logonOperator(machineName: string, badge: string): Observable<string> {
+        return this._http.post(`/api/operatorService/operatorLogon`, {
+            Badge: badge,
+            MachineName: machineName,
+        }).pipe(
+            map((badge: string) => {
+                return badge;
+            })
+        );
+    }
+
+    public logoffOperator(machineName: string, badge: string): Observable<string> {
+        return this._http.post(`/api/operatorService/operatorLogoff`, {
+            Badge: badge,
+            MachineName: machineName,
+        }).pipe(
+            map((badge: string) => {
+                return badge;
+            })
+        );
+    }
+
     public static translateOperator(operator: any): Operator {
         let ret = new Operator();
 
