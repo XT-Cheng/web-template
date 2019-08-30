@@ -11,7 +11,7 @@ export class Tool {
 
   toolName = '';
   toolId = -1;
-  maintenanceId = -1;
+  maintenanceId: number;
   description = '';
   currentStatus = '';
   currentStatusNr = -1;

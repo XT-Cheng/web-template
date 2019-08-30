@@ -6,6 +6,7 @@ import { ToolService } from '@core/hydra/service/tool.service';
 import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
 import { throwError, of } from 'rxjs';
 import { toNumber } from 'ng-zorro-antd';
+import { ToolWebApi } from '@core/webapi/tool.webapi';
 
 @Component({
   selector: 'fw-tool-record-cycle',
@@ -38,8 +39,9 @@ export class RecordToolCycleComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _toolService: ToolService,
-    private _bapiService: WRMBapiService,
+    private _toolWebApi: ToolWebApi,
+    // private _toolService: ToolService,
+    // private _bapiService: WRMBapiService,
   ) {
     super(injector);
     this.addControls({
@@ -73,17 +75,17 @@ export class RecordToolCycleComponent extends BaseExtendForm {
   }
 
   requestToolData = () => {
-    return this._toolService.getTool(this.form.value.tool).pipe(
+    return this._toolWebApi.getTool(this.form.value.tool).pipe(
       map(tool => {
-        if (tool === null) {
+        if (!tool) {
           throw Error(`Tool ${this.form.value.tool} invalid!`);
         }
 
-        if (tool.maintenanceId === -1) {
+        if (!tool.maintenanceId) {
           throw Error(`Tool ${this.form.value.tool} has no maintenance setup!`);
         }
 
-        if (tool.loggedOnMachine === null) {
+        if (!tool.loggedOnMachine) {
           throw Error(`Tool ${this.form.value.tool} is not loggedOn!`);
         }
 
@@ -136,7 +138,13 @@ export class RecordToolCycleComponent extends BaseExtendForm {
 
   recordCycleTool = () => {
     // Reset Tool
-    return this._bapiService.recordToolCycle({ machineName: this.form.value.toolData.loggedOnMachine }, this.form.value.added, this.operatorData);
+    return this._toolWebApi.recordToolCycle(this.toolData.loggedOnMachine, this.form.value.added, this.operatorData).pipe(
+      map(_ => {
+        return {
+          isSuccess: true,
+          description: `Tool ${this.toolData.toolName} Cycles Added!`
+        }
+      }));
   }
 
   //#endregion

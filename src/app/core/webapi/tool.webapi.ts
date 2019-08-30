@@ -46,6 +46,26 @@ export class ToolWebApi {
         )
     }
 
+    public resetTool(toolId: number, maintenanceId: number, operator: Operator): Observable<number> {
+        return this._http.post(`/api/toolService/resetMaintenance`, {
+            MaintenanceId: maintenanceId,
+            ResourceId: toolId,
+            Badge: operator.badge
+        }).pipe(
+            map((toolId: number) => toolId)
+        )
+    }
+
+    public recordToolCycle(machineName: string, cycles: number, operator: Operator): Observable<string> {
+        return this._http.post(`/api/toolService/recordToolCycle`, {
+            MachineName: machineName,
+            Cycles: cycles,
+            Badge: operator.badge
+        }).pipe(
+            map((machineName: string) => machineName)
+        )
+    }
+
     public static translate(tool: any): Tool {
         var ret = new Tool();
 
@@ -61,6 +81,7 @@ export class ToolWebApi {
         ret.occupied = tool.Occupied;
         ret.loggedOnMachine = tool.LoggedOnMachine;
         ret.loggedOnOperation = tool.LoggedOnOperation
+        ret.maintenanceId = tool.MaintenanceId
 
         return ret;
     }

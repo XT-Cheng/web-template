@@ -4,6 +4,7 @@ import { map } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { ToolService } from '@core/hydra/service/tool.service';
 import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
+import { ToolWebApi } from '@core/webapi/tool.webapi';
 
 @Component({
   selector: 'fw-tool-reset-maintenance',
@@ -36,8 +37,7 @@ export class ResetToolMaintenanceComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _toolService: ToolService,
-    private _bapiService: WRMBapiService,
+    private _toolWebApi: ToolWebApi,
   ) {
     super(injector);
     this.addControls({
@@ -68,13 +68,13 @@ export class ResetToolMaintenanceComponent extends BaseExtendForm {
   }
 
   requestToolData = () => {
-    return this._toolService.getTool(this.form.value.tool).pipe(
+    return this._toolWebApi.getTool(this.form.value.tool).pipe(
       map(tool => {
         if (tool === null) {
           throw Error(`Tool ${this.form.value.tool} invalid!`);
         }
 
-        if (tool.maintenanceId === -1) {
+        if (!tool.maintenanceId) {
           throw Error(`Tool ${this.form.value.tool} has no maintenance setup!`);
         }
 
@@ -104,7 +104,14 @@ export class ResetToolMaintenanceComponent extends BaseExtendForm {
 
   resetTool = () => {
     // Reset Tool
-    return this._bapiService.resetTool(this.form.value.toolData, this.operatorData);
+    return this._toolWebApi.resetTool(this.form.value.toolData.toolId, this.form.value.toolData.maintenanceId,
+      this.operatorData).pipe(
+        map(_ => {
+          return {
+            isSuccess: true,
+            description: `Tool ${this.toolData.toolName} Maintenance Reset!`
+          }
+        }));
   }
 
   //#endregion
