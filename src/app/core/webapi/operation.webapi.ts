@@ -4,7 +4,7 @@ import { Operation, ComponentStatus, ToolStatus } from "@core/hydra/entity/opera
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { Operator } from "@core/hydra/entity/operator";
-import { Machine } from "@core/hydra/entity/machine";
+import { Machine, MachineOutput } from "@core/hydra/entity/machine";
 
 @Injectable()
 export class OperationWebApi {
@@ -215,6 +215,24 @@ export class OperationWebApi {
                 });
             })
         }
+        //#endregion
+
+        //#region Operation Statistic
+
+        if (operation.CurrentShiftOutput) {
+            ret.currentShiftOutput = new MachineOutput();
+            ret.currentShiftOutput.yield = operation.CurrentShiftOutput.Yield;
+
+            Object.keys(operation.CurrentShiftOutput.Scrap).forEach((key) => {
+                var c = operation.CurrentShiftOutput.Scrap[key];
+                ret.currentShiftOutput.scrap.set(Number.parseInt(key), {
+                    scrap: c.ScrapQuantity,
+                    scrapCode: c.ScrapQuantity,
+                    scrapText: c.ScrapReason
+                });
+            })
+        }
+
         //#endregion
 
         return ret;

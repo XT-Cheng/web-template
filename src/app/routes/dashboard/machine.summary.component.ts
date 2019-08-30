@@ -15,6 +15,7 @@ import { ProcessType } from '@core/hydra/entity/checkList';
 import { getComponentStatus } from '@core/hydra/utils/operationHelper';
 import { MaterialPreparationComponent } from './widget/materialPreparation.component';
 import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
+import { MaintenanceStatusEnum } from '@core/hydra/entity/tool';
 
 @Component({
   selector: 'fw-machine-summary',
@@ -148,7 +149,7 @@ export class MachineSummaryComponent implements OnInit {
     this.machine.output.forEach((value, key) => {
       yields.push({
         x: format(key, 'HH:mm'),
-        y: value.yield
+        y: value.output
       });
     });
 
@@ -407,7 +408,7 @@ export class MachineSummaryComponent implements OnInit {
     const result = [];
     if (machine.currentOperation) {
       this.machine.toolsLoggedOn.forEach(logon => {
-        if (logon.toolStatus === 3) {
+        if (logon.toolStatus && logon.toolStatus === MaintenanceStatusEnum.RED) {
           result.push({
             toolName: logon.toolName,
           });

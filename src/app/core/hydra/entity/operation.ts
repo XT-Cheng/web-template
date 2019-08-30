@@ -1,5 +1,6 @@
 import { toNumber } from '@delon/util';
 import { MachineOutput } from './machine';
+import { MaintenanceStatusEnum } from './tool';
 
 export class Operation {
   static FRACTION_DIGIT = 2;
@@ -13,7 +14,7 @@ export class Operation {
 
     for (let i = 48; i > 0; i -= 1) {
       this.output.set(new Date(beginDay - interval * i), {
-        yield: 0,
+        output: 0,
         scrap: 0,
         performance: 0,
       });
@@ -125,7 +126,7 @@ export class Operation {
 }
 
 export class OpeartionOutput {
-  yield = 0;
+  output = 0;
   scrap = 0;
   performance = 0;
 }
@@ -168,7 +169,7 @@ export class ToolLoggedOn {
   loggedOnMachine = '';
   toolName = '';
   toolId = -1;
-  toolStatus = ``;
+  toolStatus: MaintenanceStatusEnum;
   currentCycle = -1;
 }
 

@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { Injectable } from "@angular/core";
-import { Tool } from "@core/hydra/entity/tool";
+import { Tool, MaintenanceStatusEnum } from "@core/hydra/entity/tool";
 import { Operator } from "@core/hydra/entity/operator";
 
 @Injectable()
@@ -77,11 +77,11 @@ export class ToolWebApi {
         ret.intervalCycles = tool.IntervalCycles;
         ret.currentCycles = tool.CurrentCycles;
         ret.nextMaintennaceCycles = tool.NextMaintennaceCycles;
-        ret.maintenanceStatus = tool.MaintenanceStatus;
+        ret.maintenanceStatus = tool.MaintenanceStatus ? MaintenanceStatusEnum[tool.MaintenanceStatus as string] : null;
         ret.occupied = tool.Occupied;
         ret.loggedOnMachine = tool.LoggedOnMachine;
-        ret.loggedOnOperation = tool.LoggedOnOperation
-        ret.maintenanceId = tool.MaintenanceId
+        ret.loggedOnOperation = tool.LoggedOnOperation;
+        ret.maintenanceId = tool.MaintenanceId;
 
         return ret;
     }

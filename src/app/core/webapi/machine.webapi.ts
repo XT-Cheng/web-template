@@ -3,12 +3,14 @@ import { Observable } from "rxjs";
 import { IActionResult } from "@core/utils/helpers";
 import { map } from "rxjs/operators";
 import { BaseRequest } from "./base.request";
-import { Machine } from "@core/hydra/entity/machine";
+import { Machine, MachineOEE, MachineAlarmSetting, MachineOutput } from "@core/hydra/entity/machine";
 import { Injectable } from "@angular/core";
 import { OperationWebApi } from "./operation.webapi";
 import { ReasonCode } from "@core/hydra/entity/reasonCode";
 import { ToolMachine } from "@core/hydra/entity/toolMachine";
 import { Operator } from "@core/hydra/entity/operator";
+import { ProcessType, CheckList, CheckListResult } from "@core/hydra/entity/checkList";
+import { MaintenanceStatusEnum } from "@core/hydra/entity/tool";
 
 @Injectable()
 export class MachineWebApi {
@@ -116,6 +118,7 @@ export class MachineWebApi {
         //#endregion
 
         //#region Machine
+
         if (machine.ComponentsLoggedOn) {
             Object.keys(machine.ComponentsLoggedOn).forEach((key) => {
                 var c = machine.ComponentsLoggedOn[key];
@@ -143,7 +146,7 @@ export class MachineWebApi {
                     loggedOnMachine: tool.ToolMachine,
                     toolName: tool.ToolName,
                     toolId: tool.ToolId,
-                    toolStatus: tool.ToolStatus,
+                    toolStatus: tool.ToolStatus ? MaintenanceStatusEnum[tool.ToolStatus as string] : null,
                     currentCycle: tool.CurrentCycle,
                 };
             })
@@ -160,13 +163,113 @@ export class MachineWebApi {
             })
         }
 
+        //#region CheckList
+
+        if (machine.CheckLists) {
+            Object.keys(machine.CheckLists).forEach((key) => {
+                var c = machine.CheckLists[key];
+                var checkList = new CheckList();
+                checkList.processType = ProcessType[key];
+                checkList.checkListType = c.CheckListType;
+                checkList.headerId = c.HeaderId;
+
+                checkList.items = c.Items.map(item => {
+                    return {
+                        sequence: item.Sequence,
+                        shortText: item.ShortText
+                    }
+                })
+
+                ret.checkLists.set(ProcessType[key], checkList);
+            })
+        }
+
+        if (machine.CheckListResultsOfCurrentShift) {
+            Object.keys(machine.CheckListResultsOfCurrentShift).forEach((key) => {
+                var c = machine.CheckListResultsOfCurrentShift[key];
+
+                var checkListResult = new CheckListResult();
+                checkListResult.sequence = c.Sequence;
+                checkListResult.answer = c.Answer;
+                checkListResult.criticalAnswer = c.CriticalAnswer;
+                checkListResult.checkListType = c.CheckListType;
+                checkListResult.headerId = c.HeaderId;
+                checkListResult.operationName = c.OperationName;
+                checkListResult.finishedAt = new Date(c.FinishedAt);
+                checkListResult.finishedBy = c.FinishedBy;
+                checkListResult.comment = c.Comment;
+
+                ret.checkListResultsOfCurrentShift.set(Number.parseInt(key), checkListResult);
+            })
+        }
+
+        if (machine.CheckListResultsOfChangeOver) {
+            Object.keys(machine.CheckListResultsOfChangeOver).forEach((key) => {
+                var c = machine.CheckListResultsOfChangeOver[key];
+
+                var checkListResult = new CheckListResult();
+                checkListResult.sequence = c.Sequence;
+                checkListResult.answer = c.Answer;
+                checkListResult.criticalAnswer = c.CriticalAnswer;
+                checkListResult.checkListType = c.CheckListType;
+                checkListResult.headerId = c.HeaderId;
+                checkListResult.operationName = c.OperationName;
+                checkListResult.finishedAt = new Date(c.FinishedAt);
+                checkListResult.finishedBy = c.FinishedBy;
+                checkListResult.comment = c.Comment;
+
+                ret.checkListResultsOfChangeOver.set(Number.parseInt(key), checkListResult);
+            })
+        }
+
         ret.changeShiftCheckListFinished = machine.ChangeShiftCheckListFinished;
 
         //#endregion
 
-        //#region CheckList
+        //#endregion
 
+        //#region Machine Statistics
 
+        if (machine.AlarmSetting) {
+            ret.alarmSetting = new MachineAlarmSetting();
+            ret.alarmSetting.oeeLower = machine.AlarmSetting.OEE_Lower;
+            ret.alarmSetting.oeeUpper = machine.AlarmSetting.OEE_Upper;
+            ret.alarmSetting.scrapLower = machine.AlarmSetting.Scrap_Lower;
+            ret.alarmSetting.scrapUpper = machine.AlarmSetting.Scrap_Upper;
+        }
+
+        if (machine.CurrentShiftOEE) {
+            ret.currentShiftOEE = new MachineOEE();
+            ret.currentShiftOEE.operationTime = machine.CurrentShiftOEE.OperationTime;
+            ret.currentShiftOEE.availability = machine.CurrentShiftOEE.Availability;
+            ret.currentShiftOEE.performance = machine.CurrentShiftOEE.Performance;
+            ret.currentShiftOEE.quality = machine.CurrentShiftOEE.Quality;
+        }
+
+        if (machine.CurrentShiftOutput) {
+            ret.currentShiftOutput = new MachineOutput();
+            ret.currentShiftOutput.yield = machine.CurrentShiftOutput.Yield;
+
+            Object.keys(machine.CurrentShiftOutput.Scrap).forEach((key) => {
+                var c = machine.CurrentShiftOutput.Scrap[key];
+                ret.currentShiftOutput.scrap.set(Number.parseInt(key), {
+                    scrap: c.ScrapQuantity,
+                    scrapCode: c.ScrapQuantity,
+                    scrapText: c.ScrapReason
+                });
+            })
+        }
+
+        if (machine.OutputByTime) {
+            Object.keys(machine.OutputByTime).forEach((key) => {
+                var c = machine.OutputByTime[key];
+                ret.output.set(new Date(key), {
+                    output: c.Yield,
+                    scrap: c.Scrap,
+                    performance: c.Performance,
+                });
+            })
+        }
 
         //#endregion
 

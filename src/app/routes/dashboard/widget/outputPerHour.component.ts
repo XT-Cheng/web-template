@@ -47,7 +47,7 @@ export class OutputPerHourComponent implements OnInit {
     this._machine.output.forEach((value, key) => {
       yields.push({
         x: format(key, 'HH:mm'),
-        y: value.yield
+        y: value.output
       });
     });
 

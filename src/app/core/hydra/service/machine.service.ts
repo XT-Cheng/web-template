@@ -553,13 +553,13 @@ export class MachineService {
             if (found) {
               if (firstOperationRecord.has(mraItem.ORDERNUMBER)) {
                 const ot = machineRet.output.get(found);
-                ot.yield += mraItem.QUANTITY_GOOD;
+                ot.output += mraItem.QUANTITY_GOOD;
                 ot.scrap += mraItem.QUANTITY_SCRAP;
                 ot.performance += mraItem.PERFORMANCE;
               } else {
                 firstOperationRecord.set(mraItem.ORDERNUMBER, true);
                 const ot = machineRet.output.get(found);
-                ot.yield += mraItem.QUANTITY_GOOD;
+                ot.output += mraItem.QUANTITY_GOOD;
                 ot.scrap += mraItem.QUANTITY_SCRAP;
                 ot.performance += mraItem.PERFORMANCE;
               }
