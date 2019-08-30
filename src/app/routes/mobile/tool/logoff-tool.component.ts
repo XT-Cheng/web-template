@@ -5,6 +5,9 @@ import { map, switchMap, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
 import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
 import { FetchService } from '@core/hydra/service/fetch.service';
+import { ToolWebApi } from '@core/webapi/tool.webapi';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { ToolLoggedOn } from '@core/hydra/entity/operation';
 
 @Component({
   selector: 'fw-tool-logoff',
@@ -37,8 +40,8 @@ export class LogoffToolComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _machineService: MachineService,
-    private _bapiService: WRMBapiService,
+    private _toolWebApi: ToolWebApi,
+    private _machineWebApi: MachineWebApi,
   ) {
     super(injector);
     this.addControls({
@@ -63,7 +66,7 @@ export class LogoffToolComponent extends BaseExtendForm {
   }
 
   requestToolMachineData = () => {
-    return this._machineService.getToolMachine(this.form.value.toolMachine).pipe(
+    return this._machineWebApi.getToolMachine(this.form.value.toolMachine).pipe(
       tap(toolMachine => {
         if (toolMachine === null) {
           throw Error(`Tool Machine ${this.form.value.toolMachine} invalid!`);
@@ -97,9 +100,15 @@ export class LogoffToolComponent extends BaseExtendForm {
 
   logoffTool = () => {
     // LogOff Tool
-    return this._bapiService.logoffTool({ name: this.form.value.toolMachineData.toolsLoggedOn[0].loggedOnOperation },
-      { machineName: this.form.value.toolMachine }, { toolId: this.form.value.toolMachineData.toolsLoggedOn[0].toolId },
-      this.operatorData);
+    var toolLoggedOn = this.form.value.toolMachineData.toolsLoggedOn[0] as ToolLoggedOn;
+    return this._toolWebApi.logoffTool(toolLoggedOn.toolName, toolLoggedOn.toolId,
+      toolLoggedOn.loggedOnOperation, toolLoggedOn.loggedOnMachine, this.operatorData).pipe(
+        map(_ => {
+          return {
+            isSuccess: true,
+            description: `Tool ${toolLoggedOn.toolName} Logged Off!`
+          }
+        }));
   }
 
   //#endregion

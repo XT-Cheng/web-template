@@ -167,8 +167,8 @@ export class ToolLoggedOn {
   loggedOnOperation = '';
   loggedOnMachine = '';
   toolName = '';
-  toolId = '';
-  toolStatus = -1;
+  toolId = -1;
+  toolStatus = ``;
   currentCycle = -1;
 }
 

@@ -7,14 +7,20 @@ import { Machine } from "@core/hydra/entity/machine";
 import { Injectable } from "@angular/core";
 import { OperationWebApi } from "./operation.webapi";
 import { ReasonCode } from "@core/hydra/entity/reasonCode";
+import { ToolMachine } from "@core/hydra/entity/toolMachine";
+import { Operator } from "@core/hydra/entity/operator";
 
 @Injectable()
 export class MachineWebApi {
     constructor(protected _http: HttpClient) {
     }
 
-    public changeMachineStatus(req: ChangeMachineStatusReq): Observable<string> {
-        return this._http.post(`/api/machineService/changeStatus`, req).pipe(
+    public changeMachineStatus(machineName: string, newStatus: number, operator: Operator): Observable<string> {
+        return this._http.post(`/api/machineService/changeStatus`, {
+            MachineName: machineName,
+            NewStatus: newStatus,
+            Badge: operator.badge
+        }).pipe(
             map((machineName: string) => machineName)
         );
     }
@@ -65,6 +71,18 @@ export class MachineWebApi {
                 }
 
                 return MachineWebApi.translate(machine);
+            })
+        )
+    }
+
+    public getToolMachine(machineName: string): Observable<ToolMachine> {
+        return this._http.get(`/api/machineService/toolMachine/${machineName}`).pipe(
+            map((machine: any) => {
+                if (!machine) {
+                    throw Error(`${machineName} not exist!`);
+                }
+
+                return MachineWebApi.translateToolMachine(machine);
             })
         )
     }
@@ -154,9 +172,30 @@ export class MachineWebApi {
 
         return ret;
     }
+
+    public static translateToolMachine(machine: any): ToolMachine {
+        var ret = new ToolMachine();
+
+        ret.machineName = machine.MachineName;
+        ret.description = machine.Description;
+
+        if (machine.ToolsLoggedOn) {
+            ret.toolsLoggedOn = machine.ToolsLoggedOn.map(tool => {
+                return {
+                    loggedOnOperation: tool.DeputyOperation,
+                    loggedOnMachine: tool.ToolMachine,
+                    toolName: tool.ToolName,
+                    toolId: tool.ToolId,
+                    toolStatus: tool.ToolStatus,
+                    currentCycle: tool.CurrentCycle,
+                };
+            })
+        }
+
+        return ret;
+    }
 }
 
 export class ChangeMachineStatusReq extends BaseRequest {
-    public MachineName: string;
-    public NewStatus: number;
+
 }

@@ -105,11 +105,7 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
   }
 
   changeStatus = () => {
-    return this._machineWebApi.changeMachineStatus({
-      MachineName: this.machineData.machineName,
-      NewStatus: this.form.value.statusNbr,
-      Badge: this.operatorData.badge
-    }).pipe(
+    return this._machineWebApi.changeMachineStatus(this.machineData.machineName, this.form.value.statusNbr, this.operatorData).pipe(
       map(_ => {
         return {
           isSuccess: true,

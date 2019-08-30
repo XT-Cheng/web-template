@@ -172,7 +172,7 @@ export class OperationWebApi {
         if (operation.BomItems) {
             Object.keys(operation.BomItems).forEach((key) => {
                 var c = operation.BomItems[key];
-                ret.bomItems.set(Number.parseInt(c.key), {
+                ret.bomItems.set(Number.parseInt(key), {
                     material: c.Material,
                     unit: c.Unit,
                     pos: c.Pos,
@@ -183,7 +183,7 @@ export class OperationWebApi {
         if (operation.ToolItems) {
             Object.keys(operation.ToolItems).forEach((key) => {
                 var c = operation.ToolItems[key];
-                ret.toolItems.set(c.key, {
+                ret.toolItems.set(key, {
                     requiredMaterial: c.RequiredMaterial,
                     availableTools: c.AvailableTools.map(x => x),
                     requiredQty: c.RequiredQty
@@ -194,7 +194,7 @@ export class OperationWebApi {
         if (operation.ComponentsLoggedOn) {
             Object.keys(operation.ComponentsLoggedOn).forEach((key) => {
                 var c = operation.ComponentsLoggedOn[key];
-                ret.componentsLoggedOn.set(Number.parseInt(c.key), {
+                ret.componentsLoggedOn.set(Number.parseInt(key), {
                     operations: [{ name: c.OperationPos[0].OperationName, pos: c.OperationPos[0].Pos }],
                     batchName: c.BatchName,
                     material: c.Material,
@@ -208,7 +208,7 @@ export class OperationWebApi {
         if (operation.OperatorsLoggedOn) {
             Object.keys(operation.OperatorsLoggedOn).forEach((key) => {
                 var c = operation.OperatorsLoggedOn[key];
-                ret.operatorsLoggedOn.set(Number.parseInt(c.key), {
+                ret.operatorsLoggedOn.set(Number.parseInt(key), {
                     personNumber: c.PersonNumber,
                     name: c.Name,
                     badge: c.Badge

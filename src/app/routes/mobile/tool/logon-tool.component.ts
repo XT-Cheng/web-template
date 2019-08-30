@@ -15,6 +15,10 @@ import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
 import { FetchService } from '@core/hydra/service/fetch.service';
 import { replaceAll } from '@core/utils/helpers';
 import { MaintenanceStatusEnum } from '@core/hydra/entity/tool';
+import { ToolWebApi } from '@core/webapi/tool.webapi';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
+import { OperationWebApi } from '@core/webapi/operation.webapi';
 
 @Component({
   selector: 'fw-tool-logon',
@@ -25,12 +29,6 @@ import { MaintenanceStatusEnum } from '@core/hydra/entity/tool';
   },
 })
 export class LogonToolComponent extends BaseExtendForm {
-  private machineNameTBR = '$machineNameTBR';
-  private operationNameTBR = '$operationNameTBR';
-  private resIDTBR = '$resIDTBR';
-
-  private updateHYBUCHSql = `UPDATE HYBUCH SET PARAM_STR1 = '${this.operationNameTBR}'
-   WHERE KEY_TYPE = 'O' AND SUBKEY1 = '${this.machineNameTBR}' AND SUBKEY6 = '${this.resIDTBR}'`;
 
   //#region View Children
 
@@ -57,12 +55,10 @@ export class LogonToolComponent extends BaseExtendForm {
 
   constructor(
     injector: Injector,
-    private _toolService: ToolService,
-    private _machineService: MachineService,
-    private _batchService: BatchService,
-    private _operationService: OperationService,
-    private _bapiService: WRMBapiService,
-    private _fetchService: FetchService
+    private _toolWebApi: ToolWebApi,
+    private _machineWebApi: MachineWebApi,
+    private _batchWebApi: BatchWebApi,
+    private _operationWebApi: OperationWebApi,
   ) {
     super(injector, false);
     this.addControls({
@@ -91,7 +87,7 @@ export class LogonToolComponent extends BaseExtendForm {
   }
 
   requestToolData = () => {
-    return this._toolService.getTool(this.form.value.tool).pipe(
+    return this._toolWebApi.getTool(this.form.value.tool).pipe(
       tap(tool => {
         if (!tool) {
           throw Error(`Tool ${this.form.value.tool} not exist`);
@@ -124,10 +120,14 @@ export class LogonToolComponent extends BaseExtendForm {
   }
 
   requestToolMachineData = () => {
-    return this._machineService.getToolMachine(this.form.value.toolMachine).pipe(
+    return this._machineWebApi.getToolMachine(this.form.value.toolMachine).pipe(
       tap(toolMachine => {
         if (toolMachine === null) {
           throw Error(`Tool Machine ${this.form.value.toolMachine} invalid!`);
+        }
+
+        if (!this.machineData.toolMachines.find(machine => machine === toolMachine.machineName)) {
+          throw Error(`Tool Machine ${this.form.value.toolMachine} is not belongs to machine ${this.machineData.machineName}!`);
         }
       })
     );
@@ -154,7 +154,7 @@ export class LogonToolComponent extends BaseExtendForm {
   }
 
   requestMachineData = () => {
-    return this._machineService.getMachine(this.form.value.machine).pipe(
+    return this._machineWebApi.getMachine(this.form.value.machine).pipe(
       tap(machine => {
         if (!machine) {
           throw Error('Machine invalid');
@@ -183,10 +183,10 @@ export class LogonToolComponent extends BaseExtendForm {
 
   requestBatchData = () => {
     let barCodeInfo: MaterialBatch;
-    return this._batchService.getBatchInfoFrom2DBarCode(this.form.value.batch).pipe(
+    return this._batchWebApi.getBatchInfoFrom2DBarCode(this.form.value.batch).pipe(
       switchMap((barCodeData: MaterialBatch) => {
         barCodeInfo = barCodeData;
-        return this._batchService.getBatchInformationWithRunning(barCodeData.name).pipe(
+        return this._batchWebApi.getBatch(barCodeData.name).pipe(
           tap((batch: MaterialBatch) => {
             if (!batch) {
               throw Error(`${barCodeInfo.name} not exist!`);
@@ -219,10 +219,14 @@ export class LogonToolComponent extends BaseExtendForm {
   }
 
   requestOperationData = (): Observable<any> => {
-    return this._operationService.getOperation(this.form.value.operation).pipe(
-      map(operation => {
-        this.toolStatus$.next(getToolStatus(operation, this.machineData));
-        return operation;
+    return this._operationWebApi.getOperation(this.form.value.operation).pipe(
+      switchMap(operation => {
+        return this._operationWebApi.getToolStatus(operation.name, this.machineData.machineName).pipe(
+          map((toolStatus) => {
+            this.toolStatus$.next(toolStatus);
+            return operation;
+          })
+        );
       }));
   }
 
@@ -236,6 +240,11 @@ export class LogonToolComponent extends BaseExtendForm {
     if (!srcElement) return of(true);
 
     switch (srcElement.id) {
+      case 'toolMachine':
+        if (!this.form.value.machineData) {
+          return throwError(`Input Machine First`);
+        }
+        break;
       case 'batch':
         if (!this.form.value.toolMachineData) {
           return throwError(`Input Tool Machine First`);
@@ -278,7 +287,7 @@ export class LogonToolComponent extends BaseExtendForm {
     this.operations$.next([]);
 
     this.form.controls.machine.setValue(machineName);
-    this._machineService.getMachine(machineName).subscribe((machine) => {
+    this._machineWebApi.getMachine(machineName).subscribe((machine) => {
       this.form.controls.machineData.setValue(machine);
       this.operations$.next([...machine.currentOperations, ...machine.nextOperations]);
       if (machine.currentOperation) {
@@ -297,47 +306,14 @@ export class LogonToolComponent extends BaseExtendForm {
   }
 
   logonTool = () => {
-    let logonTool$ = of(null);
-    if (this.form.value.toolMachineData.toolsLoggedOn.length > 0) {
-      // Log off first
-      logonTool$ = logonTool$.pipe(
-        switchMap(_ => {
-          return this._bapiService.logoffTool({ name: this.form.value.toolMachineData.toolsLoggedOn[0].loggedOnOperation },
-            { machineName: this.form.value.toolMachine }, { toolId: this.form.value.toolMachineData.toolsLoggedOn[0].toolId },
-            this.operatorData);
-        })
-      );
-    }
-
-    if (this.toolData.loggedOnMachine) {
-      // Log off first
-      logonTool$ = logonTool$.pipe(
-        switchMap(_ => {
-          return this._bapiService.logoffTool({ name: this.toolData.loggedOnOperation },
-            { machineName: this.toolData.loggedOnMachine }, { toolId: this.toolData.toolId },
-            this.operatorData);
-        })
-      );
-    }
-
-    // LogOn Tool
-    return logonTool$.pipe(
-      switchMap(_ => {
-        return this._bapiService.logonTool({ name: this.machineData.toolLogonOrder },
-          { machineName: this.form.value.toolMachine }, this.toolData,
-          this.operatorData);
-      }),
-      switchMap(_ => {
-        return this._fetchService.query(replaceAll(this.updateHYBUCHSql,
-          [this.machineNameTBR, this.operationNameTBR, this.resIDTBR],
-          [this.form.value.toolMachine, this.operationData.name, this.toolData.toolId]));
-      }),
-      map(_ => {
-        return {
-          isSuccess: true,
-          description: `Tool ${this.toolData.toolName} Logged On!`
-        };
-      }));
+    return this._toolWebApi.logonTool(this.toolData.toolName, this.toolData.toolId,
+      this.machineData.toolLogonOrder, this.form.value.toolMachine, this.operatorData).pipe(
+        map(_ => {
+          return {
+            isSuccess: true,
+            description: `Tool ${this.toolData.toolName} Logged On!`
+          }
+        }));
   }
 
   //#endregion

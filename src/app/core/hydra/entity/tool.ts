@@ -24,7 +24,7 @@ export class Tool {
   intervalCycles = -1;
   nextMaintennaceCycles = -1;
 
-  maintenanceStatus: MaintenanceStatusEnum = null;
+  maintenanceStatus: MaintenanceStatusEnum;
 
   //#endregion
 
