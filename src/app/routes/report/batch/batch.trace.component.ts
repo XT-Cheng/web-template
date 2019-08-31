@@ -7,6 +7,7 @@ import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
 import { format } from 'date-fns';
 import { BehaviorSubject, forkJoin, of } from 'rxjs';
 import { map, switchMap, finalize } from 'rxjs/operators';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
 
 @Component({
   selector: 'app-batch-trace',
@@ -86,7 +87,9 @@ export class BatchTraceabilityComponent implements OnInit {
   //#region Constructor
 
   constructor(public msg: NzMessageService, private fb: FormBuilder,
-    private _batchService: BatchService) {
+    private _batchWebApi: BatchWebApi,
+    private _batchService: BatchService
+  ) {
     this.searchForm = this.fb.group({
       direction: [true, []],
       batch: [null, []],

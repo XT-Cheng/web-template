@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { NzMessageService, toNumber } from 'ng-zorro-antd';
-import { BatchService } from '@core/hydra/service/batch.service';
 import { STColumn } from '@delon/abc';
 import { MaterialBatch, BatchBuffer } from '@core/hydra/entity/Batch';
 import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
 import { format } from 'date-fns';
+import { BatchWebApi } from '@core/webapi/batch.webapi';
 
 @Component({
   selector: 'app-batch-general',
@@ -86,7 +86,8 @@ export class BatchGeneralComponent implements OnInit {
   //#region Constructor
 
   constructor(public msg: NzMessageService, private fb: FormBuilder,
-    private batchService: BatchService) { }
+    private _batchWebApi: BatchWebApi,
+  ) { }
 
   //#endregion
 
@@ -117,11 +118,11 @@ export class BatchGeneralComponent implements OnInit {
       lastChanged: new FormControl()
     });
 
-    this.batchService.getAllMaterialNames().subscribe(materialNames => {
+    this._batchWebApi.searchBatchMaterial(``).subscribe(materialNames => {
       this.matList = materialNames;
     });
 
-    this.batchService.getMaterialBuffers().subscribe(buffers => {
+    this._batchWebApi.getMaterialBuffers().subscribe(buffers => {
       this.buffers = buffers;
     });
   }
@@ -131,7 +132,8 @@ export class BatchGeneralComponent implements OnInit {
   //#region Public methods
 
   submitForm(): void {
-    this.batchService.getBatches(this.searchForm.value.material, this.searchForm.value.buffer, this.searchForm.value.lastChanged)
+    this._batchWebApi.searchBatch(this.searchForm.value.material ? this.searchForm.value.material.name : ``,
+      this.searchForm.value.buffer ? this.searchForm.value.buffer.name : ``, this.searchForm.value.lastChanged)
       .subscribe(batches => {
         this.originalData = batches;
         this.level = 0;
@@ -142,6 +144,15 @@ export class BatchGeneralComponent implements OnInit {
         this._isConditionActive = false;
         this._isTableActive = false;
       });
+  }
+
+  getBufferDisplay(buffer: BatchBuffer) {
+    if (!!buffer) {
+      if (!!buffer.description)
+        return `${buffer.name} - ${buffer.description}`;
+      else
+        return `${buffer.name}`;
+    }
   }
 
   resetForm(): void {
@@ -195,7 +206,7 @@ export class BatchGeneralComponent implements OnInit {
   private getBufferDescription(bufferName: string) {
     const found = this.buffers.find(buffer => buffer.name === bufferName);
 
-    if (found) return found.description;
+    if (found) return this.getBufferDisplay(found);
 
     return '';
   }
@@ -212,7 +223,7 @@ export class BatchGeneralComponent implements OnInit {
     if (bufferName) {
       intervalData = intervalData.filter(batch => {
         const buffer = this.buffers.find(b => b.name === batch.bufferName);
-        // if (buffer.parentBuffers.includes(bufferName)) return true;
+        if (buffer.parentBuffer === bufferName) return true;
         return false;
       });
     }
@@ -261,10 +272,10 @@ export class BatchGeneralComponent implements OnInit {
         // 1. Find Batch Buffer's Parents
         const buffer = this.buffers.find(b => b.name === batch.bufferName);
         directChildren.some(c => {
-          // if (buffer.parentBuffers.find(p => p === c.name)) {
-          //   toAddBuffer = c;
-          //   return true;
-          // }
+          if (buffer.parentBuffer === c.name) {
+            toAddBuffer = c;
+            return true;
+          }
 
           if (buffer.name === c.name) {
             toAddBuffer = c;
@@ -293,6 +304,7 @@ export class BatchGeneralComponent implements OnInit {
       });
       return new DataSet().createView().source(chartData);
     }
+
   }
   //#endregion
 }

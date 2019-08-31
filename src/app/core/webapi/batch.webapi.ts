@@ -97,6 +97,14 @@ export class BatchWebApi {
         )
     }
 
+    getMaterialBuffers(): Observable<BatchBuffer[]> {
+        return this._http.get(`/api/batchService/batchBuffers`).pipe(
+            map((buffers: any) => {
+                return buffers.map(buffer => BatchWebApi.translateBatchBuffer(buffer));
+            })
+        )
+    }
+
     searchBatchMaterial(materialName: string): Observable<string[]> {
         return this._http.get(`/api/batchService/material/${materialName}`).pipe(
             map((mats: string[]) => {
@@ -106,11 +114,14 @@ export class BatchWebApi {
     }
 
     searchBatch(materialName: string, bufferName: string = '', lastChangedDateTime: Date = null): Observable<MaterialBatch[]> {
-        let params = {
-            materialName: materialName
-        };
+        let params = {};
 
-        if (bufferName != '') {
+        if (!!materialName) {
+            params[`materialName`] = materialName;
+        }
+
+
+        if (!!bufferName) {
             params[`bufferName`] = bufferName;
         }
 

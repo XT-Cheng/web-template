@@ -25,7 +25,7 @@
               <nz-select nzMode="default" [nzPlaceHolder]="'app.report.condition.buffer.placeholder' | translate"
                 formControlName="buffer" nzAllowClear nzShowSearch>
                 <ng-container *ngFor="let o of buffers">
-                  <nz-option [nzValue]="o" [nzLabel]="o.description"></nz-option>
+                  <nz-option [nzValue]="o" [nzLabel]="getBufferDisplay(o)"></nz-option>
                 </ng-container>
               </nz-select>
             </nz-form-control>
@@ -42,7 +42,8 @@
       </div>
       <div nz-row>
         <div nz-col [nzSpan]="24" style="text-align: right;">
-          <button nz-button [nzType]="'primary'" (click)="submitForm()">{{'app.report.button.search' | translate}}</button>
+          <button nz-button [nzType]="'primary'"
+            (click)="submitForm()">{{'app.report.button.search' | translate}}</button>
           <button nz-button (click)="resetForm()">{{'app.report.button.clear' | translate}}</button>
         </div>
       </div>
@@ -61,10 +62,10 @@
 <ng-template #extraTemplate>
   <div nz-row>
     <div nz-col nzSpan="12">
-      <p>{{'app.report.batch.currentMaterial' | translate}}:{{currentMaterial}}</p>
+      <p>{{'app.report.batch.currentMaterial' | translate}}: {{currentMaterial}}</p>
     </div>
     <div nz-col nzSpan="12">
-      <p>{{'app.report.batch.currentBuffer' | translate}}:{{currentBufferDescription}}</p>
+      <p>{{'app.report.batch.currentBuffer' | translate}}: {{currentBufferDescription}}</p>
     </div>
     <div nz-col>
       <button nz-button nzSize='small' [disabled]='level === 0' [nzType]="'primary'" (click)='gotoUpperLevel()'>

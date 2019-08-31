@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, OnDestroy } from '@angular/core';
 import { _HttpClient, ALAIN_I18N_TOKEN } from '@delon/theme';
 import { NzMessageService, NzCarouselComponent } from 'ng-zorro-antd';
 import { format } from 'date-fns';
@@ -6,7 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Machine } from '@core/hydra/entity/machine';
 import { toNumber } from '@delon/util';
 import { Operation } from '@core/hydra/entity/operation';
-import { finalize } from 'rxjs/operators';
+import { finalize, takeUntil, startWith } from 'rxjs/operators';
 import { I18NService } from '@core/i18n/i18n.service';
 import { ReuseTabService } from '@shared/components/reuse-tab/reuse-tab.service';
 import { ChartGaugeComponent } from '@shared/components/chart/gauge.component';
@@ -15,17 +15,18 @@ import { MaterialPreparationComponent } from './widget/materialPreparation.compo
 import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
 import { MaintenanceStatusEnum } from '@core/hydra/entity/tool';
 import { MachineWebApi } from '@core/webapi/machine.webapi';
+import { Subject, interval } from 'rxjs';
 
 @Component({
   selector: 'fw-machine-summary',
   templateUrl: './machine.summary.component.html',
   styleUrls: ['./machine.summary.component.less']
 })
-export class MachineSummaryComponent implements OnInit {
+export class MachineSummaryComponent implements OnInit, OnDestroy {
   private REFRESH_INTERVAL = 15000;
 
   //#region Private field
-
+  private destroy$ = new Subject();
   private toolCycles: Map<string, { pre: number, now: number }> = new Map<string, { pre: number, now: number }>();
 
   //#endregion
@@ -68,7 +69,10 @@ export class MachineSummaryComponent implements OnInit {
       this.machineName = param.get('machineName');
       this.reuseTabService.title = `${this.i18n.fanyi('app.route.line-summary')} - ${this.machineName}`;
 
-      setInterval(() => {
+      interval(this.REFRESH_INTERVAL).pipe(
+        startWith(),
+        takeUntil(this.destroy$),
+      ).subscribe(_ => {
         this.isLoading = true;
         this._machineWebApi.getMachineWithStatistic(this.machineName).pipe(
           finalize(() => this.isLoading = false)).subscribe((machine) => {
@@ -85,20 +89,21 @@ export class MachineSummaryComponent implements OnInit {
             });
 
           });
-      }, this.REFRESH_INTERVAL);
-      this._machineWebApi.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
-        this.machine = machine;
-
-        this.machine.toolsLoggedOn.forEach(logon => {
-          const exist = this.toolCycles.get(logon.toolName);
-          if (exist) {
-            exist.pre = exist.now;
-            exist.now = logon.currentCycle;
-          } else {
-            this.toolCycles.set(logon.toolName, { pre: logon.currentCycle, now: logon.currentCycle });
-          }
-        });
       });
+
+      // this._machineWebApi.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
+      //   this.machine = machine;
+
+      //   this.machine.toolsLoggedOn.forEach(logon => {
+      //     const exist = this.toolCycles.get(logon.toolName);
+      //     if (exist) {
+      //       exist.pre = exist.now;
+      //       exist.now = logon.currentCycle;
+      //     } else {
+      //       this.toolCycles.set(logon.toolName, { pre: logon.currentCycle, now: logon.currentCycle });
+      //     }
+      //   });
+      // });
     });
   }
 
@@ -113,15 +118,6 @@ export class MachineSummaryComponent implements OnInit {
   //#region Average Yield / Scrap by Hour
 
   get averageHourYield() {
-    // if (this.machine.output.size === 0) return 0;
-
-    // let totalYield = 0;
-    // this.machine.output.forEach(item => {
-    //   totalYield += item.yield;
-    // });
-
-    // return (totalYield / this.machine.output.size * 2).toFixed(Machine.FRACTION_DIGIT);
-
     if (this.machine.currentShiftOEE.operationTime === 0) return `-`;
 
     return (this.machine.currentShiftOutput.yield / (this.machine.currentShiftOEE.operationTime / 3600)).toFixed(Machine.FRACTION_DIGIT_1);
@@ -513,4 +509,8 @@ export class MachineSummaryComponent implements OnInit {
   }
 
   //#endregion
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+  }
 }
