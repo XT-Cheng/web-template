@@ -38,6 +38,10 @@ export class BatchConnection {
   totalLevel: number;
   root: string;
   nodes: BatchConnectionNode[];
+
+  constructor() {
+    this.nodes = [];
+  }
 }
 
 export class BatchConnectionNode {

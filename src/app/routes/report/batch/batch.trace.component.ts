@@ -6,7 +6,7 @@ import { MaterialBatch, BatchBuffer, BatchConnection } from '@core/hydra/entity/
 import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
 import { format } from 'date-fns';
 import { BehaviorSubject, forkJoin, of } from 'rxjs';
-import { map, switchMap, finalize } from 'rxjs/operators';
+import { map, switchMap, finalize, catchError } from 'rxjs/operators';
 import { BatchWebApi } from '@core/webapi/batch.webapi';
 
 @Component({
@@ -88,7 +88,7 @@ export class BatchTraceabilityComponent implements OnInit {
 
   constructor(public msg: NzMessageService, private fb: FormBuilder,
     private _batchWebApi: BatchWebApi,
-    private _batchService: BatchService
+    // private _batchService: BatchService
   ) {
     this.searchForm = this.fb.group({
       direction: [true, []],
@@ -130,8 +130,8 @@ export class BatchTraceabilityComponent implements OnInit {
     this.batchDatas$.next([]);
     this.treeNodes$.next([]);
     const data$ = this.searchForm.value.direction ?
-      this._batchService.getForwardBatchConnection(this.searchForm.value.batch) :
-      this._batchService.getBackwardBatchConnection(this.searchForm.value.batch);
+      this._batchWebApi.getForwardBatchConnection(this.searchForm.value.batch) :
+      this._batchWebApi.getBackwardBatchConnection(this.searchForm.value.batch);
     data$.pipe(
       map(connection => {
         if (this.searchForm.value.direction) {
@@ -142,7 +142,7 @@ export class BatchTraceabilityComponent implements OnInit {
       }),
       switchMap((array: any[]) => {
         const [connection, batches] = array;
-        return forkJoin(of(connection), of(batches), this._batchService.getBatchesByNames(batches.map(batch => batch.batchName)));
+        return forkJoin(of(connection), of(batches), this._batchWebApi.getBatches(batches.map(batch => batch.batchName)));
       }),
       finalize(() => {
         this.searchForm.controls.batch.setValue(``);
@@ -174,7 +174,7 @@ export class BatchTraceabilityComponent implements OnInit {
       this._isChartActive = true;
       this._isConditionActive = false;
       this._isTableActive = true;
-    });
+    }, _ => { });
   }
 
   resetForm(): void {
@@ -182,6 +182,7 @@ export class BatchTraceabilityComponent implements OnInit {
   }
 
   checkChanged() {
+    this.onlyHighestBatch = !this.onlyHighestBatch;
     this.batchDatas$.next(this.searchForm.value.batches.filter(b => {
       if (this.onlyHighestBatch) {
         return b.isHighest;

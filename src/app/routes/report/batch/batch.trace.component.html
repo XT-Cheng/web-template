@@ -25,7 +25,8 @@
       </div>
       <div nz-row>
         <div nz-col [nzSpan]="24" style="text-align: right;">
-          <button nz-button [nzType]="'primary'" (click)="submitForm()">{{'app.report.button.search' | translate}}</button>
+          <button nz-button [nzType]="'primary'" [disabled]="!this.searchForm.value.batch"
+            (click)="submitForm()">{{'app.report.button.search' | translate}}</button>
           <button nz-button (click)="resetForm()">{{'app.report.button.clear' | translate}}</button>
         </div>
       </div>
@@ -42,7 +43,7 @@
   </nz-collapse>
   <nz-collapse nz-col nzSpan="18">
     <nz-collapse-panel [nzActive]="isTableActive" [nzHeader]="'app.report.table' | translate">
-      <label nz-checkbox (ngModelChange)='checkChanged()' [(ngModel)]="onlyHighestBatch">
+      <label nz-checkbox (ngModelChange)='checkChanged()' [ngModel]="onlyHighestBatch">
         {{'app.report.condition.onlyMaterialOrFinishGoods' | translate}}
       </label>
       <st #st [data]="batchDatas$ | async" [ps]="50" [columns]="columns" class="mt-sm"></st>

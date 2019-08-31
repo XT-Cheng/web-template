@@ -1,9 +1,9 @@
 import { Injectable } from "@angular/core";
 
 import { HttpClient } from "@angular/common/http";
-import { MaterialBatch, BatchBuffer } from "@core/hydra/entity/batch";
+import { MaterialBatch, BatchBuffer, BatchConnection, BatchConsumeConnectionNode, BatchConnectionNode, BatchMergeConnectionNode, BatchSplitConnectionNode } from "@core/hydra/entity/batch";
 import { Observable, throwError, of } from "rxjs";
-import { map } from "rxjs/operators";
+import { map, switchMap } from "rxjs/operators";
 import { Operator } from "@core/hydra/entity/operator";
 import { ComponentToBeChangeQty } from "@core/hydra/utils/operationHelper";
 import { ComponentLoggedOn, Operation } from "@core/hydra/entity/operation";
@@ -138,7 +138,7 @@ export class BatchWebApi {
     }
 
     getBatch(batchName: string): Observable<MaterialBatch> {
-        return this._http.get(`/api/batchService/batch//${batchName}`).pipe(
+        return this._http.get(`/api/batchService/batch/${batchName}`).pipe(
             map((batch: any) => {
                 if (!batch) {
                     throw Error(`${batchName} not exist!`);
@@ -147,6 +147,38 @@ export class BatchWebApi {
                 return BatchWebApi.translateBatch(batch);
             })
         )
+    }
+
+    getBatches(batchNames: []): Observable<MaterialBatch[]> {
+        return this._http.get(`/api/batchService/batches`, {
+            params: {
+                "batchNames": batchNames
+            }
+        }).pipe(
+            map((batches: any) => {
+                return batches.map(batch => BatchWebApi.translateBatch(batch));
+            })
+        )
+    }
+
+    getBackwardBatchConnection(batchName: string): Observable<BatchConnection> {
+        return this.getBatchInfoFrom2DBarCode(batchName).pipe(
+            switchMap((batch: MaterialBatch) => {
+                return this._http.get(`/api/batchService/backwardBatchConnection/${batch.name}`);
+            }),
+            map((connection: any) => {
+                return BatchWebApi.translateBatchConnection(connection);
+            }));
+    }
+
+    getForwardBatchConnection(batchName: string): Observable<BatchConnection> {
+        return this.getBatchInfoFrom2DBarCode(batchName).pipe(
+            switchMap((batch: MaterialBatch) => {
+                return this._http.get(`/api/batchService/forwardBatchConnection/${batch.name}`);
+            }),
+            map((connection: any) => {
+                return BatchWebApi.translateBatchConnection(connection);
+            }));
     }
 
     getRecentlyUpdatedBatch(onlyComponent: boolean): Observable<MaterialBatch[]> {
@@ -338,6 +370,54 @@ export class BatchWebApi {
         ret.dateCode = batch.DateCode;
         ret.lastChanged = new Date(batch.LastChanged);
         ret.bufferDescription = batch.BufferDescription;
+        return ret;
+    }
+
+    public static translateBatchConnection(connection: any): BatchConnection {
+        let ret = new BatchConnection();
+
+        ret.root = connection.Root;
+        ret.totalLevel = connection.TotalLeel;
+
+        connection.Nodes.map(node => {
+            let created: BatchConnectionNode;
+            if (node.OperationName && node.MachineName) {
+                created = Object.assign<BatchConsumeConnectionNode, any>(new BatchConsumeConnectionNode(), {
+                    level: node.Level,
+                    inputBatch: node.InputBatch,
+                    inputBatchMaterial: node.InputBatchMaterial,
+                    inputBatchMaterialType: node.InputBatchMaterialType,
+                    outputBatch: node.OutputBatch,
+                    outputBatchMaterial: node.OutputBatchMaterial,
+                    outputBatchMaterialType: node.OutputBatchMaterialType,
+                    machineName: node.MachineName,
+                    orderName: node.OperationName,
+                });
+            } else if (node.MachineName === '0') {
+                created = Object.assign<BatchMergeConnectionNode, any>(new BatchMergeConnectionNode(), {
+                    level: node.Level,
+                    inputBatch: node.InputBatch,
+                    inputBatchMaterial: node.InputBatchMaterial,
+                    inputBatchMaterialType: node.InputBatchMaterialType,
+                    outputBatch: node.OutputBatch,
+                    outputBatchMaterial: node.OutputBatchMaterial,
+                    outputBatchMaterialType: node.OutputBatchMaterialType,
+                });
+            } else {
+                created = Object.assign<BatchSplitConnectionNode, any>(new BatchSplitConnectionNode(), {
+                    level: node.Level,
+                    inputBatch: node.InputBatch,
+                    inputBatchMaterial: node.InputBatchMaterial,
+                    inputBatchMaterialType: node.InputBatchMaterialType,
+                    outputBatch: node.OutputBatch,
+                    outputBatchMaterial: node.OutputBatchMaterial,
+                    outputBatchMaterialType: node.OutputBatchMaterialType,
+                });
+            }
+
+            ret.nodes.push(created);
+        });
+
         return ret;
     }
 }
