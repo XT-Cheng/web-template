@@ -30,13 +30,16 @@
               {{machine.currentOperation?.totalYield}}</span>
           </p>
           <fw-g2-mini-progress *ngIf='machine.currentOperation' [percent]="machine.currentOperation?.finishRate"
-            strokeWidth="28" [target]="machine.currentOperation?.expectFinishRate" [color]="getProgressColor(machine.currentOperation?.finishRate, machine.currentOperation?.expectFinishRate)"></fw-g2-mini-progress>
+            strokeWidth="28" [target]="machine.currentOperation?.expectFinishRate"
+            [color]="getProgressColor(machine.currentOperation?.finishRate, machine.currentOperation?.expectFinishRate)">
+          </fw-g2-mini-progress>
           <ng-template #footer1>
             <p class="text-truncate mb0">
               {{'app.machine.summary.scheduleCompltedAt' | translate}}:
               <span class="ml-sm">{{format(machine.currentOperation?.planEnd)}}</span>
             </p>
-            <fw-g2-trend *ngIf='machine.currentOperation' [reverseColor]='true' [flag]="getTrendFlag(machine.currentOperation?.estimatedFinishedAt, machine.currentOperation?.planEnd)"
+            <fw-g2-trend *ngIf='machine.currentOperation' [reverseColor]='true'
+              [flag]="getTrendFlag(machine.currentOperation?.estimatedFinishedAt, machine.currentOperation?.planEnd)"
               style="display:block; margin-top:2px;">
               {{'app.machine.summary.estimateFinishedAt' | translate}}:
               <span class="ml-sm">{{format(machine.currentOperation?.estimatedFinishedAt)}}</span>
@@ -45,13 +48,13 @@
         </fw-g2-card>
       </div>
       <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
-        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.shift.output' | translate" [total]="machine.currentShiftYield"
-          totalHeight="200px" contentHeight="50px" [footer]="footer2">
+        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.shift.output' | translate"
+          [total]="machine.currentShiftYield" totalHeight="200px" contentHeight="50px" [footer]="footer2">
           <p class="text-truncate mb0">
             {{'app.machine.summary.outputPerHour' | translate}}:
             <span class="ml-sm">{{averageHourYield}}</span>
           </p>
-          <fw-g2-mini-area color="#975FE4" height="40" [data]="yieldTrend"></fw-g2-mini-area>
+          <fw-g2-mini-bar height="40" [data]="yieldTrend"></fw-g2-mini-bar>
           <ng-template #footer2>
             <fw-g2-trend [flag]="performanceFlag" [reverseColor]='true' style="display:block; margin-top:2px;">
               {{'app.machine.summary.compareToLastHour' | translate}}:
@@ -61,8 +64,8 @@
         </fw-g2-card>
       </div>
       <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
-        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.shift.scrap' | translate" [total]="machine.currentShiftScrap"
-          totalHeight="200px" contentHeight="50px" [footer]="footer3">
+        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.shift.scrap' | translate"
+          [total]="machine.currentShiftScrap" totalHeight="200px" contentHeight="50px" [footer]="footer3">
           <p class="text-truncate mb0">
             {{'app.machine.summary.scrapPerHour' | translate}}:
             <span class="ml-sm">{{averageHourScrap}}</span>
@@ -77,7 +80,8 @@
         </fw-g2-card>
       </div>
       <div nz-col nzXs="24" nzSm="12" nzMd="6" nzLg="6">
-        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.oee' | translate" totalHeight="200px" contentHeight="87px">
+        <fw-g2-card [bordered]='true' [title]="'app.machine.summary.oee' | translate" totalHeight="200px"
+          contentHeight="87px">
           <fw-g2-gauge [height]="150" [lower]='machine.alarmSetting?.oeeLower' [upper]='machine.alarmSetting?.oeeUpper'
             [percent]="machine.currentOperation ? machine.currentShiftOEE?.overAll : 0"></fw-g2-gauge>
         </fw-g2-card>
@@ -98,7 +102,8 @@
       <nz-tab [nzTitle]="'app.machine.summary.nextOperations' | translate">
         <fw-widget-next-op [machine]='machine'></fw-widget-next-op>
       </nz-tab>
-      <nz-tab *ngIf='isShiftChangeCheckListVisible' [nzTitle]="'app.machine.summary.checkListOfShiftChange' | translate">
+      <nz-tab *ngIf='isShiftChangeCheckListVisible'
+        [nzTitle]="'app.machine.summary.checkListOfShiftChange' | translate">
         <fw-widget-check-shift [machine]='machine'></fw-widget-check-shift>
       </nz-tab>
       <nz-tab *ngIf='isChangeOverCheckListVisible' [nzTitle]="'app.machine.summary.checkListOfChangeOver' | translate">

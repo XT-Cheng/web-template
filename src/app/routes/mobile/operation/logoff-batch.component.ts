@@ -1,16 +1,11 @@
 import { Component, Injector } from '@angular/core';
-import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { IActionResult } from '@core/utils/helpers';
-import { of, Observable, BehaviorSubject, throwError, forkJoin } from 'rxjs';
-import { MachineService } from '@core/hydra/service/machine.service';
+import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
-import { ComponentToBeLoggedOff, getComponentToBeLoggedOff } from '@core/hydra/utils/operationHelper';
-import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
+import { ComponentToBeLoggedOff } from '@core/hydra/utils/operationHelper';
 import { toNumber } from 'ng-zorro-antd';
-import { PrintService } from '@core/hydra/service/print.service';
-import { MaterialBatch } from '@core/hydra/entity/batch';
 import { MachineWebApi } from '@core/webapi/machine.webapi';
 import { BatchWebApi } from '@core/webapi/batch.webapi';
 import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';

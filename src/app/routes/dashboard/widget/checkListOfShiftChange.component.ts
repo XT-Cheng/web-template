@@ -57,7 +57,7 @@ export class CheckListOfShiftChangeComponent implements OnInit {
   //#region Constructor
 
   constructor(
-    public machineService: MachineService
+    // public machineService: MachineService
   ) {
 
   }

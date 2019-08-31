@@ -1,4 +1,4 @@
-import { Operation, OpeartionOutput, ComponentLoggedOn, ToolLoggedOn, OperatorLoggedOn } from './operation';
+import { Operation, OpeartionOutput, ComponentLoggedOn, ToolLoggedOn, OperatorLoggedOn, ComponentStatus, ToolStatus } from './operation';
 import { toNumber } from '@delon/util';
 import { CheckList, ProcessType, CheckListResult } from './checkList';
 
@@ -63,17 +63,6 @@ export class Machine {
   //#region Constructor
 
   constructor() {
-    // const now = new Date();
-    // const interval = 1000 * 60 * 30;
-    // const beginDay = (new Date(now.getTime() - (now.getTime() % interval))).getTime();
-
-    // for (let i = 48; i >= 0; i -= 1) {
-    //   this.output.set(new Date(beginDay - interval * i), {
-    //     output: 0,
-    //     scrap: 0,
-    //     performance: 0,
-    //   });
-    // }
   }
 
   //#endregion
@@ -130,6 +119,76 @@ export class Machine {
   }
 
   //#endregion
+
+  getComponentStatus(operation: Operation): ComponentStatus[] {
+    let ret: ComponentStatus[] = [];
+
+    operation.bomItems.forEach((item, key) => {
+      let loggedOn = this.componentsLoggedOn.find(x => x.material === item.material);
+
+      if (loggedOn) {
+        // Material found
+        ret.push({
+          operation: loggedOn.operations[0].name,
+          material: item.material,
+          pos: item.pos,
+          isReady: true,
+          batchName: loggedOn.batchName,
+          quantity: loggedOn.batchQty,
+        });
+      }
+      else {
+        ret.push({
+          operation: ``,
+          material: item.material,
+          pos: item.pos,
+          isReady: false,
+          batchName: ``,
+          quantity: null,
+        });
+      }
+    });
+
+    return ret;
+  }
+
+  getToolStatus(operation: Operation): ToolStatus[] {
+    let ret: ToolStatus[] = [];
+
+    operation.toolItems.forEach((toolItem, requiredMaterial) => {
+      let loggedOnFound = null;
+      let found = toolItem.availableTools.find(available => {
+        loggedOnFound = this.toolsLoggedOn.find(loggedOn => loggedOn.toolName === available);
+        return !!loggedOnFound;
+      });
+
+      if (found) {
+        ret.push(
+          {
+            requiredMaterial: requiredMaterial,
+            loggedOnMachine: loggedOnFound.loggedOnMachine,
+            deputyOperation: loggedOnFound.loggedOnOperation,
+            isReady: true,
+            toolId: loggedOnFound.toolId,
+            toolName: loggedOnFound.toolName
+          });
+      }
+      else {
+        ret.push(
+          {
+            requiredMaterial: requiredMaterial,
+            loggedOnMachine: ``,
+            deputyOperation: ``,
+            isReady: true,
+            toolId: ``,
+            toolName: ``,
+          });
+      }
+    });
+
+    return ret;
+
+  }
 }
 
 export class MachineAlarmSetting {

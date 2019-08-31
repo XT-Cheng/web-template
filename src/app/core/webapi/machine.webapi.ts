@@ -1,6 +1,5 @@
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { IActionResult } from "@core/utils/helpers";
 import { map } from "rxjs/operators";
 import { BaseRequest } from "./base.request";
 import { Machine, MachineOEE, MachineAlarmSetting, MachineOutput } from "@core/hydra/entity/machine";
@@ -67,6 +66,18 @@ export class MachineWebApi {
 
     public getMachine(machineName: string): Observable<Machine> {
         return this._http.get(`/api/machineService/machine/${machineName}`).pipe(
+            map((machine: any) => {
+                if (!machine) {
+                    throw Error(`${machineName} not exist!`);
+                }
+
+                return MachineWebApi.translate(machine);
+            })
+        )
+    }
+
+    public getMachineWithStatistic(machineName: string): Observable<Machine> {
+        return this._http.get(`/api/machineService/machineStatistic/${machineName}`).pipe(
             map((machine: any) => {
                 if (!machine) {
                     throw Error(`${machineName} not exist!`);

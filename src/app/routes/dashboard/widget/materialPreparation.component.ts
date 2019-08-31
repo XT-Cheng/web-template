@@ -3,7 +3,6 @@ import { STColumn, STColumnTag } from '@delon/abc';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { toNumber } from '@delon/util';
-import { getComponentStatus } from '@core/hydra/utils/operationHelper';
 
 const MAT_TAG: STColumnTag = {
   1: { text: 'In Use', color: 'green' },
@@ -73,7 +72,7 @@ export class MaterialPreparationComponent implements OnInit {
 
     if (this._machine.currentOperation) {
       const op = this._machine.currentOperation;
-      const componentStatus = getComponentStatus(op, this._machine);
+      const componentStatus = this._machine.getComponentStatus(op);
       componentStatus.forEach((comp) => {
         // 1: 'In Use',
         // 2: 'No Mat.',
@@ -95,7 +94,7 @@ export class MaterialPreparationComponent implements OnInit {
 
         ret.push({
           batchName: comp.batchName,
-          batchQty: comp.quantity.toFixed(2),
+          batchQty: comp.quantity ? comp.quantity.toFixed(2) : ``,
           material: comp.material,
           percentage: percentage,
           loaded: loaded

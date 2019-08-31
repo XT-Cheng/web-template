@@ -10,6 +10,8 @@ import {
   NgZone,
 } from '@angular/core';
 import { toNumber, toBoolean } from '@delon/util';
+import { Subscription, fromEvent } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 declare var G2: any;
 
@@ -20,7 +22,7 @@ declare var G2: any;
 })
 export class ChartMiniAreaComponent implements OnDestroy, OnChanges {
   // #region fields
-
+  private resize$: Subscription = null;
   @Input()
   color = 'rgba(24, 144, 255, 0.2)';
   @Input()
@@ -171,7 +173,21 @@ export class ChartMiniAreaComponent implements OnDestroy, OnChanges {
   }
 
   ngOnChanges(): void {
+    this.installResizeEvent();
+    this.runInstall();
+    // this.zone.runOutsideAngular(() => setTimeout(() => this.install()));
+  }
+
+  private runInstall() {
     this.zone.runOutsideAngular(() => setTimeout(() => this.install()));
+  }
+
+  private installResizeEvent() {
+    if (this.resize$) return;
+
+    this.resize$ = fromEvent(window, 'resize')
+      .pipe(debounceTime(200))
+      .subscribe(() => this.runInstall());
   }
 
   ngOnDestroy(): void {

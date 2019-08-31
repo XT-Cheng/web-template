@@ -25,7 +25,6 @@ import {
   MACHINE_STATUS_CHANGSHIT_SETUP
 } from '../constants';
 import { MachineService } from '@core/hydra/service/machine.service';
-import { getToolStatus } from '@core/hydra/utils/operationHelper';
 
 @Injectable()
 export class BDEBapiService {
@@ -187,42 +186,42 @@ export class BDEBapiService {
       );
   }
 
-  changeOutputBatch(operation: Operation, machine: Machine, currentBatch: string, qty: number,
-    operator: Operator): Observable<IActionResult> {
+  // changeOutputBatch(operation: Operation, machine: Machine, currentBatch: string, qty: number,
+  //   operator: Operator): Observable<IActionResult> {
 
-    return this._webAPIService.getNextLicenseTag(operation.article, operation.name).pipe(
-      switchMap(batchName => {
-        return new ChangeOutputBatch(operation.name, machine.machineName, operator.badge, batchName, 0).execute(this._http);
-      }),
-      switchMap(_ => {
-        return this._batchService.getBatchInformationWithRunning(currentBatch, true);
-      }),
-      switchMap(materialBatch => {
-        const toolStatus = getToolStatus(operation, machine);
-        const toolUsed = toolStatus.map(status => {
-          if (status.isReady) return status.toolName;
-        });
-        return this._bapiMPL.modifyOutputBatch(materialBatch, qty, operator, toolUsed.join(','));
-      }),
-      switchMap(ret => {
-        if (qty > 0) {
-          return this._printService.printoutBatchLabel([currentBatch], machine.machineName);
-        }
-        return of(ret);
-      }),
-      map((ret: IActionResult) => {
-        if (qty > 0) {
-          return Object.assign(ret, {
-            description: `Batch ${currentBatch} Generated And Print!`
-          });
-        } else {
-          return Object.assign(ret, {
-            description: `Batch ${currentBatch} Abandoned!`
-          });
-        }
-      })
-    );
-  }
+  //   return this._webAPIService.getNextLicenseTag(operation.article, operation.name).pipe(
+  //     switchMap(batchName => {
+  //       return new ChangeOutputBatch(operation.name, machine.machineName, operator.badge, batchName, 0).execute(this._http);
+  //     }),
+  //     switchMap(_ => {
+  //       return this._batchService.getBatchInformationWithRunning(currentBatch, true);
+  //     }),
+  //     switchMap(materialBatch => {
+  //       const toolStatus = getToolStatus(operation, machine);
+  //       const toolUsed = toolStatus.map(status => {
+  //         if (status.isReady) return status.toolName;
+  //       });
+  //       return this._bapiMPL.modifyOutputBatch(materialBatch, qty, operator, toolUsed.join(','));
+  //     }),
+  //     switchMap(ret => {
+  //       if (qty > 0) {
+  //         return this._printService.printoutBatchLabel([currentBatch], machine.machineName);
+  //       }
+  //       return of(ret);
+  //     }),
+  //     map((ret: IActionResult) => {
+  //       if (qty > 0) {
+  //         return Object.assign(ret, {
+  //           description: `Batch ${currentBatch} Generated And Print!`
+  //         });
+  //       } else {
+  //         return Object.assign(ret, {
+  //           description: `Batch ${currentBatch} Abandoned!`
+  //         });
+  //       }
+  //     })
+  //   );
+  // }
 
   logonOperator(machine: Machine | { machineName: string }, operator: Operator | { badge: string }): Observable<IActionResult> {
     return new LogonOperator(machine.machineName, operator.badge).execute(this._http).pipe(

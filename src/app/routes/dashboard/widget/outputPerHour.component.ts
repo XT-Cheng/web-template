@@ -22,7 +22,7 @@ export class OutputPerHourComponent implements OnInit {
   //#region Constructor
 
   constructor(
-    public machineService: MachineService
+    // public machineService: MachineService
   ) {
 
   }

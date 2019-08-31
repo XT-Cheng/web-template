@@ -3,7 +3,6 @@ import { _HttpClient, ALAIN_I18N_TOKEN } from '@delon/theme';
 import { NzMessageService, NzCarouselComponent } from 'ng-zorro-antd';
 import { format } from 'date-fns';
 import { ActivatedRoute } from '@angular/router';
-import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { toNumber } from '@delon/util';
 import { Operation } from '@core/hydra/entity/operation';
@@ -12,10 +11,10 @@ import { I18NService } from '@core/i18n/i18n.service';
 import { ReuseTabService } from '@shared/components/reuse-tab/reuse-tab.service';
 import { ChartGaugeComponent } from '@shared/components/chart/gauge.component';
 import { ProcessType } from '@core/hydra/entity/checkList';
-import { getComponentStatus } from '@core/hydra/utils/operationHelper';
 import { MaterialPreparationComponent } from './widget/materialPreparation.component';
 import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
 import { MaintenanceStatusEnum } from '@core/hydra/entity/tool';
+import { MachineWebApi } from '@core/webapi/machine.webapi';
 
 @Component({
   selector: 'fw-machine-summary',
@@ -51,7 +50,8 @@ export class MachineSummaryComponent implements OnInit {
   //#region Constructor
 
   constructor(
-    public machineService: MachineService,
+    // public machineService: MachineService,
+    public _machineWebApi: MachineWebApi,
     public msg: NzMessageService,
     private route: ActivatedRoute,
     private reuseTabService: ReuseTabService,
@@ -70,7 +70,7 @@ export class MachineSummaryComponent implements OnInit {
 
       setInterval(() => {
         this.isLoading = true;
-        this.machineService.getMachineWithStatistic(this.machineName).pipe(
+        this._machineWebApi.getMachineWithStatistic(this.machineName).pipe(
           finalize(() => this.isLoading = false)).subscribe((machine) => {
             this.machine = machine;
 
@@ -86,7 +86,7 @@ export class MachineSummaryComponent implements OnInit {
 
           });
       }, this.REFRESH_INTERVAL);
-      this.machineService.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
+      this._machineWebApi.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
         this.machine = machine;
 
         this.machine.toolsLoggedOn.forEach(logon => {
@@ -424,7 +424,7 @@ export class MachineSummaryComponent implements OnInit {
 
     if (machine.currentOperation) {
       const op = machine.currentOperation;
-      const componentStatus = getComponentStatus(op, machine);
+      const componentStatus = machine.getComponentStatus(op);
       componentStatus.forEach((comp) => {
         // 1: 'In Use',
         // 2: 'No Mat.',

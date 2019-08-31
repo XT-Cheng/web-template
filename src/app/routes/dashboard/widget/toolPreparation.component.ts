@@ -2,10 +2,10 @@ import { Component, OnInit, Input } from '@angular/core';
 import { STColumn, STColumnTag } from '@delon/abc';
 import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
-import { getToolStatus } from '@core/hydra/utils/operationHelper';
 import { of, forkJoin, BehaviorSubject } from 'rxjs';
 import { ToolService } from '@core/hydra/service/tool.service';
 import { Tool, MaintenanceStatusEnum } from '@core/hydra/entity/tool';
+import { ToolWebApi } from '@core/webapi/tool.webapi';
 
 const TOOL_TAG: STColumnTag = {
   1: { text: 'In Use', color: 'green' },
@@ -61,8 +61,9 @@ export class ToolPreparationComponent implements OnInit {
   //#region Constructor
 
   constructor(
-    public machineService: MachineService,
-    private toolService: ToolService
+    private _toolWebApi: ToolWebApi,
+    // public machineService: MachineService,
+    // private toolService: ToolService
   ) {
 
   }
@@ -95,13 +96,13 @@ export class ToolPreparationComponent implements OnInit {
   private getToolLoggedOnTable() {
     if (this._machine.currentOperation) {
       const op = this._machine.currentOperation;
-      const toolStatuses = getToolStatus(op, this._machine);
+      const toolStatuses = this._machine.getToolStatus(op);
       const ret = [];
       const tool$ = [];
 
       toolStatuses.forEach((tool) => {
         if (tool.toolName) {
-          tool$.push(this.toolService.getTool(tool.toolName));
+          tool$.push(this._toolWebApi.getTool(tool.toolName));
         }
       });
 

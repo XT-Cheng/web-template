@@ -1,13 +1,9 @@
 import { Component, Injector } from '@angular/core';
-import { BatchService } from '@core/hydra/service/batch.service';
 import { Validators } from '@angular/forms';
 import { IActionResult } from '@core/utils/helpers';
 import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
-import { MachineService } from '@core/hydra/service/machine.service';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
-import { ComponentToBeReplenish, getComponentToBeReplenish } from '@core/hydra/utils/operationHelper';
-import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
 import { requestBatchData } from '../material/request.common';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { MachineWebApi } from '@core/webapi/machine.webapi';
