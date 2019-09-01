@@ -106,6 +106,7 @@ export class LogonToolComponent extends BaseExtendForm {
   //#region Tool Machine Reqeust
 
   requestToolMachineDataSuccess = () => {
+    setTimeout(() => this.document.getElementById(`batch`).focus(), 0);
   }
 
   requestToolMachineDataFailed = () => {
@@ -204,7 +205,14 @@ export class LogonToolComponent extends BaseExtendForm {
 
   //#region Operation Reqeust
   requestOperationDataSuccess = (_) => {
-    setTimeout(() => this.document.getElementById(`toolMachine`).focus(), 0);
+    if (this.machineData.toolMachines.length === 1) {
+      this.form.controls.toolMachine.setValue(this.machineData.toolMachines[0]);
+      this.request(this.requestToolMachineData, this.requestToolMachineDataSuccess, this.requestToolMachineDataFailed)
+        (null, null, `toolMachine`);
+    }
+    else {
+      setTimeout(() => this.document.getElementById(`toolMachine`).focus(), 0);
+    }
   }
 
   requestOperationDataFailed = () => {

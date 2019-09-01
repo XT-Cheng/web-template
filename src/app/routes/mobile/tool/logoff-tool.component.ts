@@ -1,10 +1,7 @@
 import { Component, Injector } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { MachineService } from '@core/hydra/service/machine.service';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
-import { WRMBapiService } from '@core/hydra/bapi/wrm/bapi.service';
-import { FetchService } from '@core/hydra/service/fetch.service';
 import { ToolWebApi } from '@core/webapi/tool.webapi';
 import { MachineWebApi } from '@core/webapi/machine.webapi';
 import { ToolLoggedOn } from '@core/hydra/entity/operation';
