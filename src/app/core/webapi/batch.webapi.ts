@@ -262,6 +262,21 @@ export class BatchWebApi {
         );
     }
 
+    scrapInputBatch(machine: Machine | { machineName: string },
+        batch: MaterialBatch | { name: string, material: string }, scrapQty: number, operator: Operator) {
+        return this._http.post(`/api/batchService/scrapInputBatch`, {
+            Badge: operator.badge,
+            MachineName: machine.machineName,
+            BatchMaterial: batch.material,
+            BatchName: batch.name,
+            ScrapQty: scrapQty
+        }).pipe(
+            map((loggedOff: string) => {
+                return loggedOff;
+            })
+        );
+    }
+
     logonInputBatch(operation: Operation | { name: string }, machine: Machine | { machineName: string },
         batch: MaterialBatch, pos: number, operator: Operator) {
         return this._http.post(`/api/batchService/logonInputBatch`, {

@@ -53,6 +53,7 @@ import { SetupFunctionsComponent } from './mobile/setup/setup-functions.componen
 import { SetupPrinterComponent } from './mobile/setup/setup-printer.component';
 import { ImportSqlComponent } from './import/import.sql.exec.component';
 import { RecordToolCycleComponent } from './mobile/tool/record-tool-cycle.component';
+import { ScrapBatchComponent } from './mobile/operation/scrap-batch.component';
 
 const routes: Routes = [
   {
@@ -91,6 +92,7 @@ const routes: Routes = [
       { path: 'operation/interrupt', component: InterruptOperationComponent },
       { path: 'operation/logoff', component: LogoffOperationComponent },
       { path: 'operation/partialConfirm', component: PartialConfirmationOperationComponent },
+      { path: 'operation/scrapBatch', component: ScrapBatchComponent },
       { path: 'operation/packing', component: PackingComponent },
       { path: 'operation/list', component: OperationFunctionsComponent },
       { path: 'operation/generateOutputBatch', component: GenerateOutputBatchComponent },
