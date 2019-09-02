@@ -110,7 +110,7 @@ export class ScrapBatchComponent extends BaseExtendForm {
 
   //#endregion
 
-  //#region New Qty Reqeust
+  //#region Scrap Qty Reqeust
   requestScrapQtyDataSuccess = () => {
   }
 
@@ -140,6 +140,13 @@ export class ScrapBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+  protected isValid() {
+    if (!this.machineData) return false;
+
+    if (!this.machineData.currentOperation) return false;
+
+    return true;
+  }
 
   protected beforeRequestCheck(srcElement): Observable<boolean> {
     if (!srcElement) return of(true);

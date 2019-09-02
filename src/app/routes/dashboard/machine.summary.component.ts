@@ -339,7 +339,7 @@ export class MachineSummaryComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (this.machine.lastArticle === this.machine.currentOperation.article) {
+    if (this.machine.lastArticle !== this.machine.currentOperation.article) {
       return false;
     }
 
