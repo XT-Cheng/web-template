@@ -29,6 +29,8 @@ import { PrinterWebApi } from './webapi/printer.webapi';
 import { PrintLabelWebApi } from './webapi/printLabel.webapi';
 import { OperationWebApi } from './webapi/operation.webapi';
 import { ToolWebApi } from './webapi/tool.webapi';
+import { BapiWebApi } from './webapi/bapi.webapi';
+import { FetchWebApi } from './webapi/fetch.webapi';
 
 @NgModule({
   providers: [
@@ -60,6 +62,8 @@ import { ToolWebApi } from './webapi/tool.webapi';
     PrintLabelWebApi,
     OperationWebApi,
     ToolWebApi,
+    BapiWebApi,
+    FetchWebApi,
   ]
 })
 export class CoreModule {

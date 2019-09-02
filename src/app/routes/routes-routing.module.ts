@@ -15,7 +15,6 @@ import { Exception403Component } from './exception/403.component';
 import { Exception404Component } from './exception/404.component';
 import { Exception500Component } from './exception/500.component';
 import { BAPITestComponent } from './bapi/bapi.test.component';
-import { ImportBufferComponent } from './import/import.buffer.component';
 import { MachineSummaryComponent } from './dashboard/machine.summary.component';
 import { BatchGeneralComponent } from './report/batch/batch.general.component';
 import { ImportBapiComponent } from './import/import.bapi.exec.component';
@@ -63,7 +62,6 @@ const routes: Routes = [
       { path: '', redirectTo: 'dashboard/lineGeneral', pathMatch: 'full' },
       { path: 'dashboard/lineGeneral/:machineName', component: MachineSummaryComponent, data: { title: '产线概览' } },
       { path: 'bapi/test', component: BAPITestComponent, data: { title: 'BAPI 测试' } },
-      { path: 'import/buffer', component: ImportBufferComponent, data: { title: '导入 Material Buffer' } },
       { path: 'import/bapi', component: ImportBapiComponent, data: { title: 'BAPI 批量执行' } },
       { path: 'import/sql', component: ImportSqlComponent, data: { title: 'SQL 批量执行' } },
       { path: 'reports/batchSummary', component: BatchGeneralComponent, data: { title: '物料批次概览' } },

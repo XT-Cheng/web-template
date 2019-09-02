@@ -2,6 +2,7 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import { XlsxService, STColumn } from '@delon/abc';
 import { ImportHandleBase } from '@shared/components/import.handle.base';
 import { BapiService } from '@core/hydra/bapi/bapi.service';
+import { BapiWebApi } from '@core/webapi/bapi.webapi';
 
 @Component({
   selector: 'app-import-bapi',
@@ -17,7 +18,10 @@ export class ImportBapiComponent extends ImportHandleBase {
 
   //#region Constructor
 
-  constructor(_xlsx: XlsxService, private _bapiService: BapiService) {
+  constructor(_xlsx: XlsxService,
+    private _bapiWebApi: BapiWebApi,
+    // private _bapiService: BapiService
+  ) {
     super(_xlsx);
   }
 
@@ -38,7 +42,7 @@ export class ImportBapiComponent extends ImportHandleBase {
     this.execute((records) => {
       const rec = records[0];
 
-      return this._bapiService.test(rec.dialog, rec.content);
+      return this._bapiWebApi.executeBapi(rec.dialog, rec.content);
     });
   }
 

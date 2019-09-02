@@ -22,6 +22,7 @@ export class ChangeMachineStatusComponent extends BaseExtendForm {
     335, // 设备保养
     340, // 品质异常
     399, // 无工单
+    200, // 正常生产
   ];
 
   //#region View Children

@@ -51,7 +51,7 @@ export class MaterialPreparationComponent implements OnInit {
   //#region Constructor
 
   constructor(
-    public machineService: MachineService
+    // public machineService: MachineService
   ) {
 
   }

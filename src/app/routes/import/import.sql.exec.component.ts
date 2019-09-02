@@ -4,6 +4,7 @@ import { ImportHandleBase } from '@shared/components/import.handle.base';
 import { FetchService } from '@core/hydra/service/fetch.service';
 import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { FetchWebApi } from '@core/webapi/fetch.webapi';
 
 @Component({
   selector: 'app-import-sql',
@@ -19,7 +20,10 @@ export class ImportSqlComponent extends ImportHandleBase {
 
   //#region Constructor
 
-  constructor(_xlsx: XlsxService, private _fetchService: FetchService) {
+  constructor(_xlsx: XlsxService,
+    private _fetchWebApi: FetchWebApi,
+    // private _fetchService: FetchService
+  ) {
     super(_xlsx);
   }
 
@@ -41,14 +45,14 @@ export class ImportSqlComponent extends ImportHandleBase {
       const rec = records[0];
 
       return of(1).pipe(
-        switchMap(() => {
+        switchMap(_ => {
           if (rec.delete) {
-            return this._fetchService.query(rec.delete)
+            return this._fetchWebApi.executeUpdate(rec.delete)
           }
-          return of([]);
+          return of(1);
         }),
-        switchMap(() => {
-          return this._fetchService.query(rec.insert);
+        switchMap(_ => {
+          return this._fetchWebApi.executeUpdate(rec.insert);
         })
       );
     });
