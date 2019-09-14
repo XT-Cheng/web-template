@@ -77,7 +77,7 @@ export class ToolWebApi {
         ret.intervalCycles = tool.IntervalCycles;
         ret.currentCycles = tool.CurrentCycles;
         ret.nextMaintennaceCycles = tool.NextMaintennaceCycles;
-        ret.maintenanceStatus = tool.MaintenanceStatus ? MaintenanceStatusEnum[tool.MaintenanceStatus as string] : null;
+        ret.maintenanceStatus = tool.MaintenanceStatus ? MaintenanceStatusEnum[(tool.MaintenanceStatus as string).toUpperCase()] : null;
         ret.occupied = tool.Occupied;
         ret.loggedOnMachine = tool.LoggedOnMachine;
         ret.loggedOnOperation = tool.LoggedOnOperation;

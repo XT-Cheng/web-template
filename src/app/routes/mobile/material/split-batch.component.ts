@@ -44,7 +44,7 @@ export class SplitBatchComponent extends BaseExtendForm {
     super(injector);
     this.addControls({
       batch: [null, [Validators.required], 'batchData'],
-      numberOfSplits: [2, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(2)], 'numberOfSplitsData'],
+      numberOfSplits: [1, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)], 'numberOfSplitsData'],
       childQty: [``, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)], 'childQtyData'],
     });
   }
@@ -188,15 +188,8 @@ export class SplitBatchComponent extends BaseExtendForm {
   }
 
   splitBatch = () => {
-    return forkJoin(this._batchWebApi.splitBatch(this.batchData, this.form.value.numberOfSplitsData,
-      this.form.value.childQtyData, this.operatorData), this._materialMasterWebApi.getPartMaster(this.batchData.material)).pipe(
-        switchMap((array: Array<any>) => {
-          let [
-            ltsToPrint,
-            // tslint:disable-next-line:prefer-const
-            materialMaster] = array;
-          return this._printLabelWebApi.printLabel(ltsToPrint, materialMaster.tagTypeName, this.batchData.SAPBatch, this.batchData.dateCode)
-        }),
+    return this._batchWebApi.splitBatch(this.batchData, this.form.value.numberOfSplitsData,
+      this.form.value.childQtyData, this.operatorData).pipe(
         switchMap((ltsToPrint: string[]) => {
           return of({
             isSuccess: true,

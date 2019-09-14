@@ -1,6 +1,6 @@
 import { Component, Injector } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { Observable, BehaviorSubject, forkJoin } from 'rxjs';
+import { Observable, BehaviorSubject, forkJoin, throwError, of } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
 import { Operation, ComponentStatus, ToolStatus } from '@core/hydra/entity/operation';
 import { map, tap, switchMap } from 'rxjs/operators';
@@ -8,6 +8,9 @@ import { BaseExtendForm } from '../base.form.extend';
 import { MACHINE_STATUS_NOORDER, MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
 import { MachineWebApi } from '@core/webapi/machine.webapi';
 import { OperationWebApi } from '@core/webapi/operation.webapi';
+import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
+import { MaterialMaster } from '@core/hydra/entity/materialMaster';
+import { toNumber } from 'ng-zorro-antd';
 
 @Component({
   selector: 'fw-operation-logon',
@@ -44,11 +47,13 @@ export class LogonOperationComponent extends BaseExtendForm {
     injector: Injector,
     private _machineWebApi: MachineWebApi,
     private _operationWebApi: OperationWebApi,
+    private _materialMasterWebApi: MaterialMasterWebApi
   ) {
     super(injector);
     this.addControls({
       machine: [null, [Validators.required], 'machineData'],
       operation: [null, [Validators.required], 'operationData'],
+      outputBatchSize: [0, [Validators.required, Validators.min(1)], 'outputBatchSizeData'],
     });
   }
 
@@ -92,6 +97,9 @@ export class LogonOperationComponent extends BaseExtendForm {
 
   //#region Operation Reqeust
   requestOperationDataSuccess = (_) => {
+    setTimeout(() => {
+      this.document.getElementById(`outputBatchSize`).focus();
+    }, 0);
   }
 
   requestOperationDataFailed = () => {
@@ -101,14 +109,37 @@ export class LogonOperationComponent extends BaseExtendForm {
     return this._operationWebApi.getOperation(this.form.value.operation).pipe(
       switchMap(operation => {
         return forkJoin(this._operationWebApi.getComponentStatus(operation.name, this.form.value.machineData.machineName),
-          this._operationWebApi.getToolStatus(operation.name, this.form.value.machineData.machineName)).pipe(
-            map((array: [ComponentStatus[], ToolStatus[]]) => {
+          this._operationWebApi.getToolStatus(operation.name, this.form.value.machineData.machineName),
+          this._materialMasterWebApi.getPartMaster(operation.article)).pipe(
+            map((array: [ComponentStatus[], ToolStatus[], MaterialMaster]) => {
               this.componentStatus$.next(array[0]);
               this.toolStatus$.next(array[1]);
+              this.form.controls.outputBatchSize.setValue(array[2].standardPackageQty);
               return operation;
             })
           );
       }));
+  }
+
+  //#endregion
+
+  //#region Operation Reqeust
+  requestOutputBatchSizeDataSuccess = (_) => {
+  }
+
+  requestOutputBatchSizeDataFailed = () => {
+  }
+
+  requestOutputBatchSizeData = (): Observable<any> => {
+    if (!/^[0-9]*$/.test(this.form.value.outputBatchSize)) {
+      return throwError('Incorrect Output Batch Size');
+    }
+
+    if (!this.operationData) {
+      return throwError('Input Operation First');
+    }
+
+    return of(toNumber(this.form.value.outputBatchSize, 1));
   }
 
   //#endregion
@@ -142,7 +173,7 @@ export class LogonOperationComponent extends BaseExtendForm {
   logonOperation = () => {
     // LogOn Operation
     return this._operationWebApi.logonOperation(this.form.value.operationData,
-      this.form.value.machineData, this.form.value.badgeData).pipe(
+      this.form.value.machineData, this.form.value.outputBatchSizeData, this.form.value.badgeData).pipe(
         map(_ => {
           return {
             isSuccess: true,

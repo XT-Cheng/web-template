@@ -5,17 +5,19 @@ import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { Operator } from "@core/hydra/entity/operator";
 import { Machine, MachineOutput } from "@core/hydra/entity/machine";
+import { SettingsService } from "@delon/theme";
 
 @Injectable()
 export class OperationWebApi {
-    constructor(protected _http: HttpClient) {
+    constructor(protected _http: HttpClient, protected _settingService: SettingsService) {
     }
 
-    public logonOperation(operation: Operation, machine: Machine, operator: Operator) {
+    public logonOperation(operation: Operation, machine: Machine, outputBatchSize: number, operator: Operator) {
         return this._http.post(`/api/operationService/logon`, {
             Badge: operator.badge,
             OperationName: operation.name,
             MachineName: machine.machineName,
+            OutputBatchSize: outputBatchSize
         }).pipe(
             map((outputBatch: string) => {
                 return outputBatch;
@@ -78,7 +80,8 @@ export class OperationWebApi {
             OperationName: operation.name,
             MachineName: machine.machineName,
             Quantity: quantity,
-            ScrapReason: scrapReason
+            ScrapReason: scrapReason,
+            PrinterName: this._settingService.app.printer,
         }).pipe(
             map((outputBatch: string) => {
                 return outputBatch;
@@ -165,9 +168,10 @@ export class OperationWebApi {
         //#region Operation
 
         ret.currentOutputBatch = operation.CurrentOutputBatch;
-        ret.pendingProblemQty = operation.PendingProblemQty
-        ret.pendingYieldQty = operation.PendingYieldQty
-        ret.pendingScrapQty = operation.PendingScrapQty
+        ret.pendingProblemQty = operation.PendingProblemQty;
+        ret.pendingYieldQty = operation.PendingYieldQty;
+        ret.pendingScrapQty = operation.PendingScrapQty;
+        ret.outputBatchSize = operation.OutputBatchSize;
 
         if (operation.BomItems) {
             Object.keys(operation.BomItems).forEach((key) => {

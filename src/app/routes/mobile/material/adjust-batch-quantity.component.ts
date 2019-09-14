@@ -163,12 +163,6 @@ export class AdjustBatchQuantityComponent extends BaseExtendForm {
     // Adjust Batch Qty
     const newQty = toNumber(this.form.value.newQty, 0);
     return this._batchWebApi.changeBatchQuantity(this.batchData, newQty, this.operatorData).pipe(
-      switchMap((ltToPrint: string) => {
-        if (!!ltToPrint)
-          return this._printLabelWebApi.printLabel([ltToPrint], this.materialMaster.tagTypeName, this.batchData.SAPBatch, this.batchData.dateCode);
-        else
-          return of(null);
-      }),
       switchMap(_ => {
         return of({
           isSuccess: true,

@@ -9,10 +9,11 @@ import { ComponentToBeChangeQty } from "@core/hydra/utils/operationHelper";
 import { ComponentLoggedOn, Operation } from "@core/hydra/entity/operation";
 import { Machine } from "@core/hydra/entity/machine";
 import { format } from "date-fns";
+import { SettingsService } from "@delon/theme";
 
 @Injectable()
 export class BatchWebApi {
-    constructor(protected _http: HttpClient) {
+    constructor(protected _http: HttpClient, protected _settingService: SettingsService) {
     }
 
     getBatchInfoFrom2DBarCode(barCodeOf2D: string, requireFullData: boolean = false): Observable<MaterialBatch> {
@@ -69,7 +70,7 @@ export class BatchWebApi {
         return of(batchInfo);
     }
 
-    isBatchNameExist(batchName: string, ignoreSAP: boolean = true): Observable<boolean> {
+    isBatchNameExist(batchName: string, ignoreSAP: boolean = false): Observable<boolean> {
         return this._http.get(`/api/batchService/isBatchNameExist/${batchName}/${ignoreSAP}`).pipe(
             map((exist: any) => {
                 return exist;
@@ -192,15 +193,11 @@ export class BatchWebApi {
     splitBatch(batch: MaterialBatch, childCount: number, childQty: number, operator: Operator) {
         return this._http.post(`/api/batchService/splitBatch`, {
             BatchName: batch.name,
-            MaterialName: batch.material,
-            MaterialType: batch.materialType,
             Quantity: batch.quantity,
-            MaterialBuffer: batch.bufferName,
-            SAPBatch: batch.SAPBatch,
-            DateCode: batch.dateCode,
             NumberOfSplit: childCount,
             ChildQty: childQty,
-            Badge: operator.badge
+            Badge: operator.badge,
+            PrinterName: this._settingService.app.printer,
         }).pipe(
             map((ltsToPrint: string[]) => {
                 return ltsToPrint;
@@ -208,19 +205,19 @@ export class BatchWebApi {
         )
     }
 
-    createBatch(batch: MaterialBatch, batchBuffer: BatchBuffer, numberOfSplits: number,
+    createBatch(batch: MaterialBatch, batchBuffer: BatchBuffer, numberOfSplits: number, childQty: number,
         isReturnFromSAP: boolean, operator: Operator): Observable<string[]> {
         return this._http.post(`/api/batchService/createBatch`, {
             BatchName: batch.name,
             MaterialName: batch.material,
-            MaterialType: batch.materialType,
-            Unit: batch.unit,
             Quantity: batch.quantity,
             MaterialBuffer: batchBuffer.name,
             SAPBatch: batch.SAPBatch,
             DateCode: batch.dateCode,
             IsReturnFromSAP: isReturnFromSAP,
             NumberOfSplit: numberOfSplits,
+            ChildQty: childQty,
+            PrinterName: this._settingService.app.printer,
             Badge: operator.badge
         }).pipe(
             map((ltsToPrint: string[]) => {
@@ -237,7 +234,7 @@ export class BatchWebApi {
                 Status: batch.status,
                 Class: batch.class,
                 MaterialType: batch.materialType,
-                Badge: operator.badge
+                Badge: operator.badge,
             }
         });
 

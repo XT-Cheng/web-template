@@ -36,7 +36,7 @@
       </div>
       <div class="weui-cell__bd">
         <input class="weui-input" id='numberOfSplits' formControlName="numberOfSplits"
-          [fwShareKeyHandler]='{controlName: "numberOfSplits", inputing: Inputing, req: request(requestNumberOfSplitsData, requestNumberOfSplitsDataSuccess, requestNumberOfSplitsDataFailed)}'
+          [fwShareKeyHandler]='{controlName: "numberOfSplits", inputing: Inputing, nextInputId: "remainQty",req: request(requestNumberOfSplitsData, requestNumberOfSplitsDataSuccess, requestNumberOfSplitsDataFailed)}'
           [placeholder]="'app.mobile.material.create.numberOfSplits.placeholder' | translate">
       </div>
     </div>
@@ -45,6 +45,16 @@
         {{getSplitInfo()}}
       </span>
     </label>
+    <div class="weui-cell">
+      <div class="weui-cell__hd">
+        <label class="weui-label">{{'app.mobile.material.create.remainQty' | translate}}</label>
+      </div>
+      <div class="weui-cell__bd">
+        <input class="weui-input" id='remainQty' formControlName="remainQty"
+          [fwShareKeyHandler]='{controlName: "remainQty", inputing: Inputing, req: request(requestRemainQtyData, requestRemainQtyDataSuccess, requestRemainQtyDataFailed)}'
+          [placeholder]="'app.mobile.material.create.remainQty.placeholder' | translate">
+      </div>
+    </div>
     <div class="mobile-fill">
       <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute"
         (click)='doAction(createBatch, createBatchSuccess, createBatchFailed)'>{{'app.mobile.material.create.action'

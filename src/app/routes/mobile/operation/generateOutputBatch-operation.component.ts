@@ -3,23 +3,15 @@ import { PopupComponent } from 'ngx-weui';
 import { Validators } from '@angular/forms';
 import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
-import { MachineService } from '@core/hydra/service/machine.service';
-import { OperationService } from '@core/hydra/service/operation.service';
 import { BaseExtendForm } from '../base.form.extend';
 import { toNumber } from '@delon/util';
 import { switchMap, map, tap } from 'rxjs/operators';
-import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
-import { MasterService } from '@core/hydra/service/master.service';
 import { MACHINE_STATUS_PRODUCTION } from '@core/hydra/bapi/constants';
 import { ReasonCode } from '@core/hydra/entity/reasonCode';
 import { Operation } from '@core/hydra/entity/operation';
 import { MachineWebApi } from '@core/webapi/machine.webapi';
 import { OperationWebApi } from '@core/webapi/operation.webapi';
-import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
 import { deepExtend } from '@core/utils/helpers';
-import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
-import { BatchWebApi } from '@core/webapi/batch.webapi';
-import { MaterialBatch } from '@core/hydra/entity/batch';
 
 @Component({
   selector: 'fw-operation-generate-output-batch',
@@ -55,16 +47,12 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   constructor(
     injector: Injector,
     private _machineWebApi: MachineWebApi,
-    private _operationWebApi: OperationWebApi,
-    private _materialMasterWebApi: MaterialMasterWebApi,
-    private _printLabelWebApi: PrintLabelWebApi,
-    private _batchWebApi: BatchWebApi,
+    private _operationWebApi: OperationWebApi
   ) {
     super(injector);
     this.addControls({
       machine: [null, [Validators.required], 'machineData'],
       operation: [null, [Validators.required], 'operationData'],
-      materialData: [null, [Validators.required]],
       reasonCodeData: [null],
       scrap: [null],
       quantity: [null, [Validators.required, Validators.min(0),
@@ -84,11 +72,8 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
     if (!this.machineData) return null;
     if (!this.operationData) return null;
     if (!this.form.value.quantityData) return null;
-    if (!this.form.value.materialData) return null;
-    if (!this.form.value.quantityData) return null;
 
-    if (this.operationData.pendingYieldQty > this.form.value.quantityData
-      && this.form.value.quantityData !== this.form.value.materialData.standardPackageQty) {
+    if (this.operationData.pendingYieldQty > this.form.value.quantityData) {
 
       this.form.controls.scrap.setValue(this.operationData.pendingYieldQty - this.form.value.quantityData);
 
@@ -181,40 +166,18 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
     return this._operationWebApi.getOperation(this.form.value.operation).pipe(
       tap((operation: Operation) => {
         if (operation.pendingProblemQty > 0) {
-          throw Error('There are pending Qty, call IT please!');
+          throw Error('There are pending Problem Qty, call IT please!');
         }
       }),
-      switchMap((operation: Operation) => {
-        return this._materialMasterWebApi.getPartMaster(operation.article).pipe(
-          map(material => {
-            if (!material) {
-              throw Error(`Material ${operation.article} not exist`);
-            }
-            if (!material.standardPackageQty || material.standardPackageQty === 0) {
-              throw Error(`Material ${operation.article} has no std. Qty setup`);
-            }
-
-            this.form.controls.materialData.setValue(material);
-            if (operation.pendingYieldQty === 0) {
-              this.form.controls.quantity.setValue(material.standardPackageQty);
-            } else {
-              if (material) {
-                if (material.standardPackageQty > operation.pendingYieldQty) {
-                  this.form.controls.quantity.setValue(operation.pendingYieldQty);
-                }
-              }
-            }
-
-            return operation;
-          })
-        );
-      }),
-      tap((operation: Operation) => {
-        if (operation.pendingYieldQty >= this.form.value.materialData.standardPackageQty) {
-          throw Error('There are pending Yield larger than standard packing Qty, call IT please!');
+      map((operation: Operation) => {
+        if (operation.pendingYieldQty > 0) {
+          this.form.controls.quantity.setValue(operation.pendingYieldQty);
         }
-      }),
-    );
+        else {
+          this.form.controls.quantity.setValue(operation.outputBatchSize);
+        }
+        return operation;
+      }));
   }
 
   //#endregion
@@ -239,10 +202,6 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
     }
 
     const quantity = toNumber(this.form.value.quantity);
-
-    if (this.form.value.materialData && quantity > this.form.value.materialData.standardPackageQty) {
-      return throwError('Quantity larger than standard packing qty');
-    }
 
     return of(quantity);
   }
@@ -282,15 +241,6 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
 
     return this._operationWebApi.changeOutputBatch(this.operationData, this.machineData,
       this.operatorData, quantity, (this.form.value.reasonCodeData ? this.form.value.reasonCodeData.codeNbr : 0)).pipe(
-        switchMap(outputBatch => {
-          return this._batchWebApi.getBatch(outputBatch).pipe(
-            switchMap((batch: MaterialBatch) => {
-              return this._printLabelWebApi.printLabel([outputBatch], this.form.value.materialData.tagTypeName,
-                batch.SAPBatch, batch.dateCode)
-            }),
-            map(_ => outputBatch)
-          )
-        }),
         map(outputBatch => {
           return {
             isSuccess: true,
@@ -311,18 +261,9 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
   protected isValid() {
     if (!this.operationData) return false;
     if (!this.form.value.quantityData) return false;
-    if (!this.form.value.materialData) return false;
-
-    if (this.operationData.pendingYieldQty >= this.form.value.materialData.standardPackageQty) {
-      return false;
-    }
-    if (this.form.value.quantityData > this.form.value.materialData.standardPackageQty) {
-      return false;
-    }
 
     if (this.operationData.pendingYieldQty > this.form.value.quantityData
-      && !this.form.value.reasonCodeData
-      && this.form.value.quantityData !== this.form.value.materialData.standardPackageQty) {
+      && !this.form.value.reasonCodeData) {
       return false;
     }
 

@@ -157,7 +157,7 @@ export class MachineWebApi {
                     loggedOnMachine: tool.ToolMachine,
                     toolName: tool.ToolName,
                     toolId: tool.ToolId,
-                    toolStatus: tool.ToolStatus ? MaintenanceStatusEnum[tool.ToolStatus as string] : null,
+                    toolStatus: tool.ToolStatus ? MaintenanceStatusEnum[(tool.ToolStatus as string).toUpperCase()] : null,
                     currentCycle: tool.CurrentCycle,
                 };
             })

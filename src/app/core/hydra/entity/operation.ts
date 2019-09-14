@@ -56,6 +56,7 @@ export class Operation {
   pendingProblemQty = 0;
   pendingYieldQty = 0;
   pendingScrapQty = 0;
+  outputBatchSize = 0;
 
   //#endregion
 

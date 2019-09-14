@@ -44,7 +44,6 @@ export class CreateBatchComponent extends BaseExtendForm {
   constructor(
     injector: Injector,
     private _batchWebApi: BatchWebApi,
-    private _printLabelWebApi: PrintLabelWebApi,
     private _materialMasterWebApi: MaterialMasterWebApi,
 
   ) {
@@ -53,6 +52,7 @@ export class CreateBatchComponent extends BaseExtendForm {
       batch: [null, [Validators.required], 'batchData'],
       materialBuffer: [null, [Validators.required], 'materialBufferData'],
       numberOfSplits: [1, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)], 'numberOfSplitsData'],
+      remainQty: [0, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(0)], 'remainQtyData'],
       isReturnedFromSAP: [false]
     });
   }
@@ -65,7 +65,7 @@ export class CreateBatchComponent extends BaseExtendForm {
 
     if (this.form.value.numberOfSplits === '') return ` `;
 
-    return `${this.i18n.fanyi('app.common.childQty')}: ${this.batchData.quantity / this.form.value.numberOfSplits}`;
+    return `${this.i18n.fanyi('app.common.childQty')}: ${(this.batchData.quantity - this.form.value.remainQty) / this.form.value.numberOfSplits}`;
   }
   //#endregion
 
@@ -90,7 +90,7 @@ export class CreateBatchComponent extends BaseExtendForm {
     return this._batchWebApi.getBatchInfoFrom2DBarCode(this.form.value.batch, true).pipe(
       switchMap((barCodeData: MaterialBatch) => {
         batch = barCodeData;
-        return this._batchWebApi.isBatchNameExist(barCodeData.name);
+        return this._batchWebApi.isBatchNameExist(barCodeData.name, true);
       }),
       switchMap((exist: boolean) => {
         if (exist) {
@@ -106,13 +106,10 @@ export class CreateBatchComponent extends BaseExtendForm {
           batchInSAP] = array;
         this.materialMaster = materialMaster;
         this.form.controls.isReturnedFromSAP.setValue(!!batchInSAP);
-        if (batchInSAP) {
-          return of(batchInSAP);
-        } else {
-          batch.materialType = materialMaster.materialType;
-          batch.unit = materialMaster.unit;
-          return of(batch);
-        }
+
+        batch.materialType = materialMaster.materialType;
+        batch.unit = materialMaster.unit;
+        return of(batch);
       }));
   }
   //#endregion
@@ -151,6 +148,8 @@ export class CreateBatchComponent extends BaseExtendForm {
         [this.batchData.material]: this.form.value.numberOfSplitsData
       }
     });
+
+    this.form.value.remainQty = (this.batchData.quantity % this.form.value.numberOfSplits);
   }
 
   requestNumberOfSplitsDataFailed = () => {
@@ -167,10 +166,6 @@ export class CreateBatchComponent extends BaseExtendForm {
 
     const numberOfSplits = toNumber(this.form.value.numberOfSplits, 1);
 
-    if ((this.batchData.quantity % numberOfSplits) > 0) {
-      return throwError('Incorrect Child Count');
-    }
-
     if (this.form.value.isReturnedFromSAP && numberOfSplits > 1) {
       return throwError('Incorrect Child Count');
     }
@@ -179,6 +174,48 @@ export class CreateBatchComponent extends BaseExtendForm {
   }
 
   //#endregion
+
+  //#region Number of Splits Reqeust
+  requestRemainQtyDataSuccess = () => {
+  }
+
+  requestRemainQtyDataFailed = () => {
+  }
+
+  requestRemainQtyData = () => {
+    if (!/^[0-9]*$/.test(this.form.value.remainQty)) {
+      return throwError('Incorrect Remain Qty');
+    }
+
+    if (!this.batchData) {
+      return throwError('Input Batch First');
+    }
+
+    if (!this.form.value.numberOfSplits) {
+      return throwError('Input Batch First');
+    }
+
+    const remainQty = toNumber(this.form.value.remainQty, 1);
+
+    const toBesplitQty = this.batchData.quantity - remainQty;
+
+    if (toBesplitQty === 0) {
+      return throwError('Incorrect Remain Qty');
+    }
+
+    if ((toBesplitQty % this.form.value.numberOfSplits) > 0) {
+      return throwError('Incorrect Remain Qty');
+    }
+
+    if (this.form.value.isReturnedFromSAP && remainQty > 0) {
+      return throwError('Incorrect Child Count');
+    }
+
+    return of(remainQty);
+  }
+
+  //#endregion
+
 
   //#endregion
 
@@ -226,10 +263,7 @@ export class CreateBatchComponent extends BaseExtendForm {
 
   createBatch = () => {
     return this._batchWebApi.createBatch(this.batchData, this.form.value.materialBufferData, this.form.value.numberOfSplitsData,
-      this.form.value.isReturnedFromSAP, this.operatorData).pipe(
-        switchMap((ltsToPrint: string[]) => {
-          return this._printLabelWebApi.printLabel(ltsToPrint, this.materialMaster.tagTypeName, this.batchData.SAPBatch, this.batchData.dateCode)
-        }),
+      this.form.value.remainQtyData, this.form.value.isReturnedFromSAP, this.operatorData).pipe(
         switchMap((ltsToPrint: string[]) => {
           return of({
             isSuccess: true,
