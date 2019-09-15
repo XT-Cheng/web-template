@@ -1,4 +1,4 @@
-import { Component, Injector } from '@angular/core';
+import { Component, Injector, ViewChild } from '@angular/core';
 import { Validators } from '@angular/forms';
 import { IActionResult } from '@core/utils/helpers';
 import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
@@ -8,9 +8,9 @@ import { ComponentToBeLoggedOff } from '@core/hydra/utils/operationHelper';
 import { toNumber } from 'ng-zorro-antd';
 import { MachineWebApi } from '@core/webapi/machine.webapi';
 import { BatchWebApi } from '@core/webapi/batch.webapi';
-import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
 import { ComponentLoggedOn } from '@core/hydra/entity/operation';
-import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
+import { PopupComponent } from 'ngx-weui';
+import { ReasonCode } from '@core/hydra/entity/reasonCode';
 
 @Component({
   selector: 'fw-batch-scrap',
@@ -23,6 +23,8 @@ import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
 export class ScrapBatchComponent extends BaseExtendForm {
   //#region View Children
 
+  @ViewChild(`reasonCode`) reasonCodePopup: PopupComponent;
+
   //#endregion
 
   //#region Protected member
@@ -34,6 +36,7 @@ export class ScrapBatchComponent extends BaseExtendForm {
   //#region Public member
 
   componentsToBeScrapped$: BehaviorSubject<ComponentToBeLoggedOff[]> = new BehaviorSubject<[]>([]);
+  reasonCodes$: BehaviorSubject<ReasonCode[]> = new BehaviorSubject<ReasonCode[]>([]);
 
   //#endregion
 
@@ -47,20 +50,55 @@ export class ScrapBatchComponent extends BaseExtendForm {
     injector: Injector,
     private _machineWebApi: MachineWebApi,
     private _batchWebApi: BatchWebApi,
-    private _printLabelWebApi: PrintLabelWebApi,
-    private _materialMasterWebApi: MaterialMasterWebApi,
   ) {
     super(injector, false);
     this.addControls({
       machine: [null, [Validators.required], 'machineData'],
       scrapQty: [null, [Validators.required], 'scrapQtyData'],
       componentToBeScrappedData: [null, [Validators.required]],
+      reasonCodeData: [null, [Validators.required]],
     });
   }
 
   //#endregion
 
   //#region Public methods
+  getReasonCodeStyle(reasonCodeDisplay) {
+    return reasonCodeDisplay.selected ? {} : { 'color': 'red' };
+  }
+
+  getSelectedReasonCodeDisplay() {
+    if (!this.machineData) return null;
+    if (!this.form.value.componentToBeScrappedData) return null;
+
+    if (this.form.value.reasonCodeData) {
+      return {
+        description: this.form.value.reasonCodeData.description,
+        selected: true
+      };
+    } else {
+      return {
+        description: `Please select Reason Code`,
+        selected: false
+      };
+    }
+  }
+
+  showReasonCodes(focusId = ``) {
+    if (this.reasonCodePopup) {
+      this.reasonCodePopup.config = Object.assign({}, this.reasonCodePopup.config, {
+        cancel: this.i18n.fanyi(`app.common.cancel`),
+        confirm: this.i18n.fanyi(`app.common.confirm`),
+      });
+      this.reasonCodePopup.show().subscribe(() => {
+        if (!focusId) return;
+        const element = this.document.getElementById(focusId);
+        if (element) {
+          element.focus();
+        }
+      });
+    }
+  }
 
   hasComponentToBeScrappedData() {
     return (this.form.value.componentToBeScrappedData && this.machineData);
@@ -102,6 +140,14 @@ export class ScrapBatchComponent extends BaseExtendForm {
           throw Error('Machine invalid');
         }
       }),
+      switchMap(machine => {
+        return this._machineWebApi.getScrapReasonByMachine(machine.machineName).pipe(
+          map(reasonCodes => {
+            this.reasonCodes$.next(reasonCodes);
+            return machine;
+          })
+        );
+      }),
       map(machine => {
         this.componentsToBeScrapped$.next(machine.componentsLoggedOn);
         return machine;
@@ -128,7 +174,7 @@ export class ScrapBatchComponent extends BaseExtendForm {
       return throwError('Incorrect Scrap Qty');
     }
 
-    if (scrapQty > this.form.value.componentToBeScrappedData.batchQty) {
+    if (scrapQty >= this.form.value.componentToBeScrappedData.batchQty) {
       return throwError('Incorrect Scrap Qty');
     }
 
@@ -166,6 +212,10 @@ export class ScrapBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Event Handler
+  reasonCodeSelected(reasonCode: ReasonCode) {
+    this.reasonCodePopup.close();
+    this.form.controls.reasonCodeData.setValue(reasonCode);
+  }
 
   componentSelected(componentSelected: ComponentLoggedOn) {
     this.componentStatusPopup.close();
@@ -179,8 +229,10 @@ export class ScrapBatchComponent extends BaseExtendForm {
   scrapBatchSuccess = () => {
     this.form.controls.scrapQty.setValue(null);
     this.form.controls.componentToBeScrappedData.setValue(null);
+    this.form.controls.reasonCodeData.setValue(null);
 
     this.componentsToBeScrapped$.next([]);
+    this.reasonCodes$.next([]);
 
     this.request(this.requestMachineData, this.requestMachineDataSuccess, this.requestMachineDataFailed)
       (null, null, `machine`);
@@ -194,7 +246,8 @@ export class ScrapBatchComponent extends BaseExtendForm {
     const componentToBeScrappedData = this.form.value.componentToBeScrappedData as ComponentLoggedOn;
 
     return this._batchWebApi.scrapInputBatch(this.machineData,
-      { name: componentToBeScrappedData.batchName, material: componentToBeScrappedData.material }, scrapQty, this.operatorData).pipe(
+      { name: componentToBeScrappedData.batchName, material: componentToBeScrappedData.material }, scrapQty,
+      this.form.value.reasonCodeData.codeNbr, this.operatorData).pipe(
         map(_ => {
           return {
             isSuccess: true,
@@ -212,6 +265,7 @@ export class ScrapBatchComponent extends BaseExtendForm {
     this.document.getElementById(`machine`).focus();
 
     this.componentsToBeScrapped$.next([]);
+    this.reasonCodes$.next([]);
   }
 
   //#endregion

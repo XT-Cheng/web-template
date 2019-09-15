@@ -145,9 +145,20 @@ export class MachineWebApi {
                     material: c.Material,
                     machine: c.Machine,
                     allowLogoff: c.AllowLogoff,
+                    suggestLogoff: c.SuggestLogoff,
                     batchQty: c.BatchQty,
                 });
             })
+
+            ret.componentsLoggedOn.sort((a, b) => {
+                if (a.suggestLogoff !== b.suggestLogoff) {
+                    if (a.suggestLogoff)
+                        return -1;
+                    else
+                        return 1;
+                }
+                return a.material > b.material ? -1 : 1
+            });
         }
 
         if (machine.ToolsLoggedOn) {

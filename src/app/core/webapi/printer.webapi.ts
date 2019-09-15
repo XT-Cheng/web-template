@@ -17,6 +17,16 @@ export class PrinterWebApi {
         )
     }
 
+    public getPrinterByName(printerName: string): Observable<Printer> {
+        return this._http.get(`/api/printerService/printer/${printerName}`).pipe(
+            map((printer: any) => {
+                if (printer === null) return null;
+
+                return PrinterWebApi.translate(printer);
+            })
+        )
+    }
+
     public static translate(printer: any): Printer {
         let ret = new Printer();
 

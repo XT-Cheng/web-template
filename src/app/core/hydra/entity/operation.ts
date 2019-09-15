@@ -148,6 +148,7 @@ export class BomItem {
 export class ComponentLoggedOn {
   batchName: string;
   allowLogoff: boolean;
+  suggestLogoff: boolean;
   material: string;
   batchQty: number;
   machine: string;

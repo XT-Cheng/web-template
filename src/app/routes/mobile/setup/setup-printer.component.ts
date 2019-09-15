@@ -5,6 +5,7 @@ import { BaseExtendForm } from '../base.form.extend';
 import { PopupComponent } from 'ngx-weui';
 import { PrinterWebApi } from '@core/webapi/printer.webapi';
 import { Printer } from '@core/hydra/entity/printer';
+import { tap } from 'rxjs/operators';
 
 @Component({
   selector: 'fw-setup-printer',
@@ -41,7 +42,7 @@ export class SetupPrinterComponent extends BaseExtendForm implements OnInit {
   ) {
     super(injector, false, false);
     this.addControls({
-      printerSelected: [null, [Validators.required]],
+      printerSelected: [null, [Validators.required], `printerSelectedData`],
     });
   }
 
@@ -50,8 +51,8 @@ export class SetupPrinterComponent extends BaseExtendForm implements OnInit {
   //#region Public properties
 
   get selected() {
-    if (this.form.value.printerSelected) {
-      return this.form.value.printerSelected;
+    if (this.form.value.printerSelectedData) {
+      return this.form.value.printerSelectedData.name;
     } else if (this.printers$.value.length > 0) {
       return this.printers$.value[0].name;
     } else {
@@ -62,6 +63,25 @@ export class SetupPrinterComponent extends BaseExtendForm implements OnInit {
   //#endregion
 
   //#region Data Request
+
+  //#region Machine Reqeust
+
+  requestPrinterSelectedDataSuccess = (_) => {
+  }
+
+  requestPrinterSelectedDataFailed = () => {
+  }
+
+  requestPrinterSelectedData = () => {
+    return this._printerWebApi.getPrinterByName(this.form.value.printerSelected).pipe(
+      tap(printer => {
+        if (!printer) {
+          throw Error('Printer invalid');
+        }
+      }));
+  }
+
+  //#endregion
 
   //#endregion
 
@@ -110,7 +130,11 @@ export class SetupPrinterComponent extends BaseExtendForm implements OnInit {
   ngOnInit(): void {
     this.form.controls.printerSelected.setValue(this.printer);
 
-    this._printerWebApi.getPrinters().subscribe(printers => this.printers$.next(printers));
+    this._printerWebApi.getPrinters().subscribe(printers => {
+      this.printers$.next(printers)
+      this.form.controls.printerSelectedData.setValue(printers.find(x => x.name === this.printer));
+    });
+
   }
 
   //#endregion

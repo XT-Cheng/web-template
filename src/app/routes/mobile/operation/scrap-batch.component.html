@@ -38,6 +38,15 @@
             [placeholder]="'app.mobile.material.scrap.scrapQty.placeholder' | translate">
         </div>
       </div>
+      <ng-container *ngIf='getSelectedReasonCodeDisplay() as display'>
+        <div class="weui-cell weui-cell_board weui-cell_access" (click)='showReasonCodes()'>
+          <div class="weui-cell__bd">
+            <span [ngStyle]="getReasonCodeStyle(display)">{{'app.common.reasonCode' | translate}}:
+              {{display.description}}</span>
+          </div>
+          <div class="weui-cell__ft"></div>
+        </div>
+      </ng-container>
     </ng-container>
     <div class="mobile-fill">
       <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute"
@@ -51,6 +60,10 @@
   </div>
 </form>
 <weui-mask #mask [backdrop]="false"></weui-mask>
+<weui-popup #reasonCode>
+  <fw-mobile-reason-list [reasonCodes$]='reasonCodes$' (itemClicked)='reasonCodeSelected($event)'>
+  </fw-mobile-reason-list>
+</weui-popup>
 <weui-popup #componentStatus>
   <fw-mobile-component-list [componentItems$]='componentsToBeScrapped$' (itemClicked)='componentSelected($event)'>
   </fw-mobile-component-list>

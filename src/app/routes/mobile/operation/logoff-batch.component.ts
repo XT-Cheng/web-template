@@ -49,10 +49,6 @@ export class LogoffBatchComponent extends BaseExtendForm {
     private _batchWebApi: BatchWebApi,
     private _printLabelWebApi: PrintLabelWebApi,
     private _materialMasterWebApi: MaterialMasterWebApi,
-    // private _printService: PrintService,
-    // private _machineService: MachineService,
-    // private _bapiService: MPLBapiService,
-    // private _batchService: BatchService
   ) {
     super(injector, false);
     this.addControls({

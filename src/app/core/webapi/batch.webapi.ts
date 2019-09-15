@@ -273,13 +273,14 @@ export class BatchWebApi {
     }
 
     scrapInputBatch(machine: Machine | { machineName: string },
-        batch: MaterialBatch | { name: string, material: string }, scrapQty: number, operator: Operator) {
+        batch: MaterialBatch | { name: string, material: string }, scrapQty: number, scrapReason: number, operator: Operator) {
         return this._http.post(`/api/batchService/scrapInputBatch`, {
             Badge: operator.badge,
             MachineName: machine.machineName,
             BatchMaterial: batch.material,
             BatchName: batch.name,
-            ScrapQty: scrapQty
+            ScrapQty: scrapQty,
+            ScrapReason: scrapReason
         }).pipe(
             map((loggedOff: string) => {
                 return loggedOff;
@@ -353,6 +354,7 @@ export class BatchWebApi {
             batchName: batchLoggedOn.BatchName,
             material: batchLoggedOn.Material,
             allowLogoff: batchLoggedOn.AllowLogoff,
+            suggestLogoff: batchLoggedOn.SuggestLogoff,
             batchQty: batchLoggedOn.BatchQty,
             machine: batchLoggedOn.Machine,
             operations: batchLoggedOn.OperationPos.map(op => {

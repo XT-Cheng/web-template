@@ -204,6 +204,7 @@ export class OperationWebApi {
                     batchName: c.BatchName,
                     material: c.Material,
                     allowLogoff: c.AllowLogoff,
+                    suggestLogoff: c.SuggestLogoff,
                     machine: c.Machine,
                     batchQty: c.BatchQty,
                 });

@@ -1,7 +1,8 @@
 <div class="weui-cells" [ngStyle]="{'max-height': '200px'}">
   <ng-container *ngIf='(componentItems$ | async) as componentItems'>
-    <div class="weui-cell" *ngFor='let comp of componentItems' (click)='click(comp)'>
-      <div class="weui-cell__bd">
+    <div class="weui-cell weui-cell_access" [ngStyle]="{'padding': '5px'}" *ngFor='let comp of componentItems'
+      (click)='click(comp)'>
+      <div class="weui-cell__bd" [ngStyle]="getColor(comp)">
         <span>{{comp.material}}</span>
       </div>
     </div>

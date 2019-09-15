@@ -151,7 +151,6 @@ export class GenerateOutputBatchComponent extends BaseExtendForm {
 
   //#region Operation Reqeust
   requestOperationDataSuccess = (operation: Operation) => {
-
     if (this.storedData && this.storedData.outputBatchQtys && this.storedData.outputBatchQtys[operation.article]) {
       this.form.controls.quantity.setValue(this.storedData.outputBatchQtys[operation.article]);
     }

@@ -131,17 +131,6 @@ export class LogonToolComponent extends BaseExtendForm {
   //#region Machine Reqeust
 
   requestMachineDataSuccess = (machine: Machine) => {
-    //   this.form.controls.machineData.setValue(machine);
-    //   this.operations$.next([...machine.currentOperations, ...machine.nextOperations]);
-    //   if (machine.currentOperation) {
-    //     this.form.controls.operation.setValue(machine.currentOperation.name);
-    //     this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
-    //       (null, null, `operation`);
-    //   } else if (machine.nextOperations.length > 0) {
-    //     this.form.controls.operation.setValue(machine.nextOperations[0].name);
-    //     this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
-    //       (null, null, `operation`);
-    //   }
     this.operations$.next([...machine.nextOperations]);
     if (machine.nextOperations.length > 0) {
       this.form.controls.operation.setValue(machine.nextOperations[0].name);
@@ -296,19 +285,6 @@ export class LogonToolComponent extends BaseExtendForm {
     this.form.controls.machine.setValue(machineName);
     this.request(this.requestMachineData, this.requestMachineDataSuccess, this.requestMachineDataFailed)
       (null, null, `machine`);
-    // this._machineWebApi.getMachine(machineName).subscribe((machine) => {
-    //   this.form.controls.machineData.setValue(machine);
-    //   this.operations$.next([...machine.currentOperations, ...machine.nextOperations]);
-    //   if (machine.currentOperation) {
-    //     this.form.controls.operation.setValue(machine.currentOperation.name);
-    //     this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
-    //       (null, null, `operation`);
-    //   } else if (machine.nextOperations.length > 0) {
-    //     this.form.controls.operation.setValue(machine.nextOperations[0].name);
-    //     this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
-    //       (null, null, `operation`);
-    //   }
-    // });
   }
 
   logonToolFailed = () => {

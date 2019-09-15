@@ -7,11 +7,9 @@ import { FetchService } from './hydra/service/fetch.service';
 import { BapiService } from './hydra/bapi/bapi.service';
 import { VBoardService } from './hydra/service/vBoard.service';
 import { BatchService } from './hydra/service/batch.service';
-import { MachineService } from './hydra/service/machine.service';
 import { OperatorService } from './hydra/service/operator.service';
 import { WebAPIService } from './hydra/service/webapi.service';
 import { PrintService } from './hydra/service/print.service';
-import { OperationService } from './hydra/service/operation.service';
 import { MPLBapiService } from './hydra/bapi/mpl/bapi.service';
 import { MPLMasterBapiService } from './hydra/bapi/mpl/master/bapi.service';
 import { ToolService } from './hydra/service/tool.service';
@@ -38,7 +36,6 @@ import { FetchWebApi } from './webapi/fetch.webapi';
     FetchService,
     BapiService,
     ToolService,
-    OperationService,
     BatchService,
     OperatorService,
     VBoardService,
@@ -49,7 +46,6 @@ import { FetchWebApi } from './webapi/fetch.webapi';
     MPLBapiService,
     MDEBapiService,
     MPLMasterBapiService,
-    // BDEBapiService,
     WRMBapiService,
     UtilityService,
     MachineWebApi,

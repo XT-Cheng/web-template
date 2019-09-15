@@ -17,4 +17,12 @@ export class MobileComponentListComponent {
   click(componentClicked: ComponentLoggedOn | ComponentToBeLoggedOff | ComponentToBeReplenish) {
     this.itemClicked.next(componentClicked);
   }
+
+  getColor(comp) {
+    if (comp.suggestLogoff) {
+      return { color: 'red' };
+    } else {
+      return { color: `rgba(0, 0, 0, 0.65)` };
+    }
+  }
 }

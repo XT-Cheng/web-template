@@ -520,6 +520,7 @@ export class MachineService {
           loggedOnComponent.map(component => {
             machineRet.componentsLoggedOn.push({
               allowLogoff: true,
+              suggestLogoff: true,
               machine: '',
               operations: component.OPERATION,
               batchName: component.BATCHID,
