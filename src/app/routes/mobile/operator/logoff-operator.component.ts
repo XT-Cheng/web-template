@@ -1,14 +1,10 @@
 import { Component, Injector, ViewChild } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { IActionResult } from '@core/utils/helpers';
 import { BehaviorSubject } from 'rxjs';
 import { Machine } from '@core/hydra/entity/machine';
-import { MachineService } from '@core/hydra/service/machine.service';
 import { OperatorLoggedOn } from '@core/hydra/entity/operation';
 import { map, tap } from 'rxjs/operators';
 import { BaseExtendForm } from '../base.form.extend';
-import { BDEBapiService } from '@core/hydra/bapi/bde/bapi.service';
-import { OperatorService } from '@core/hydra/service/operator.service';
 import { PopupComponent } from 'ngx-weui';
 import { MachineWebApi } from '@core/webapi/machine.webapi';
 import { OperatorWebApi } from '@core/webapi/operator.webapi';

@@ -23,7 +23,7 @@ import { Subject, interval } from 'rxjs';
   styleUrls: ['./machine.summary.component.less']
 })
 export class MachineSummaryComponent implements OnInit, OnDestroy {
-  private REFRESH_INTERVAL = 15000;
+  private REFRESH_INTERVAL = 60000;
 
   //#region Private field
   private destroy$ = new Subject();
@@ -70,7 +70,7 @@ export class MachineSummaryComponent implements OnInit, OnDestroy {
       this.reuseTabService.title = `${this.i18n.fanyi('app.route.line-summary')} - ${this.machineName}`;
 
       interval(this.REFRESH_INTERVAL).pipe(
-        startWith(),
+        startWith(0),
         takeUntil(this.destroy$),
       ).subscribe(_ => {
         this.isLoading = true;
@@ -90,20 +90,6 @@ export class MachineSummaryComponent implements OnInit, OnDestroy {
 
           });
       });
-
-      // this._machineWebApi.getMachineWithStatistic(this.machineName).pipe(finalize(() => this.isLoading = false)).subscribe((machine) => {
-      //   this.machine = machine;
-
-      //   this.machine.toolsLoggedOn.forEach(logon => {
-      //     const exist = this.toolCycles.get(logon.toolName);
-      //     if (exist) {
-      //       exist.pre = exist.now;
-      //       exist.now = logon.currentCycle;
-      //     } else {
-      //       this.toolCycles.set(logon.toolName, { pre: logon.currentCycle, now: logon.currentCycle });
-      //     }
-      //   });
-      // });
     });
   }
 
@@ -261,7 +247,7 @@ export class MachineSummaryComponent implements OnInit, OnDestroy {
   }
 
   get machineStatusSpan(): number {
-    if (this.warningMessages.length > 0) return 18;
+    if (this.warningMessages.length > 0) return 12;
 
     return 24;
   }
@@ -282,7 +268,7 @@ export class MachineSummaryComponent implements OnInit, OnDestroy {
     // Change Over
     const changeOverResult = this.ifChangeOverCheckListFinished(this.machine);
     if (changeOverResult.notFinished > 0) {
-      messages.push(`换型点检未完成, 已完成${changeOverResult.finished}，未完成${changeOverResult.notFinished}`);
+      messages.push(`${changeOverResult.operation}换型点检未完成, 已完成${changeOverResult.finished}，未完成${changeOverResult.notFinished}`);
     }
 
     // Change Shift
@@ -339,7 +325,8 @@ export class MachineSummaryComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (this.machine.lastArticle !== this.machine.currentOperation.article) {
+    if (!this.machine.lastArticle
+      || this.machine.lastArticle === this.machine.currentOperations[this.machine.currentOperations.length - 1].article) {
       return false;
     }
 
@@ -452,13 +439,18 @@ export class MachineSummaryComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  private ifChangeOverCheckListFinished(machine: Machine): { finished: number, notFinished: number } {
-    const result = {
+  private ifChangeOverCheckListFinished(machine: Machine): { operation: string, finished: number, notFinished: number } {
+    if (!this.isChangeOverCheckListVisible) return {
+      operation: ``,
       finished: 0,
       notFinished: 0
     };
 
-    if (!this.isChangeOverCheckListVisible) return result;
+    const result = {
+      operation: machine.currentOperations[machine.currentOperations.length - 1].name,
+      finished: 0,
+      notFinished: 0
+    };
 
     if (machine.checkListResultsOfChangeOver.size === 0) {
       return Object.assign(result, {

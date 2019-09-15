@@ -10,7 +10,7 @@
           </div>
         </div>
         <ng-container *ngIf='warningMessages.length > 0'>
-          <div nz-col nzSpan="6">
+          <div nz-col nzSpan="12">
             <nz-carousel [nzAutoPlay]='true' [nzDots]='false' [nzEffect]="'fade'">
               <div nz-carousel-content *ngFor="let msg of warningMessages">
                 <h3>{{msg}}</h3>

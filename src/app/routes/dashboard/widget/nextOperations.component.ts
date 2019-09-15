@@ -1,7 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { STColumn } from '@delon/abc';
 import { format } from 'date-fns';
-import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { Operation } from '@core/hydra/entity/operation';
 import { toNumber } from '@delon/util';

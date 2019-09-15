@@ -1,6 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { STColumn, STColumnTag } from '@delon/abc';
-import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { ProcessType } from '@core/hydra/entity/checkList';
 import { format } from 'date-fns';

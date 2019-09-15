@@ -129,7 +129,7 @@ export class Machine {
       if (loggedOn) {
         // Material found
         ret.push({
-          operation: loggedOn.operations[0].name,
+          operations: loggedOn.operations.map(x => x.name),
           material: item.material,
           pos: item.pos,
           isReady: true,
@@ -139,7 +139,7 @@ export class Machine {
       }
       else {
         ret.push({
-          operation: ``,
+          operations: [],
           material: item.material,
           pos: item.pos,
           isReady: false,
@@ -158,7 +158,7 @@ export class Machine {
     operation.toolItems.forEach((toolItem, requiredMaterial) => {
       let loggedOnFound = null;
       let found = toolItem.availableTools.find(available => {
-        loggedOnFound = this.toolsLoggedOn.find(loggedOn => loggedOn.toolName === available);
+        loggedOnFound = this.toolsLoggedOn.find(loggedOn => loggedOn.toolName === available && loggedOn.batchMaterial == requiredMaterial);
         return !!loggedOnFound;
       });
 
@@ -179,7 +179,7 @@ export class Machine {
             requiredMaterial: requiredMaterial,
             loggedOnMachine: ``,
             deputyOperation: ``,
-            isReady: true,
+            isReady: false,
             toolId: ``,
             toolName: ``,
           });

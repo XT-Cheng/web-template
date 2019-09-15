@@ -29,6 +29,7 @@ export class Operation {
   article = '';//checked
   sequence = '';//checked
   leadOrder = '';//checked
+  leadOrderArticle = '';//checked
   targetQty = -1;//checked
   totalYield = -1;//checked
   totalScrap = -1;//checked
@@ -64,7 +65,7 @@ export class Operation {
   toolItems: Map<string, ToolItem> = new Map<string, ToolItem>();
 
   componentsLoggedOn: Map<number, ComponentLoggedOn> = new Map<number, ComponentLoggedOn>();
-  toolsLoggedOn: ToolLoggedOn[] = [];
+  // toolsLoggedOn: ToolLoggedOn[] = [];
   operatorsLoggedOn: Map<number, OperatorLoggedOn> = new Map<number, OperatorLoggedOn>();
 
   // Save last 24 Hours Data
@@ -76,6 +77,10 @@ export class Operation {
   //#region Display
 
   get display(): string {
+    if (this.leadOrder) {
+      return `${this.leadOrderArticle} / ${this.article} ${this.totalYield} ${this.targetQty}`;
+    }
+
     return `${this.article} ${this.totalYield} ${this.targetQty}`;
   }
 
@@ -150,7 +155,7 @@ export class ComponentLoggedOn {
 }
 
 export interface ComponentStatus {
-  operation: string;
+  operations: string[];
   material: string;
   pos: number;
   isReady: boolean;
@@ -166,6 +171,7 @@ export class ToolItem {
 }
 
 export class ToolLoggedOn {
+  batchMaterial = '';
   loggedOnOperation = '';
   loggedOnMachine = '';
   toolName = '';

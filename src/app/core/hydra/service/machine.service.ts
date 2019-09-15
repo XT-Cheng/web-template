@@ -414,14 +414,14 @@ export class MachineService {
 
             //#region Setup Logged On Tools
             loggedOnTools.forEach(tool => {
-              machineRet.toolsLoggedOn.push({
-                loggedOnOperation: tool.OPERATION,
-                loggedOnMachine: tool.MACHINE,
-                toolName: tool.TOOLNAME,
-                toolId: tool.RESOURCEID,
-                toolStatus: tool.TOOLSTATUS ? tool.TOOLSTATUS : -1,
-                currentCycle: tool.CURRENTCYCLE ? tool.CURRENTCYCLE : -1,
-              });
+              // machineRet.toolsLoggedOn.push({
+              //   loggedOnOperation: tool.OPERATION,
+              //   loggedOnMachine: tool.MACHINE,
+              //   toolName: tool.TOOLNAME,
+              //   toolId: tool.RESOURCEID,
+              //   toolStatus: tool.TOOLSTATUS ? tool.TOOLSTATUS : -1,
+              //   currentCycle: tool.CURRENTCYCLE ? tool.CURRENTCYCLE : -1,
+              // });
             });
             //#endregion
 
@@ -657,14 +657,14 @@ export class MachineService {
             , [toolMacineNames.join(',')])).pipe(
               map(loggedOnTools => {
                 loggedOnTools.forEach(tool => {
-                  machineRet.toolsLoggedOn.push({
-                    loggedOnOperation: tool.OPERATION,
-                    loggedOnMachine: tool.MACHINE,
-                    toolName: tool.TOOLNAME,
-                    toolId: tool.RESOURCEID,
-                    toolStatus: tool.TOOLSTATUS ? tool.TOOLSTATUS : -1,
-                    currentCycle: tool.CURRENTCYCLE ? tool.CURRENTCYCLE : -1,
-                  });
+                  // machineRet.toolsLoggedOn.push({
+                  //   loggedOnOperation: tool.OPERATION,
+                  //   loggedOnMachine: tool.MACHINE,
+                  //   toolName: tool.TOOLNAME,
+                  //   toolId: tool.RESOURCEID,
+                  //   toolStatus: tool.TOOLSTATUS ? tool.TOOLSTATUS : -1,
+                  //   currentCycle: tool.CURRENTCYCLE ? tool.CURRENTCYCLE : -1,
+                  // });
                 });
               })
             );

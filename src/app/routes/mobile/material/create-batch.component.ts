@@ -9,7 +9,6 @@ import { BaseExtendForm } from '../base.form.extend';
 import { BUFFER_SAP, BUFFER_914 } from './constants';
 import { BatchWebApi } from '@core/webapi/batch.webapi';
 import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
-import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
 import { MaterialMaster } from '@core/hydra/entity/materialMaster';
 
 @Component({
@@ -27,15 +26,6 @@ export class CreateBatchComponent extends BaseExtendForm {
 
   //#region Protected member
   protected key = `app.mobile.material.create`;
-  //#endregion
-
-  //#region Public member
-
-  //#endregion
-
-  //#region Private member
-
-  private materialMaster: MaterialMaster;
 
   //#endregion
 
@@ -104,7 +94,6 @@ export class CreateBatchComponent extends BaseExtendForm {
           materialMaster,
           // tslint:disable-next-line:prefer-const
           batchInSAP] = array;
-        this.materialMaster = materialMaster;
         this.form.controls.isReturnedFromSAP.setValue(!!batchInSAP);
 
         batch.materialType = materialMaster.materialType;
@@ -281,6 +270,7 @@ export class CreateBatchComponent extends BaseExtendForm {
     this.document.getElementById(`batch`).focus();
 
     this.form.controls.numberOfSplits.setValue(1);
+    this.form.controls.remainQty.setValue(0);
   }
 
   //#endregion

@@ -38,13 +38,11 @@ export class SplitBatchComponent extends BaseExtendForm {
   constructor(
     injector: Injector,
     private _batchWebApi: BatchWebApi,
-    private _printLabelWebApi: PrintLabelWebApi,
-    private _materialMasterWebApi: MaterialMasterWebApi,
   ) {
     super(injector);
     this.addControls({
       batch: [null, [Validators.required], 'batchData'],
-      numberOfSplits: [1, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)], 'numberOfSplitsData'],
+      numberOfSplits: [2, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)], 'numberOfSplitsData'],
       childQty: [``, [Validators.required, Validators.pattern('^[0-9]*$'), Validators.min(1)], 'childQtyData'],
     });
   }

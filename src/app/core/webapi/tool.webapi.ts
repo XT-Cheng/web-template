@@ -22,12 +22,13 @@ export class ToolWebApi {
         )
     }
 
-    public logonTool(toolName: string, toolId: number, operationName: string, machineName: string, operator: Operator): Observable<string> {
+    public logonTool(toolName: string, toolId: number, batchMaterial: string, operationName: string, machineName: string, operator: Operator): Observable<string> {
         return this._http.post(`/api/toolService/logonTool`, {
             OperationName: operationName,
             MachineName: machineName,
             ToolName: toolName,
             ToolId: toolId,
+            BatchMaterial: batchMaterial,
             Badge: operator.badge
         }).pipe(
             map((tool: string) => tool)

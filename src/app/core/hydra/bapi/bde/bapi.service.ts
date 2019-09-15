@@ -49,7 +49,7 @@ export class BDEBapiService {
 
     // LogOn Batch if required
     componentStatus.forEach((status: ComponentStatus) => {
-      if (status.isReady && status.operation !== operation.name) {
+      if (status.isReady && !status.operations.find(x => x === operation.name)) {
         operationLogon$ = operationLogon$.pipe(
           switchMap(() => {
             return this._bapiMPL.logonInputBatch(operation,

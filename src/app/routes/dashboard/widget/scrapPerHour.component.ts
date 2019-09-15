@@ -1,5 +1,4 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { format } from 'date-fns';
 

@@ -1,16 +1,14 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { STColumn, STColumnTag } from '@delon/abc';
-import { MachineService } from '@core/hydra/service/machine.service';
 import { Machine } from '@core/hydra/entity/machine';
 import { of, forkJoin, BehaviorSubject } from 'rxjs';
-import { ToolService } from '@core/hydra/service/tool.service';
 import { Tool, MaintenanceStatusEnum } from '@core/hydra/entity/tool';
 import { ToolWebApi } from '@core/webapi/tool.webapi';
 
 const TOOL_TAG: STColumnTag = {
-  1: { text: 'In Use', color: 'green' },
-  2: { text: 'No Tool.', color: 'red' },
-  3: { text: 'Need Maintain', color: 'red' },
+  1: { text: '使用中', color: 'green' },
+  2: { text: '无卡模', color: 'red' },
+  3: { text: '需维护', color: 'red' },
 };
 
 @Component({

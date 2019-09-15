@@ -131,12 +131,19 @@ export class LogonToolComponent extends BaseExtendForm {
   //#region Machine Reqeust
 
   requestMachineDataSuccess = (machine: Machine) => {
-    this.operations$.next([...machine.currentOperations, ...machine.nextOperations]);
-    if (machine.currentOperation) {
-      this.form.controls.operation.setValue(machine.currentOperation.name);
-      this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
-        (null, null, `operation`);
-    } else if (machine.nextOperations.length > 0) {
+    //   this.form.controls.machineData.setValue(machine);
+    //   this.operations$.next([...machine.currentOperations, ...machine.nextOperations]);
+    //   if (machine.currentOperation) {
+    //     this.form.controls.operation.setValue(machine.currentOperation.name);
+    //     this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
+    //       (null, null, `operation`);
+    //   } else if (machine.nextOperations.length > 0) {
+    //     this.form.controls.operation.setValue(machine.nextOperations[0].name);
+    //     this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
+    //       (null, null, `operation`);
+    //   }
+    this.operations$.next([...machine.nextOperations]);
+    if (machine.nextOperations.length > 0) {
       this.form.controls.operation.setValue(machine.nextOperations[0].name);
       this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
         (null, null, `operation`);
@@ -287,26 +294,28 @@ export class LogonToolComponent extends BaseExtendForm {
     this.operations$.next([]);
 
     this.form.controls.machine.setValue(machineName);
-    this._machineWebApi.getMachine(machineName).subscribe((machine) => {
-      this.form.controls.machineData.setValue(machine);
-      this.operations$.next([...machine.currentOperations, ...machine.nextOperations]);
-      if (machine.currentOperation) {
-        this.form.controls.operation.setValue(machine.currentOperation.name);
-        this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
-          (null, null, `operation`);
-      } else if (machine.nextOperations.length > 0) {
-        this.form.controls.operation.setValue(machine.nextOperations[0].name);
-        this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
-          (null, null, `operation`);
-      }
-    });
+    this.request(this.requestMachineData, this.requestMachineDataSuccess, this.requestMachineDataFailed)
+      (null, null, `machine`);
+    // this._machineWebApi.getMachine(machineName).subscribe((machine) => {
+    //   this.form.controls.machineData.setValue(machine);
+    //   this.operations$.next([...machine.currentOperations, ...machine.nextOperations]);
+    //   if (machine.currentOperation) {
+    //     this.form.controls.operation.setValue(machine.currentOperation.name);
+    //     this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
+    //       (null, null, `operation`);
+    //   } else if (machine.nextOperations.length > 0) {
+    //     this.form.controls.operation.setValue(machine.nextOperations[0].name);
+    //     this.request(this.requestOperationData, this.requestOperationDataSuccess, this.requestOperationDataFailed)
+    //       (null, null, `operation`);
+    //   }
+    // });
   }
 
   logonToolFailed = () => {
   }
 
   logonTool = () => {
-    return this._toolWebApi.logonTool(this.toolData.toolName, this.toolData.toolId,
+    return this._toolWebApi.logonTool(this.toolData.toolName, this.toolData.toolId, this.batchData.material,
       this.machineData.toolLogonOrder, this.form.value.toolMachine, this.operatorData).pipe(
         map(_ => {
           return {

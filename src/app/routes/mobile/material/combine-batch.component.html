@@ -2,56 +2,46 @@
   <div class="weui-cells">
     <div class="weui-cell">
       <div class="weui-cell__hd">
-        <label class="weui-label">{{'app.mobile.material.combine.batch1' | translate}}</label>
+        <label class="weui-label">{{'app.mobile.material.combine.batch' | translate}}</label>
       </div>
       <div class="weui-cell__bd">
-        <input class="weui-input" id='batch1' formControlName="batch1" fwShareAutoFocus [fwShareKeyHandler]='{controlName: "batch1", inputing: Inputing, nextInputId: "quantity1", req: request(requestBatch1Data, requestBatch1DataSuccess, requestBatch1DataFailed)}'
-          [placeholder]="'app.mobile.material.combine.batch1.placeholder' | translate">
+        <input class="weui-input" id='batch' formControlName="batch" fwShareAutoFocus
+          [fwShareKeyHandler]='{controlName: "batch", inputing: Inputing, nextInputId: "quantity", req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
+          [placeholder]="'app.mobile.material.combine.batch.placeholder' | translate">
       </div>
     </div>
     <label for="weuiAgree" class="weui-agree">
       <span class="weui-agree__text">
-        {{getAssociateDataDisplay('batch1')}}
+        {{getAssociateDataDisplay('batch')}}
       </span>
     </label>
     <div class="weui-cell">
       <div class="weui-cell__hd">
-        <label class="weui-label">{{'app.mobile.material.combine.quantity1' | translate}}</label>
+        <label class="weui-label">{{'app.mobile.material.combine.quantity' | translate}}</label>
       </div>
       <div class="weui-cell__bd">
-        <input class="weui-input" id='quantity1' formControlName="quantity1" [fwShareKeyHandler]='{controlName: "quantity1", inputing: Inputing, nextInputId: "batch2", req: request(requestQuantity1Data, requestQuantity1DataSuccess, requestQuantity1DataFailed)}'
-          [placeholder]="'app.mobile.material.combine.quantity1.placeholder' | translate">
+        <input class="weui-input" id='quantity' formControlName="quantity"
+          [fwShareKeyHandler]='{controlName: "quantity", inputing: Inputing, nextInputId: "batch",req: request(requestQuantityData, requestQuantityDataSuccess, requestQuantityDataFailed)}'
+          [placeholder]="'app.mobile.material.combine.quantity.placeholder' | translate">
       </div>
     </div>
-    <div class="weui-cell">
-      <div class="weui-cell__hd">
-        <label class="weui-label">{{'app.mobile.material.combine.batch2' | translate}}</label>
+    <ng-container *ngIf='batches.length >0'>
+      <div class="weui-cell weui-cell_access" [ngStyle]="{'padding': '5px'}"
+        *ngFor='let batch of batches;let i = index'>
+        <div class="weui-cell__bd">
+          <span>{{getDisplay(batch,i)}}</span>
+        </div>
       </div>
-      <div class="weui-cell__bd">
-        <input class="weui-input" id='batch2' formControlName="batch2" [fwShareKeyHandler]='{controlName: "batch2", inputing: Inputing, nextInputId: "quantity2", req: request(requestBatch2Data, requestBatch2DataSuccess, requestBatch2DataFailed)}'
-          [placeholder]="'app.mobile.material.combine.batch2.placeholder' | translate">
-      </div>
-    </div>
-    <label for="weuiAgree" class="weui-agree">
-      <span class="weui-agree__text">
-        {{getAssociateDataDisplay('batch2')}}
-      </span>
-    </label>
-    <div class="weui-cell">
-      <div class="weui-cell__hd">
-        <label class="weui-label">{{'app.mobile.material.combine.quantity2' | translate}}</label>
-      </div>
-      <div class="weui-cell__bd">
-        <input class="weui-input" id='quantity2' formControlName="quantity2" [fwShareKeyHandler]='{controlName: "quantity2", inputing: Inputing, req: request(requestQuantity2Data, requestQuantity2DataSuccess, requestQuantity2DataFailed)}'
-          [placeholder]="'app.mobile.material.combine.quantity2.placeholder' | translate">
-      </div>
-    </div>
+    </ng-container>
     <div class="mobile-fill">
-      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(combineBatch, combineBatchSuccess, combineBatchFailed)'>{{'app.mobile.material.combine.action'
+      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute"
+        (click)='doAction(combineBatch, combineBatchSuccess, combineBatchFailed)'>{{'app.mobile.material.combine.action'
         | translate}}</button>
     </div>
-    <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
-      [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
+    <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText'
+      [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
+      [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'>
+    </fw-mobile-bottom>
   </div>
 </form>
 <weui-mask #mask [backdrop]="false"></weui-mask>

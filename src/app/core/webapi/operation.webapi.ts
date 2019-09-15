@@ -119,7 +119,7 @@ export class OperationWebApi {
 
     public static translateComponentStatus(comp: any): ComponentStatus {
         return {
-            operation: comp.OperationName,
+            operations: comp.OperationName,
             material: comp.Material,
             pos: comp.Pos,
             isReady: comp.IsReady,
@@ -148,6 +148,7 @@ export class OperationWebApi {
         ret.article = operation.Article;
         ret.sequence = operation.Sequence;
         ret.leadOrder = operation.LeadOrder;
+        ret.leadOrderArticle = operation.LeadOrderArticle;
         ret.targetQty = operation.TargetQty;
         ret.totalYield = operation.TotalYield;
         ret.totalScrap = operation.TotalScrap;

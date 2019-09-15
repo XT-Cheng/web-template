@@ -1,19 +1,11 @@
 import { Component, Injector } from '@angular/core';
 import { toNumber } from 'ng-zorro-antd';
-import { BatchService } from '@core/hydra/service/batch.service';
-import { Validators } from '@angular/forms';
-import { of, throwError, Observable, forkJoin } from 'rxjs';
+import { of, throwError, Observable } from 'rxjs';
 import { switchMap, map, tap } from 'rxjs/operators';
-import { deepExtend, IActionResult } from '@core/utils/helpers';
-import { PrintService } from '@core/hydra/service/print.service';
-import { requestBatchData } from './request.common';
-import { MPLBapiService } from '@core/hydra/bapi/mpl/bapi.service';
+import { deepExtend } from '@core/utils/helpers';
 import { BaseExtendForm } from '../base.form.extend';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { BatchWebApi } from '@core/webapi/batch.webapi';
-import { PrintLabelWebApi } from '@core/webapi/printLabel.webapi';
-import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
-import { MaterialMaster } from '@core/hydra/entity/materialMaster';
 
 @Component({
   selector: 'fw-batch-combine',
@@ -29,7 +21,11 @@ export class CombineBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected member
+
   protected key = `app.mobile.material.combine`;
+  batches: MaterialBatch[] = [];
+  protected quantitySplit: number[] = [];
+
   //#endregion
 
   //#region Public member
@@ -41,39 +37,46 @@ export class CombineBatchComponent extends BaseExtendForm {
   constructor(
     injector: Injector,
     private _batchWebApi: BatchWebApi,
-    private _printLabelWebApi: PrintLabelWebApi,
-    private _materialMasterWebApi: MaterialMasterWebApi,
   ) {
     super(injector);
     this.addControls({
-      batch1: [null, [Validators.required], 'batch1Data'],
-      batch2: [null, [Validators.required], 'batch2Data'],
-      quantity1: [null, [Validators.required], 'quantity1Data'],
-      quantity2: [null, [Validators.required], 'quantity2Data'],
-    });
+      batch: [null, [], 'batchData'],
+      quantity: [null, [], 'quantityData'],
+    }, true);
   }
 
   //#endregion
 
   //#region Public methods
 
+  getDisplay(batch: MaterialBatch, index: number) {
+    if (!this.quantitySplit[index])
+      return `${batch.name},${batch.material},0`;
+
+    return `${batch.name},${batch.material},${this.quantitySplit[index]}`;
+  }
+
   //#region Data Request
 
-  //#region Batch 1 Reqeust
-  requestBatch1DataSuccess = (batch) => {
-    this.form.controls.batch1.setValue(batch.name);
+  //#region Batch Reqeust
+  requestBatchDataSuccess = (batch) => {
+    this.batches.push(this.batchData);
 
-    if (this.storedData && this.storedData.materialCombine && this.storedData.materialCombine[`${batch.material}.1`]) {
-      this.form.controls.quantity1.setValue(this.storedData.materialCombine[`${batch.material}.1`]);
+    this.form.controls.batch.setValue(batch.name);
+    this.form.controls.quantity.setValue(``);
+    this.form.controls.quantityData.setValue(null);
+
+    if (this.storedData && this.storedData.materialCombine && this.storedData.materialCombine[`${batch.material}`]) {
+      this.form.controls.quantity.setValue(this.storedData.materialCombine[`${batch.material}`]);
     }
   }
 
-  requestBatch1DataFailed = () => {
+  requestBatchDataFailed = () => {
   }
 
-  requestBatch1Data = () => {
+  requestBatchData = () => {
     let barCodeInfo: MaterialBatch;
-    return this._batchWebApi.getBatchInfoFrom2DBarCode(this.form.value.batch1).pipe(
+    return this._batchWebApi.getBatchInfoFrom2DBarCode(this.form.value.batch).pipe(
       switchMap((barCodeData: MaterialBatch) => {
         barCodeInfo = barCodeData;
         return this._batchWebApi.getBatch(barCodeData.name).pipe(
@@ -89,110 +92,48 @@ export class CombineBatchComponent extends BaseExtendForm {
         if (!batch) {
           throw Error(`${barCodeInfo.name} not exist!`);
         }
-      }));
-  }
-
-  //#endregion
-
-  //#region Batch 2 Reqeust
-  requestBatch2DataSuccess = (batch) => {
-    this.form.controls.batch2.setValue(batch.name);
-
-    if (this.storedData && this.storedData.materialCombine && this.storedData.materialCombine[`${batch.material}.2`]) {
-      this.form.controls.quantity2.setValue(this.storedData.materialCombine[`${batch.material}.2`]);
-    }
-  }
-
-  requestBatch2DataFailed = () => {
-  }
-
-  requestBatch2Data = () => {
-    let barCodeInfo: MaterialBatch;
-    return this._batchWebApi.getBatchInfoFrom2DBarCode(this.form.value.batch2).pipe(
-      switchMap((barCodeData: MaterialBatch) => {
-        barCodeInfo = barCodeData;
-        return this._batchWebApi.getBatch(barCodeData.name).pipe(
-          map((batch: MaterialBatch) => {
-            if (batch) {
-              batch.barCode = barCodeData.barCode;
-            }
-            return batch;
-          })
-        );
-      }),
-      tap((batch: MaterialBatch) => {
-        if (!batch) {
-          throw Error(`${barCodeInfo.name} not exist!`);
+        if (this.batches.find(x => x.name === batch.name)) {
+          throw Error(`${barCodeInfo.name} exist already`);
         }
       }));
   }
 
   //#endregion
 
-  //#region Quantity 1 Reqeust
-  requestQuantity1DataSuccess = () => {
+  //#region Quantity Reqeust
+  requestQuantityDataSuccess = () => {
     this.storedData = deepExtend(this.storedData, {
       materialCombine: {
-        [`${this.form.value.batch1Data.material}.1`]: this.form.value.quantity1Data
+        [`${this.form.value.batchData.material}`]: this.form.value.quantityData
       }
     });
+    this.quantitySplit.push(this.form.value.quantityData);
+
+    this.form.controls.batch.setValue(``);
+    this.form.controls.quantity.setValue(``);
+    this.form.controls.batchData.setValue(null);
+    this.form.controls.quantityData.setValue(null);
   }
 
-  requestQuantity1DataFailed = () => {
+  requestQuantityDataFailed = () => {
   }
 
-  requestQuantity1Data = () => {
-    if (!/^[0-9]*$/.test(this.form.value.quantity1)) {
+  requestQuantityData = () => {
+    if (!/^[0-9]*$/.test(this.form.value.quantity)) {
       return throwError('Incorrect Qty');
     }
 
-    if (!this.form.value.batch1Data) {
+    if (!this.form.value.batchData) {
       return throwError('Input Batch First');
     }
 
-    const quantity = toNumber(this.form.value.quantity1, 0);
+    const quantity = toNumber(this.form.value.quantity, 0);
 
     if (quantity < 1) {
       return throwError('Incorrect Quantity');
     }
 
-    if (quantity > this.form.value.batch1Data.quantity) {
-      return throwError(`Incorrect Quantity!`);
-    }
-
-    return of(quantity);
-  }
-
-  //#endregion
-
-  //#region Quantity 2 Reqeust
-  requestQuantity2DataSuccess = () => {
-    this.storedData = deepExtend(this.storedData, {
-      materialCombine: {
-        [`${this.form.value.batch2Data.material}.2`]: this.form.value.quantity2Data
-      }
-    });
-  }
-
-  requestQuantity2DataFailed = () => {
-  }
-
-  requestQuantity2Data = () => {
-    if (!/^[0-9]*$/.test(this.form.value.quantity2)) {
-      return throwError('Incorrect Qty');
-    }
-
-    if (!this.form.value.batch2Data) {
-      return throwError('Input Batch First');
-    }
-
-    const quantity = toNumber(this.form.value.quantity2, 0);
-
-    if (quantity < 1) {
-      return throwError('Incorrect Quantity');
-    }
-
-    if (quantity > this.form.value.batch2Data.quantity) {
+    if (quantity > this.form.value.batchData.quantity) {
       return throwError(`Incorrect Quantity!`);
     }
 
@@ -206,6 +147,9 @@ export class CombineBatchComponent extends BaseExtendForm {
   //#endregion
 
   //#region Protected methods
+  protected isValid() {
+    return this.batches.length > 0 && this.quantitySplit.length > 0 && this.batches.length === this.quantitySplit.length;
+  }
 
   protected beforeRequestCheck(srcElement): Observable<boolean> {
     if (!srcElement) return of(true);
@@ -214,14 +158,9 @@ export class CombineBatchComponent extends BaseExtendForm {
       return throwError(`Setup Printer first`);
 
     switch (srcElement.id) {
-      case 'quantity1':
-        if (!this.form.value.batch1Data) {
-          return throwError(`Input Batch 1 First`);
-        }
-        break;
-      case 'quantity2':
-        if (!this.form.value.batch2Data) {
-          return throwError(`Input Batch 2 First`);
+      case 'quantity':
+        if (!this.form.value.batchData) {
+          return throwError(`Input Batch First`);
         }
         break;
       default:
@@ -245,31 +184,12 @@ export class CombineBatchComponent extends BaseExtendForm {
 
   combineBatch = () => {
     // Split Batch And Print
-    return forkJoin(
-      this._batchWebApi.splitBatch(this.form.value.batch1Data, 1, this.form.value.quantity1, this.operatorData),
-      this._batchWebApi.splitBatch(this.form.value.batch2Data, 1, this.form.value.quantity2, this.operatorData)
-    ).pipe(
-      switchMap((array: [string[], string[]]) => {
-        let child1 = array[0][0];
-        let child2 = array[1][0];
-        return forkJoin(this._materialMasterWebApi.getPartMaster(this.form.value.batch1Data.material),
-          this._materialMasterWebApi.getPartMaster(this.form.value.batch2Data.material)).pipe(
-            switchMap((array: [MaterialMaster, MaterialMaster]) => {
-              let matMaster1 = array[0];
-              let matMaster2 = array[1];
-              return this._printLabelWebApi.printLabel([child1], matMaster1.tagTypeName,
-                this.form.value.batch1Data.SAPBatch, this.form.value.batch1Data.dateCode).pipe(
-                  switchMap(_ => {
-                    return this._printLabelWebApi.printLabel([child2], matMaster2.tagTypeName,
-                      this.form.value.batch1Data.SAPBatch, this.form.value.batch1Data.dateCode)
-                  })
-                );
-            }));
-      }),
+    let batchNames = this.batches.map(b => b.name);
+    return this._batchWebApi.combineBatch(batchNames, this.quantitySplit, this.operatorData).pipe(
       map(_ => {
         return {
           isSuccess: true,
-          description: `Batch ${this.form.value.batch1Data.name},  ${this.form.value.batch2Data.name} Split And Label Printed!`,
+          description: `Batch ${batchNames.join(`,`)} Split And Label Printed!`,
         };
       }));
   }
@@ -279,9 +199,10 @@ export class CombineBatchComponent extends BaseExtendForm {
   //#region Override methods
 
   protected afterReset() {
-    this.document.getElementById(`batch1`).focus();
+    this.batches = [];
+    this.quantitySplit = [];
 
-    this.form.controls.numberOfSplits.setValue(2);
+    this.document.getElementById(`batch`).focus();
   }
 
   //#endregion

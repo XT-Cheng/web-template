@@ -153,6 +153,7 @@ export class MachineWebApi {
         if (machine.ToolsLoggedOn) {
             ret.toolsLoggedOn = machine.ToolsLoggedOn.map(tool => {
                 return {
+                    batchMaterial: tool.BatchMaterial,
                     loggedOnOperation: tool.DeputyOperation,
                     loggedOnMachine: tool.ToolMachine,
                     toolName: tool.ToolName,
@@ -296,6 +297,7 @@ export class MachineWebApi {
         if (machine.ToolsLoggedOn) {
             ret.toolsLoggedOn = machine.ToolsLoggedOn.map(tool => {
                 return {
+                    batchMaterial: tool.BatchMaterial,
                     loggedOnOperation: tool.DeputyOperation,
                     loggedOnMachine: tool.ToolMachine,
                     toolName: tool.ToolName,

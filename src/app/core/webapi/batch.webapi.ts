@@ -190,6 +190,19 @@ export class BatchWebApi {
         )
     }
 
+    combineBatch(batches: string[], childQty: number[], operator: Operator) {
+        return this._http.post(`/api/batchService/combineBatch`, {
+            BatchNames: batches,
+            ChildQty: childQty,
+            Badge: operator.badge,
+            PrinterName: this._settingService.app.printer,
+        }).pipe(
+            map((_) => {
+                return batches;
+            })
+        )
+    }
+
     splitBatch(batch: MaterialBatch, childCount: number, childQty: number, operator: Operator) {
         return this._http.post(`/api/batchService/splitBatch`, {
             BatchName: batch.name,

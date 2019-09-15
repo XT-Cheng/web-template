@@ -5,7 +5,8 @@
         <label class="weui-label">{{'app.mobile.material.logon.machine' | translate}}</label>
       </div>
       <div class="weui-cell__bd">
-        <input class="weui-input" id='machine' formControlName="machine" fwShareAutoFocus [fwShareKeyHandler]='{controlName: "machine", inputing: Inputing, nextInputId: "batch", req: request(requestMachineData, requestMachineDataSuccess, requestMachineDataFailed)}'
+        <input class="weui-input" id='machine' formControlName="machine" fwShareAutoFocus
+          [fwShareKeyHandler]='{controlName: "machine", inputing: Inputing, nextInputId: "batch", req: request(requestMachineData, requestMachineDataSuccess, requestMachineDataFailed)}'
           [placeholder]="'app.mobile.material.logon.machine.placeholder' | translate">
       </div>
     </div>
@@ -31,7 +32,8 @@
           <label class="weui-label">{{'app.mobile.material.logon.batch' | translate}}</label>
         </div>
         <div class="weui-cell__bd">
-          <input class="weui-input" id='batch' formControlName="batch" [fwShareKeyHandler]='{controlName: "batch", inputing: Inputing, nextInputId: "badge", req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
+          <input class="weui-input" id='batch' formControlName="batch"
+            [fwShareKeyHandler]='{controlName: "batch", inputing: Inputing, nextInputId: "badge", req: request(requestBatchData, requestBatchDataSuccess, requestBatchDataFailed)}'
             [placeholder]="'app.mobile.material.logon.batch.placeholder' | translate">
         </div>
       </div>
@@ -51,11 +53,14 @@
       </div>
     </ng-container>
     <div class="mobile-fill">
-      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute" (click)='doAction(logonBatch, logonBatchSuccess, logonBatchFailed)'>{{'app.mobile.material.logon.action'
+      <button weui-button [disabled]='isDisable()' #execute name="execute" id="execute"
+        (click)='doAction(logonBatch, logonBatchSuccess, logonBatchFailed)'>{{'app.mobile.material.logon.action'
         | translate}}</button>
     </div>
-    <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText' [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
-      [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'></fw-mobile-bottom>
+    <fw-mobile-bottom [showBadgeButton]='showBadgeButton' [badgeButtonText]='badgeButtonText'
+      [keyHandler]='{controlName: "badge", allowEmpty: true, inputing: Inputing, req: request(requestBadgeData, requestBadgeDataSuccess, requestBadgeDataFailed)}'
+      [buttonType]='getBadgeButtonType()' (resetClicked)='resetForm()' (operatorSetupClicked)='setupOperator()'>
+    </fw-mobile-bottom>
   </div>
 </form>
 <weui-mask #mask [backdrop]="false"></weui-mask>
@@ -63,5 +68,6 @@
   <fw-mobile-component-status [componentStatus$]='componentStatus$'></fw-mobile-component-status>
 </weui-popup>
 <weui-popup #operationList>
-  <fw-mobile-operation-list [operations$]='operations$' (itemClicked)='operationSelected($event)'></fw-mobile-operation-list>
+  <fw-mobile-operation-list [operations$]='operations$' (itemClicked)='operationSelected($event)'>
+  </fw-mobile-operation-list>
 </weui-popup>

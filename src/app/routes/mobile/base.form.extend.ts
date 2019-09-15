@@ -15,7 +15,6 @@ import { Machine } from '@core/hydra/entity/machine';
 import { MaterialBatch } from '@core/hydra/entity/batch';
 import { Tool } from '@core/hydra/entity/tool';
 import { toNumber } from '@delon/util';
-import { MachineService } from '@core/hydra/service/machine.service';
 import { OperatorWebApi } from '@core/webapi/operator.webapi';
 
 
@@ -72,8 +71,6 @@ export abstract class BaseExtendForm implements OnDestroy {
   protected success: ITranSuccess[] = [];
   protected executionContext: any;
 
-  protected machineService: MachineService;
-
   protected destroy$ = new Subject();
   //#endregion
 
@@ -112,8 +109,6 @@ export abstract class BaseExtendForm implements OnDestroy {
 
     this.operatorWebApi = this.injector.get(OperatorWebApi);
     this.document = this.injector.get(DOCUMENT);
-
-    this.machineService = this.injector.get(MachineService);
 
     // Setup Dialog Config
     this.dialogConfig.title = this.i18n.fanyi(`app.mobile.dialog.title`);
@@ -455,7 +450,6 @@ export abstract class BaseExtendForm implements OnDestroy {
       let title = ``;
       if (operation.leadOrder) {
         title = `${operation.leadOrder} / ${operation.order}`;
-        // title = `${operation.leadOrder}`;
       } else {
         title = `${operation.order}`;
       }
@@ -531,14 +525,17 @@ export abstract class BaseExtendForm implements OnDestroy {
   // controlsToAdd :
   // controlName: [initValue, [Validators], associatedDataControlName]
   // barCode: [null, [Validators.required], `batchData`]
-  protected addControls(controlsToAdd: { [key: string]: Array<any> }) {
+  protected addControls(controlsToAdd: { [key: string]: Array<any> }, notRequired: boolean = false) {
     Object.keys(controlsToAdd).forEach(controlName => {
       const value = controlsToAdd[controlName][0];
       const validator = controlsToAdd[controlName].length > 1 ? controlsToAdd[controlName][1] : null;
       const associatedDataControlName = controlsToAdd[controlName][2];
       this.form.addControl(controlName, new FormControl(value, validator));
       if (associatedDataControlName) {
-        this.form.addControl(associatedDataControlName, new FormControl(null, [Validators.required]));
+        if (notRequired)
+          this.form.addControl(associatedDataControlName, new FormControl(null, []));
+        else
+          this.form.addControl(associatedDataControlName, new FormControl(null, [Validators.required]));
         this.associatedControl.set(controlName, associatedDataControlName);
       }
     });
