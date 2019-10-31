@@ -2,7 +2,7 @@ import { ViewChild, Injector, OnDestroy, HostListener } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, tap, map, switchMap, takeUntil } from 'rxjs/operators';
-import { Observable, of, Subject } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { TitleService, SettingsService } from '@delon/theme';
 import { MaskComponent, ToastService, ToptipsService, PopupComponent, DialogComponent, DialogConfig } from 'ngx-weui';
 import { I18NService } from '@core/i18n/i18n.service';
@@ -556,6 +556,9 @@ export abstract class BaseExtendForm implements OnDestroy {
   }
 
   protected beforeStartCheck(): Observable<boolean> {
+    if (!this.printer)
+      return throwError(`Setup Printer first`);
+
     return of(true);
   }
 

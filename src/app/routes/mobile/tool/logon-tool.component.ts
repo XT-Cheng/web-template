@@ -292,7 +292,7 @@ export class LogonToolComponent extends BaseExtendForm {
 
   logonTool = () => {
     return this._toolWebApi.logonTool(this.toolData.toolName, this.toolData.toolId, this.batchData.material,
-      this.machineData.toolLogonOrder, this.form.value.toolMachine, this.operatorData).pipe(
+      this.operationData.name, this.machineData.machineName, this.form.value.toolMachine, this.operatorData).pipe(
         map(_ => {
           return {
             isSuccess: true,

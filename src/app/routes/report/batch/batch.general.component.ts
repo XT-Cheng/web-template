@@ -132,7 +132,7 @@ export class BatchGeneralComponent implements OnInit {
   //#region Public methods
 
   submitForm(): void {
-    this._batchWebApi.searchBatch(this.searchForm.value.material ? this.searchForm.value.material.name : ``,
+    this._batchWebApi.searchBatch(this.searchForm.value.material ? this.searchForm.value.material : ``,
       this.searchForm.value.buffer ? this.searchForm.value.buffer.name : ``, this.searchForm.value.lastChanged)
       .subscribe(batches => {
         this.originalData = batches;

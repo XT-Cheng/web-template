@@ -9,6 +9,7 @@ import { map, tap } from 'rxjs/operators';
 import { MachineWebApi } from '@core/webapi/machine.webapi';
 import { OperationWebApi } from '@core/webapi/operation.webapi';
 import { MaterialMasterWebApi } from '@core/webapi/materialMaster.webapi';
+import { deepExtend } from '@core/utils/helpers';
 
 @Component({
   selector: 'fw-packing',
@@ -93,7 +94,12 @@ export class PackingComponent extends BaseExtendForm {
     this._materialMasterWebApi.getPartMaster(this.operationData.article).subscribe(material => {
       if (material) {
         this.form.controls.materialData.setValue(material);
+
         this.form.controls.quantity.setValue(material.standardPackageQty);
+
+        if (this.storedData && this.storedData.outputBatchQtys && this.storedData.outputBatchQtys[this.operationData.article]) {
+          this.form.controls.quantity.setValue(this.storedData.outputBatchQtys[this.operationData.article]);
+        }
       }
       this.document.getElementById(`quantity`).focus();
     });
@@ -117,6 +123,11 @@ export class PackingComponent extends BaseExtendForm {
 
   //#region Number of Quantity Reqeust
   requestQuantityDataSuccess = () => {
+    this.storedData = deepExtend(this.storedData, {
+      outputBatchQtys: {
+        [this.operationData.article]: this.form.value.quantity
+      }
+    });
   }
 
   requestQuantityDataDataFailed = () => {

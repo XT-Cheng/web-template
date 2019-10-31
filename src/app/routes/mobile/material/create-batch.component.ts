@@ -252,7 +252,7 @@ export class CreateBatchComponent extends BaseExtendForm {
 
   createBatch = () => {
     return this._batchWebApi.createBatch(this.batchData, this.form.value.materialBufferData, this.form.value.numberOfSplitsData,
-      this.form.value.remainQtyData, this.form.value.isReturnedFromSAP, this.operatorData).pipe(
+      (this.batchData.quantity - this.form.value.remainQtyData) / this.form.value.numberOfSplits, this.form.value.isReturnedFromSAP, this.operatorData).pipe(
         switchMap((ltsToPrint: string[]) => {
           return of({
             isSuccess: true,

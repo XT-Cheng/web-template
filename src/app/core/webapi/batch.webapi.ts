@@ -204,12 +204,22 @@ export class BatchWebApi {
     }
 
     splitBatch(batch: MaterialBatch, childCount: number, childQty: number, operator: Operator) {
+        let splitMethod = `${childCount + 1};`;
+
+        for (let index = 0; index < childCount; index++) {
+            splitMethod += `${childQty};`
+        }
+
+        if (batch.quantity - childCount * childQty > 0)
+            splitMethod += `${batch.quantity - childCount * childQty};`
+
         return this._http.post(`/api/batchService/splitBatch`, {
             BatchName: batch.name,
             Quantity: batch.quantity,
             NumberOfSplit: childCount,
             ChildQty: childQty,
             Badge: operator.badge,
+            SplitMethod: splitMethod,
             PrinterName: this._settingService.app.printer,
         }).pipe(
             map((ltsToPrint: string[]) => {
@@ -220,6 +230,22 @@ export class BatchWebApi {
 
     createBatch(batch: MaterialBatch, batchBuffer: BatchBuffer, numberOfSplits: number, childQty: number,
         isReturnFromSAP: boolean, operator: Operator): Observable<string[]> {
+        let splitMethod = ``;
+
+        if (batch.quantity - numberOfSplits * childQty > 0) {
+            splitMethod = `${numberOfSplits + 1};`
+        }
+        else {
+            splitMethod = `${numberOfSplits};`;
+        }
+
+        for (let index = 0; index < numberOfSplits; index++) {
+            splitMethod += `${childQty};`
+        }
+
+        if (batch.quantity - numberOfSplits * childQty > 0)
+            splitMethod += `${batch.quantity - numberOfSplits * childQty};`
+
         return this._http.post(`/api/batchService/createBatch`, {
             BatchName: batch.name,
             MaterialName: batch.material,
@@ -231,7 +257,8 @@ export class BatchWebApi {
             NumberOfSplit: numberOfSplits,
             ChildQty: childQty,
             PrinterName: this._settingService.app.printer,
-            Badge: operator.badge
+            Badge: operator.badge,
+            SplitMethod: splitMethod
         }).pipe(
             map((ltsToPrint: string[]) => {
                 return ltsToPrint;
@@ -264,7 +291,8 @@ export class BatchWebApi {
             Badge: operator.badge,
             MachineName: machine.machineName,
             BatchName: batch.name,
-            Quantity: quantity
+            Quantity: quantity,
+            PrinterName: this._settingService.app.printer,
         }).pipe(
             map((loggedOff: string) => {
                 return loggedOff;
@@ -297,7 +325,8 @@ export class BatchWebApi {
             BatchMaterial: batch.material,
             BatchName: batch.name,
             Quantity: batch.quantity,
-            Position: pos
+            Position: pos,
+            PrinterName: this._settingService.app.printer,
         }).pipe(
             map((loggedOn: string) => {
                 return loggedOn;
@@ -330,6 +359,7 @@ export class BatchWebApi {
             Class: batch.class,
             SAPBatch: batch.SAPBatch,
             DateCode: batch.dateCode,
+            PrinterName: this._settingService.app.printer,
         }).pipe(
             map((changed: string) => {
                 return changed;

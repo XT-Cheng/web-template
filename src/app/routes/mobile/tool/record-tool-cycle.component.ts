@@ -138,7 +138,7 @@ export class RecordToolCycleComponent extends BaseExtendForm {
 
   recordCycleTool = () => {
     // Reset Tool
-    return this._toolWebApi.recordToolCycle(this.toolData.loggedOnMachine, this.form.value.added, this.operatorData).pipe(
+    return this._toolWebApi.recordToolCycle(this.toolData.loggedOnMachine, this.toolData.toolName, this.form.value.added, this.operatorData).pipe(
       map(_ => {
         return {
           isSuccess: true,

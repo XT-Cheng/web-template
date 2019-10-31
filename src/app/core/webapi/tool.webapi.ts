@@ -22,10 +22,11 @@ export class ToolWebApi {
         )
     }
 
-    public logonTool(toolName: string, toolId: number, batchMaterial: string, operationName: string, machineName: string, operator: Operator): Observable<string> {
+    public logonTool(toolName: string, toolId: number, batchMaterial: string, operationName: string, machineName: string, toolMachineName: string, operator: Operator): Observable<string> {
         return this._http.post(`/api/toolService/logonTool`, {
             OperationName: operationName,
             MachineName: machineName,
+            ToolMachineName: toolMachineName,
             ToolName: toolName,
             ToolId: toolId,
             BatchMaterial: batchMaterial,
@@ -57,8 +58,9 @@ export class ToolWebApi {
         )
     }
 
-    public recordToolCycle(machineName: string, cycles: number, operator: Operator): Observable<string> {
+    public recordToolCycle(machineName: string, toolName: string, cycles: number, operator: Operator): Observable<string> {
         return this._http.post(`/api/toolService/recordToolCycle`, {
+            ToolName: toolName,
             MachineName: machineName,
             Cycles: cycles,
             Badge: operator.badge
