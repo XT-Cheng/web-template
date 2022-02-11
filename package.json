@@ -43,7 +43,7 @@
     "@delon/util": "^2.0.0-rc.1",
     "@ngx-translate/core": "^10.0.1",
     "@ngx-translate/http-loader": "^3.0.1",
-    "ajv": "^6.4.0",
+    "ajv": "^6.12.3",
     "core-js": "^2.5.4",
     "file-saver": "^2.0.0",
     "husky": "^0.14.3",
